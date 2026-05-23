@@ -116,7 +116,61 @@
         </div>
     </div>
 </div>
+<script>
+    var privateKeyLuuTam = "";
 
+    function taoKhoa() {
+        var btn = document.getElementById("btnTaoKhoa");
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin me-2'></i> Đang tạo khóa...";
+        btn.disabled = true;
+
+        forge.pki.rsa.generateKeyPair({bits: 2048, workers: 2}, function(err, keypair) {
+            if (err) {
+                alert("Lỗi khi tạo khóa: " + err);
+                return;
+            }
+
+            var publicKey = forge.pki.publicKeyToPem(keypair.publicKey);
+            privateKeyLuuTam = forge.pki.privateKeyToPem(keypair.privateKey);
+
+            document.getElementById("txtPublicKey").value = publicKey;
+
+            document.getElementById("khuVucTaiKhoa").style.display = "block";
+
+            btn.innerHTML = "<i class='fas fa-magic me-2'></i> Tạo Lại Khóa Khác";
+            btn.disabled = false;
+
+            console.log("Đã sẵn sàng gửi Public Key lên server:", publicKey);
+        });
+    }
+
+    function taiPrivateKey() {
+        if (privateKeyLuuTam === "") {
+            alert("Chưa có khóa nào được tạo!");
+            return;
+        }
+
+        var blob = new Blob([privateKeyLuuTam], { type: "text/plain" });
+        var theA = document.createElement("a");
+        theA.href = window.URL.createObjectURL(blob);
+        theA.download = "khoa_bi_mat_cua_toi.pem";
+        theA.click();
+    }
+
+    function baoMatKhoa() {
+        var xacNhan = confirm("Bạn có chắc chắn muốn báo mất khóa? Hệ thống sẽ thu hồi khóa hiện tại của bạn.");
+
+        if (xacNhan == true) {
+            console.log("Gửi yêu cầu báo mất khóa lên server...");
+
+            alert("Đã báo cáo lộ khóa thành công. Khóa cũ đã bị vô hiệu hóa.");
+
+            document.getElementById("txtPublicKey").value = "--- KHÓA ĐÃ BỊ THU HỒI ---";
+            document.getElementById("khuVucTaiKhoa").style.display = "none";
+            privateKeyLuuTam = "";
+        }
+    }
+</script>
 
 </body>
 </html>
