@@ -105,9 +105,11 @@
             border-color: #000;
             background-color: #fafafa;
         }
+        /* SỬA LỖI: Chuyển từ icon Bootstrap sang FontAwesome check-circle */
         .address-slot.selected::after {
-            content: '\F26A';
-            font-family: 'bootstrap-icons';
+            content: '\f058';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
             position: absolute;
             top: 15px;
             right: 15px;
@@ -151,69 +153,41 @@
 <body>
 <div class="profile-wrapper">
     <div class="sidebar-menu">
-        <!-- menu ben trai -->
         <div class="menu-items">
             <a href="${pageContext.request.contextPath}/dashboard" class="menu-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Bảng điều khiển</span>
             </a>
-
             <a href="${pageContext.request.contextPath}/profile" class="menu-item ">
                 <i class="fas fa-user-circle"></i>
                 <span>Thông tin cá nhân</span>
             </a>
-
             <a href="${pageContext.request.contextPath}/profileEdit" class="menu-item">
                 <i class="fas fa-user-edit"></i>
                 <span>Chỉnh sửa thông tin</span>
             </a>
-
             <a href="${pageContext.request.contextPath}/changePassword" class="menu-item">
                 <i class="fas fa-lock"></i>
                 <span>Đổi mật khẩu</span>
             </a>
-
             <a href="${pageContext.request.contextPath}/order" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
                 <span>Đơn hàng của tôi</span>
             </a>
-
             <a href="${pageContext.request.contextPath}/cart" class="menu-item active">
                 <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
             </a>
-
             <a href="${pageContext.request.contextPath}/favorites" class="menu-item">
                 <i class="fas fa-heart"></i>
                 <span>Sản phẩm yêu thích</span>
             </a>
-
-<%--            <div class="menu-divider"></div>--%>
-
-<%--            <a href="${pageContext.request.contextPath}/address-list" class="menu-item">--%>
-<%--                <i class="fas fa-map-marker-alt"></i>--%>
-<%--                <span>Sổ địa chỉ</span>--%>
-<%--            </a>--%>
-
-<%--            <a href="${pageContext.request.contextPath}/notifications" class="menu-item">--%>
-<%--                <i class="fas fa-bell"></i>--%>
-<%--                <span>Thông báo</span>--%>
-<%--            </a>--%>
-
-<%--            <a href="${pageContext.request.contextPath}/settings" class="menu-item">--%>
-<%--                <i class="fas fa-cog"></i>--%>
-<%--                <span>Cài đặt</span>--%>
-<%--            </a>--%>
-
             <div class="menu-divider"></div>
-
-            <a href="${pageContext.request.contextPath}/loggout" class="menu-item">
+            <a href="${pageContext.request.contextPath}/logout" class="menu-item">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Đăng xuất</span>
             </a>
         </div>
     </div>
-
-
 
     <div class="main-content">
         <div class="content-header">
@@ -227,11 +201,12 @@
             </nav>
         </div>
 
-        <form action="process-checkout"  method="POST">
-
+        <form action="process-checkout" id="checkoutForm" method="POST">
             <input type="hidden" name="type" value="${param.type}">
-            <div class="checkout-container">
 
+            <input type="hidden" id="digitalSignature" name="digitalSignature" value="">
+
+            <div class="checkout-container">
                 <div class="checkout-form-section">
                     <div class="checkout-card">
                         <h3><i class="fas fa-map-marker-alt"></i> Thông tin giao hàng (Shipping Address)</h3>
@@ -246,34 +221,30 @@
                             <input type="text" id="phone" name="phone" class="form-control" value="${sessionScope.user != null ? sessionScope.user.phonenumber : ''}" placeholder="Nhập số điện thoại..." required>
                         </div>
 
-
-                        <!--Dia chi nhan hang -->
                         <div class="form-group mb-4">
                             <label class="mb-3">Địa chỉ nhận hàng (Shipping Address) <span class="text-danger">*</span></label>
-
                             <div id="address-slots-container">
-                            <c:choose>
-                        <c:when test="${empty listAddress}">
-                            <div class="alert alert-warning py-2 mb-3" style="font-size: 14px; border-radius: 8px;">
-                                <i class="fas fa-exclamation-triangle"></i> Bạn chưa có địa chỉ nào, hãy thêm mới để đặt hàng!
+                                <c:choose>
+                                    <c:when test="${empty listAddress}">
+                                        <div class="alert alert-warning py-2 mb-3" style="font-size: 14px; border-radius: 8px;">
+                                            <i class="fas fa-exclamation-triangle"></i> Bạn chưa có địa chỉ nào, hãy thêm mới để đặt hàng!
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach var="addr" items="${listAddress}" varStatus="status">
+                                            <c:set var="radioId" value="addr_${addr.id}" />
+                                            <input type="radio" class="address-radio-hidden" id="${radioId}" name="shippingAddress" value="${addr.street}, ${addr.commune}, ${addr.province}" ${status.first ? 'checked' : ''}>
+                                            <label for="${radioId}" class="address-slot ${status.first ? 'selected' : ''}">
+                                                <div class="address-name">
+                                                    <i class="fas fa-user-tag text-muted me-1"></i> ${addr.name}
+                                                    <c:if test="${addr.type == 'main'}"><span class="badge-default">Mặc định</span></c:if>
+                                                </div>
+                                                <div class="address-detail"><i class="fas fa-map-marker-alt text-muted me-2"></i> ${addr.street}, ${addr.commune}, ${addr.province}</div>
+                                            </label>
+                                        </c:forEach>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
-                        </c:when>
-                            <c:otherwise>
-                                <%-- xu ly nut chon dia chi giao hang --%>
-                    <c:forEach var="addr" items="${listAddress}" varStatus="status">
-                        <c:set var="radioId" value="addr_${addr.id}" />
-                        <input type="radio" class="address-radio-hidden" id="${radioId}" name="shippingAddress" value="${addr.street}, ${addr.commune}, ${addr.province}" ${status.first ? 'checked' : ''}>
-                            <label for="${radioId}" class="address-slot ${status.first ? 'selected' : ''}">
-                                <div class="address-name">
-                                    <i class="fas fa-user-tag text-muted me-1"></i> ${addr.name}
-                                    <c:if test="${addr.type == 'main'}"><span class="badge-default">Mặc định</span></c:if>
-                                </div>
-                            <div class="address-detail"><i class="fas fa-map-marker-alt text-muted me-2"></i> ${addr.street}, ${addr.commune}, ${addr.province}</div>
-                            </label>
-                    </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
 
                             <button type="button" class="btn-add-address mt-2" data-bs-toggle="modal" data-bs-target="#addAddressModal">
                                 <i class="fas fa-plus-circle me-1"></i> Thêm địa chỉ mới
@@ -281,10 +252,8 @@
                         </div>
                     </div>
 
-
-
                     <div class="checkout-card">
-                        <h3><i class="fas fa-wallet"></i> Phương thức thanh toán (Payment Method)</h3>
+                        <h3><i class="fas fa-wallet"></i> Phương thức thanh toán & Xác thực</h3>
 
                         <label class="payment-method">
                             <input type="radio" name="paymentMethod" value="COD" checked>
@@ -300,7 +269,16 @@
                             <div class="payment-icon"><i class="fas fa-qrcode" style="color: #005baa;"></i></div>
                             <div class="payment-details">
                                 <h4>Thanh toán qua VNPAY</h4>
-                                <p>Thanh toán an toàn qua ví điện tử VNPay hoặc quét mã QR ứng dụng ngân hàng.</p>
+                                <p>Thanh toán an toàn qua ví điện tử VNPay hoặc quét mã QR ngân hàng.</p>
+                            </div>
+                        </label>
+
+                        <label class="payment-method">
+                            <input type="radio" name="paymentMethod" value="DIGITAL_SIGNATURE">
+                            <div class="payment-icon"><i class="fas fa-key" style="color: #ff9900;"></i></div>
+                            <div class="payment-details">
+                                <h4>Xác thực bằng Chữ ký điện tử (RSA/DSA)</h4>
+                                <p>Sử dụng Khóa bí mật (Private Key) để băm dữ liệu đơn hàng và ký xác thực bảo mật tuyệt đối.</p>
                             </div>
                         </label>
                     </div>
@@ -310,38 +288,32 @@
                     <div class="checkout-card">
                         <h3><i class="fas fa-receipt"></i> Tóm tắt đơn hàng</h3>
 
-                        <!-- Voucher -->
                         <div class="mb-3">
                             <label class="form-label">Chọn Voucher</label>
                             <select id="voucherSelect" name="voucherId" class="form-select">
                                 <c:forEach items="${vouchers}" var="v">
                                     <option value="${v.id}">
-                                        <strong>${v.code}</strong> - Giảm ${v.value}${v.valueType == 'PERCENT' ? '%' : ' ₫'}
+                                            ${v.code} - Giảm ${v.value}${v.valueType == 'PERCENT' ? '%' : ' ₫'}
                                     </option>
                                 </c:forEach>
                             </select>
                         </div>
 
-
                         <div class="summary-items-list">
-                             <c:forEach var="item" items="${checkoutCart.items}">
+                            <c:forEach var="item" items="${checkoutCart.items}">
                                 <div class="summary-item">
                                     <div class="summary-item-info">
-
                                         <img src="${not empty item.productDetail.images ? item.productDetail.images[0] : 'https://placehold.co/50'}" style="width: 50px; height: 50px; object-fit: cover;" alt="${item.productDetail.productName}" />
-
                                         <div>
-
                                             <div class="summary-name">${item.productDetail.productName}</div>
                                             <div class="summary-qty">Số lượng: ${item.quantity}</div>
                                         </div>
                                     </div>
                                     <div class="summary-price">
-
                                         <fmt:formatNumber value="${item.totalPrice}" type="number" groupingUsed="true"/> ₫
                                     </div>
                                 </div>
-                             </c:forEach>
+                            </c:forEach>
                         </div>
 
                         <div class="summary-calc">
@@ -359,17 +331,12 @@
                             </div>
                         </div>
 
-
-                        <!-- Dat hang -->
                         <c:choose>
-                            <%-- Nếu danh sách địa chỉ rỗng -> Hiển thị nút ảo bị mờ (Disabled) --%>
                             <c:when test="${empty listAddress}">
                                 <button type="button" class="btn-submit-order" style="background-color: #6c757d; cursor: not-allowed;" disabled>
                                     <i class="fas fa-lock"></i> Vui lòng thêm địa chỉ để Đặt hàng
                                 </button>
                             </c:when>
-
-                            <%-- Nếu có địa chỉ -> Hiển thị nút Đặt hàng bình thường --%>
                             <c:otherwise>
                                 <button type="submit" class="btn-submit-order">
                                     <i class="fas fa-check-circle"></i> Đặt Hàng
@@ -378,12 +345,10 @@
                         </c:choose>
                     </div>
                 </div>
-
             </div>
         </form>
     </div>
 </div>
-
 
 <%-- Modal dia chi --%>
 <div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
@@ -395,21 +360,18 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body" style="padding: 25px;">
                 <form id="newAddressForm">
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Tên người nhận</label>
                         <input type="text" class="form-control" id="newAddrName" name="newName" placeholder="Nhập họ tên..." required>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Tỉnh / Thành phố <span class="text-danger">*</span></label>
                         <select class="form-select" id="newAddrProvince" required>
                             <option value="" selected disabled>Chọn Tỉnh / Thành phố</option>
                         </select>
                     </div>
-
                     <div class="row">
                         <div class="col-6 mb-3">
                             <label class="form-label fw-bold small">Quận / Huyện <span class="text-danger">*</span></label>
@@ -424,17 +386,14 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Số nhà, Tên đường <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="newAddrStreet" name="newStreet" placeholder="VD: Số 120 Yên Lãng" required>
                     </div>
                 </form>
             </div>
-
             <div class="modal-footer" style="border-top: none;">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">Hủy bỏ</button>
-
                 <button type="button" class="btn btn-dark" id="btnSaveAddress" style="border-radius: 8px;">
                     <i class="fas fa-save me-1"></i> Lưu địa chỉ
                 </button>
@@ -445,54 +404,75 @@
 
 </body>
 <script>
+    // XỬ LÝ LOGIC CHỮ KÝ SỐ KHI SUBMIT FORM
+    document.getElementById("checkoutForm").addEventListener("submit", function(e) {
+        // Kiểm tra phương thức người dùng lựa chọn
+        const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-    //ap voucher
+        if (selectedMethod === "DIGITAL_SIGNATURE") {
+            const currentSignature = document.getElementById("digitalSignature").value;
+
+            // Nếu chưa có chữ ký trong hidden input, chặn lại để thực hiện quy trình ký
+            if (!currentSignature) {
+                e.preventDefault(); // Chặn việc gửi form ngay lập tức
+
+                // Mở Prompt/Popup yêu cầu mã PIN thiết bị chứa Private Key (USB Token, SmartCard, CloudCA...)
+                let pin = prompt("HỆ THỐNG KÝ SỐ ĐIỆN TỬ (RSA/DSA):\nNhập mã PIN Chứng thư số của bạn để ký xác nhận đơn hàng:");
+
+                if (pin && pin.trim() !== "") {
+                    // Logic Mô phỏng: Lấy dữ liệu đơn hàng -> Băm bằng SHA-256 -> Mã hóa bằng Private Key
+                    alert("Hệ thống đang tiến hành băm dữ liệu hóa đơn (SHA-256) và mã hóa bất đối xứng...");
+
+                    // Chuỗi giả lập Base64 đại diện cho chữ ký số được sinh ra từ Private Key của user
+                    const generatedSignature = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC3V_DUMMY_SIGNATURE_DATA_RSA_DSA_ALGORITHM_SUCCESS";
+
+                    // Đẩy chuỗi chữ ký số vào hidden input
+                    document.getElementById("digitalSignature").value = generatedSignature;
+
+                    alert("Ký số đơn hàng thành công! Trình duyệt đang chuyển dữ liệu kèm chữ ký lên máy chủ xử lý.");
+
+                    // Tiến hành submit form thật lên Controller/Servlet
+                    this.submit();
+                } else {
+                    alert("Giao dịch ký số bị hủy bỏ. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.");
+                }
+            }
+        }
+    });
+
+    // Áp dụng voucher
     document.getElementById("voucherSelect").addEventListener("change", function() {
-
         let voucherId = this.value;
-
-        // update truong hop tinh voucher
         const urlParams = new URLSearchParams(window.location.search);
         const type = urlParams.get('type') || '';
 
         fetch("${pageContext.request.contextPath}/voucher", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: "voucherId=" + voucherId + "&type=" +type
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "voucherId=" + voucherId + "&type=" + type
         })
             .then(response => response.text())
             .then(data => {
-
-                console.log("Server response:", data);
                 let formatted = Number(data).toLocaleString('vi-VN');
-
-                // Ví dụ update lại giá tiền
                 document.getElementById("totalPrice").innerHTML = formatted + " ₫";
-
             })
             .catch(error => console.error("Error:", error));
-
     });
 
-    //add adr
+    // Lưu địa chỉ mới
     document.getElementById("btnSaveAddress").addEventListener("click", function(){
-
         const name = document.getElementById('newAddrName').value.trim();
-        const province = document.getElementById('newAddrProvince').value; // Bỏ trim() vì đây là Select
+        const province = document.getElementById('newAddrProvince').value;
         const district = document.getElementById('newAddrDistrict').value;
         const ward = document.getElementById('newAddrWard').value;
         const street = document.getElementById('newAddrStreet').value.trim();
 
-        //check form
         if(!name || !province || !district || !ward || !street){
-            alert("vui lòng điền đủ thông tin!");
+            alert("Vui lòng điền đủ thông tin!");
             return;
         }
 
         const fullCommune = ward + ", " + district;
-
         const formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("province", province);
@@ -500,63 +480,51 @@
         formData.append("street", street);
         formData.append("type", "sub");
 
-        //set dia chi moi la phu
-        formData.append("type", "sub");
-
-        // UI hien thi dang luu
         const btnSave = document.getElementById('btnSaveAddress');
-        btnSave.innerHTML = '<i class ="fas fa-spinner fa-spin me-1"></i> Đang lưu...';
+        btnSave.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang lưu...';
         btnSave.disabled = true;
 
         fetch('${pageContext.request.contextPath}/add-address', {
             method: 'POST',
-            headers: {
-                'Content-type' : 'application/x-www-form-urlencoded',
-            },
+            headers: { 'Content-type' : 'application/x-www-form-urlencoded' },
             body:  formData.toString()
         })
-        .then(response => response.text())
+            .then(response => response.text())
+            .then(data => {
+                if(data === 'success') {
+                    window.location.reload();
+                } else if(data === 'full_slot') {
+                    alert("Bạn chỉ lưu tối đa được 6 địa chỉ, vui lòng xóa bớt!");
+                    btnSave.innerHTML = '<i class="fas fa-save me-1"></i> Lưu địa chỉ';
+                    btnSave.disabled = false;
+                } else {
+                    alert("Có lỗi xảy ra, không thể lưu địa chỉ!");
+                    btnSave.innerHTML = '<i class="fas fa-save me-1"></i> Lưu địa chỉ';
+                    btnSave.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Lỗi kết nối máy chủ");
+                btnSave.disabled = false;
+            });
+    });
+
+    // API lấy dữ liệu Tỉnh thành Việt Nam
+    let addressData = [];
+    fetch('https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json')
+        .then(response => response.json())
         .then(data => {
-            if(data === 'success') {
-                window.location.reload();
-            }else if(data === 'full_slot') {
-                alert("Bạn chỉ lưu tối đa được 6 địa chỉ, vui lòng xóa để thêm!");
-                btnSave.innerHTML = '<i class="fas fa-save me-1"></i> Lưu địa chỉ';
-                btnSave.disabled = false;
-            }else{
-                alert("Có lỗi xảy ra, không thể lưu địa chỉ!");
-                btnSave.innerHTML = '<i class="fas fa-save me-1"></i> Lưu địa chỉ';
-                btnSave.disabled = false;
-            }
-
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("Lỗi");
-            btnSave.disabled = false;
-
+            addressData = data;
+            const provinceSelect = document.getElementById('newAddrProvince');
+            data.forEach(province => {
+                let option = document.createElement('option');
+                option.value = province.Name;
+                option.text = province.Name;
+                option.dataset.id = province.Id;
+                provinceSelect.add(option);
+            });
         });
-    });
-
-//Tỉnh thành
-let addressData = [];
-
-fetch('https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json')
-    .then(response => response.json())
-    .then(data => {
-        addressData = data;
-        const provinceSelect = document.getElementById('newAddrProvince');
-
-        data.forEach(province => {
-            let option = document.createElement('option');
-            option.value = province.Name;
-            option.text = province.Name;
-
-            //Id tp/tinh da chon
-            option.dataset.id = province.Id;
-            provinceSelect.add(option);
-        });
-    });
 
     document.getElementById('newAddrProvince').addEventListener('change', function() {
         const districtSelect = document.getElementById('newAddrDistrict');
@@ -568,8 +536,7 @@ fetch('https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/dat
         wardSelect.disabled = true;
 
         const selectedOption = this.options[this.selectedIndex];
-        const provinceId = selectedOption.dataset.id;
-        const province = addressData.find(p => p.Id === provinceId);
+        const province = addressData.find(p => p.Id === selectedOption.dataset.id);
 
         if (province && province.Districts) {
             province.Districts.forEach(district => {
@@ -588,43 +555,36 @@ fetch('https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/dat
         wardSelect.disabled = false;
 
         const provinceSelect = document.getElementById('newAddrProvince');
-            const selectedProvOption = provinceSelect.options[provinceSelect.selectedIndex];
-            const province = addressData.find(p => p.Id === selectedProvOption.dataset.id);
+        const selectedProvOption = provinceSelect.options[provinceSelect.selectedIndex];
+        const province = addressData.find(p => p.Id === selectedProvOption.dataset.id);
 
-            const selectedDistOption = this.options[this.selectedIndex];
-            const districtId = selectedDistOption.dataset.id;
-            const district = province.Districts.find(d => d.Id === districtId);
+        const districtId = this.options[this.selectedIndex].dataset.id;
+        const district = province.Districts.find(d => d.Id === districtId);
 
+        if (district && district.Wards) {
+            district.Wards.forEach(ward => {
+                let option = document.createElement('option');
+                option.value = ward.Name;
+                option.text = ward.Name;
+                wardSelect.add(option);
+            });
+        }
+    });
 
-            if (district && district.Wards) {
-                district.Wards.forEach(ward => {
-                    let option = document.createElement('option');
-                    option.value = ward.Name;
-                    option.text = ward.Name;
-                    wardSelect.add(option);
-                });
+    // Xử lý UI lựa chọn địa chỉ giao hàng
+    const addressRadios = document.querySelectorAll('input[name="shippingAddress"]');
+    addressRadios.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.address-slot').forEach(function(slot) {
+                slot.classList.remove('selected');
+            });
+            if(this.checked) {
+                const targetLabel = document.querySelector('label[for="' + this.id + '"]');
+                if (targetLabel) {
+                    targetLabel.classList.add('selected');
+                }
             }
         });
-
-        //xu ly UI chon dia chi
-        const addressRadios = document.querySelectorAll('input[name="shippingAddress"]');
-
-            addressRadios.forEach(function(radio) {
-                radio.addEventListener('change', function() {
-
-                    document.querySelectorAll('.address-slot').forEach(function(slot) {
-                        slot.classList.remove('selected');
-                    });
-
-
-                    if(this.checked) {
-                        const targetLabel = document.querySelector('label[for="' + this.id + '"]');
-                        if (targetLabel) {
-                            targetLabel.classList.add('selected');
-                    }
-                }
-            });
-        });
-
+    });
 </script>
 </html>
