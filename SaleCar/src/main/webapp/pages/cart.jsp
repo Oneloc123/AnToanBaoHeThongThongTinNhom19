@@ -82,6 +82,11 @@
                 <span>Thông tin cá nhân</span>
             </a>
 
+            <a href="${pageContext.request.contextPath}/key-manager" class="menu-item">
+                <i class="fas fa-key"></i>
+                <span>Quản lý khóa bảo mật</span>
+            </a>
+
             <a href="${pageContext.request.contextPath}/profileEdit" class="menu-item">
                 <i class="fas fa-user-edit"></i>
                 <span>Chỉnh sửa thông tin</span>

@@ -362,38 +362,51 @@
 <body>
 <div class="dashboard-wrapper">
     <!-- Sidebar Menu (không chỉnh sửa) -->
-    <div class="sidebar-menu">
+    <div class="sidebar-menu" >
         <div class="menu-items">
             <a href="${pageContext.request.contextPath}/dashboard" class="menu-item active">
                 <i class="fas fa-chart-pie"></i>
                 <span>Bảng điều khiển</span>
             </a>
-            <a href="${pageContext.request.contextPath}/profile" class="menu-item">
+
+            <a href="${pageContext.request.contextPath}/profile" class="menu-item ">
                 <i class="fas fa-user-circle"></i>
                 <span>Thông tin cá nhân</span>
             </a>
+
+            <a href="${pageContext.request.contextPath}/key-manager" class="menu-item">
+                <i class="fas fa-key"></i>
+                <span>Quản lý khóa bảo mật</span>
+            </a>
+
             <a href="${pageContext.request.contextPath}/profileEdit" class="menu-item">
                 <i class="fas fa-user-edit"></i>
                 <span>Chỉnh sửa thông tin</span>
             </a>
+
             <a href="${pageContext.request.contextPath}/changePassword" class="menu-item">
                 <i class="fas fa-lock"></i>
                 <span>Đổi mật khẩu</span>
             </a>
+
             <a href="${pageContext.request.contextPath}/order" class="menu-item">
                 <i class="fas fa-shopping-bag"></i>
                 <span>Đơn hàng của tôi</span>
             </a>
+
             <a href="${pageContext.request.contextPath}/cart" class="menu-item">
                 <i class="fas fa-shopping-cart"></i>
                 <span>Giỏ hàng</span>
             </a>
+
             <a href="${pageContext.request.contextPath}/favorites" class="menu-item">
                 <i class="fas fa-heart"></i>
                 <span>Sản phẩm yêu thích</span>
             </a>
+
             <div class="menu-divider"></div>
-            <a href="${pageContext.request.contextPath}/logout" class="menu-item">
+
+            <a href="${pageContext.request.contextPath}/loggout" class="menu-item">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Đăng xuất</span>
             </a>

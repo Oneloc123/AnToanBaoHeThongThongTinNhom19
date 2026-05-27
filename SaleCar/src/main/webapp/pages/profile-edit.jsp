@@ -337,9 +337,14 @@
                 <span>Bảng điều khiển</span>
             </a>
 
-            <a href="${pageContext.request.contextPath}/profile" class="menu-item">
+            <a href="${pageContext.request.contextPath}/profile" class="menu-item ">
                 <i class="fas fa-user-circle"></i>
                 <span>Thông tin cá nhân</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/key-manager" class="menu-item">
+                <i class="fas fa-key"></i>
+                <span>Quản lý khóa bảo mật</span>
             </a>
 
             <a href="${pageContext.request.contextPath}/profileEdit" class="menu-item active">
@@ -356,9 +361,12 @@
                 <i class="fas fa-shopping-bag"></i>
                 <span>Đơn hàng của tôi</span>
             </a>
+
             <a href="${pageContext.request.contextPath}/cart" class="menu-item">
-                <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
+                <i class="fas fa-shopping-cart"></i>
+                <span>Giỏ hàng</span>
             </a>
+
             <a href="${pageContext.request.contextPath}/favorites" class="menu-item">
                 <i class="fas fa-heart"></i>
                 <span>Sản phẩm yêu thích</span>

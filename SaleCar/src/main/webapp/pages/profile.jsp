@@ -463,6 +463,11 @@
                 <span>Thông tin cá nhân</span>
             </a>
 
+            <a href="${pageContext.request.contextPath}/key-manager" class="menu-item">
+                <i class="fas fa-key"></i>
+                <span>Quản lý khóa bảo mật</span>
+            </a>
+
             <a href="${pageContext.request.contextPath}/profileEdit" class="menu-item">
                 <i class="fas fa-user-edit"></i>
                 <span>Chỉnh sửa thông tin</span>
@@ -479,30 +484,14 @@
             </a>
 
             <a href="${pageContext.request.contextPath}/cart" class="menu-item">
-                <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
+                <i class="fas fa-shopping-cart"></i>
+                <span>Giỏ hàng</span>
             </a>
 
             <a href="${pageContext.request.contextPath}/favorites" class="menu-item">
                 <i class="fas fa-heart"></i>
                 <span>Sản phẩm yêu thích</span>
             </a>
-
-<%--            <div class="menu-divider"></div>--%>
-
-<%--            <a href="${pageContext.request.contextPath}/address-list" class="menu-item">--%>
-<%--                <i class="fas fa-map-marker-alt"></i>--%>
-<%--                <span>Sổ địa chỉ</span>--%>
-<%--            </a>--%>
-
-<%--            <a href="${pageContext.request.contextPath}/notifications" class="menu-item">--%>
-<%--                <i class="fas fa-bell"></i>--%>
-<%--                <span>Thông báo</span>--%>
-<%--            </a>--%>
-
-<%--            <a href="${pageContext.request.contextPath}/settings" class="menu-item">--%>
-<%--                <i class="fas fa-cog"></i>--%>
-<%--                <span>Cài đặt</span>--%>
-<%--            </a>--%>
 
             <div class="menu-divider"></div>
 
