@@ -392,6 +392,8 @@
                 <i class="fas fa-heart"></i>
                 <span>Sản phẩm yêu thích</span>
             </a>
+            <a href="${pageContext.request.contextPath}/key-management" class="menu-item "><i class="fas fa-key"></i><span>Quản lý Khóa cá nhân</span></a>
+
             <div class="menu-divider"></div>
             <a href="${pageContext.request.contextPath}/logout" class="menu-item">
                 <i class="fas fa-sign-out-alt"></i>

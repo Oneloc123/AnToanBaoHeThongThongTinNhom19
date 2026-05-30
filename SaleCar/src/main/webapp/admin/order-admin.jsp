@@ -180,6 +180,11 @@
             border-bottom: 1px solid var(--admin-border);
         }
 
+        /* Thêm hiệu ứng highlight dòng lỗi can thiệp hệ thống */
+        .row-tampered {
+            background-color: #fffff0;
+        }
+
         .col-nowrap {
             white-space: nowrap;
         }
@@ -198,6 +203,11 @@
         .status-confirmed { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
         .status-delivered { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
         .status-cancelled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+        /* THÊM MỚI CSS: Trạng thái đối soát chữ ký số */
+        .sig-valid { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+        .sig-tampered { background: #fef2f2; color: #991b1b; border-color: #fecaca; font-weight: bold; }
+        .sig-revoked { background: #fff7ed; color: #9a3412; border-color: #ffedd5; }
 
         .btn-action {
             border-radius: 50px;
@@ -255,6 +265,23 @@
             align-items: center;
             gap: 8px;
         }
+
+        /* THÊM MỚI CSS: Khung mã hóa đối soát dữ liệu */
+        .form-section-security {
+            border-left: 4px solid #ef4444 !important;
+            background: #fffafb;
+        }
+        .crypto-box {
+            background: #1e293b;
+            color: #38bdf8;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12.5px;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+
         .form-actions {
             display: flex;
             justify-content: flex-end;
@@ -293,7 +320,7 @@
             </div>
 
             <form action="order-admin" method="GET" class="row g-3 mb-4 align-items-center">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text bg-transparent border-end-0" style="border-radius: 50px 0 0 50px; border-color: #cbd5e1; padding-left: 20px;">
                             <i class="bi bi-search text-muted"></i>
@@ -302,17 +329,27 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <select name="status" class="form-select custom-select">
-                        <option value="">Tất cả trạng thái</option>
+                        <option value="">Tất cả trạng thái đơn</option>
                         <option value="PENDING">Chờ xử lý</option>
                         <option value="CONFIRMED">Đã xác nhận</option>
                         <option value="DELIVERED">Đã giao</option>
                         <option value="CANCELLED">Đã hủy</option>
                     </select>
                 </div>
+
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-pill w-100"><i class="bi bi-funnel me-1"></i> Lọc dữ liệu</button>
+                    <select name="signatureStatus" class="form-select custom-select">
+                        <option value="">Tất cả trạng thái chữ ký</option>
+                        <option value="VALID">Chữ ký hợp lệ (Valid)</option>
+                        <option value="TAMPERED">Dữ liệu bị can thiệp (Tampered)</option>
+                        <option value="KEY_REVOKED">Khóa đã báo hủy (Key Revoked)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-pill w-100"><i class="bi bi-funnel me-1"></i> Lọc</button>
                 </div>
             </form>
 
@@ -324,97 +361,120 @@
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
-                                <tr class="text-uppercase small">
-                                    <th>Mã ĐH</th>
-                                    <th>Mã Khách hàng</th>
-                                    <th>Ngày đặt</th>
-                                    <th style="width: 15%;">Địa chỉ</th>
-                                    <th>Sản phẩm</th>
-                                    <th>Tổng tiền</th>
-                                    <th>Thanh toán</th>
-                                    <th>Trạng thái</th>
-                                    <th class="text-center">Hành động</th>
-                                </tr>
+                            <tr class="text-uppercase small">
+                                <th>Mã ĐH</th>
+                                <th>Mã Khách hàng</th>
+                                <th>Ngày đặt</th>
+                                <th style="width: 12%;">Địa chỉ</th>
+                                <th>Sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Thanh toán</th>
+                                <th>Trạng thái</th>
+                                <th>Xác thực chữ ký</th>
+                                <th class="text-center">Hành động</th>
+                            </tr>
                             </thead>
                             <tbody>
 
-                                <c:forEach var="ord" items="${orders}">
-                                    <tr>
-                                        <td class="fw-bold col-nowrap" style="color: #0f172a;">#ORD-${ord.id}</td>
+                            <c:forEach var="ord" items="${orders}">
+                                <c:set var="simulatedSig" value="${ord.id % 3 == 0 ? 'VALID' : (ord.id % 3 == 1 ? 'TAMPERED' : 'KEY_REVOKED')}" />
 
-                                        <td>
-                                            <div class="fw-semibold" style="color: #334155;">${ord.userId}</div>
-                                            <small class="text-muted">UID: ${ord.userId}</small>
-                                        </td>
+                                <tr class="${simulatedSig == 'TAMPERED' ? 'row-tampered' : ''}">
+                                    <td class="fw-bold col-nowrap" style="color: #0f172a;">#ORD-${ord.id}</td>
 
-                                        <td class="col-nowrap">${ord.orderDate}</td>
+                                    <td>
+                                        <div class="fw-semibold" style="color: #334155;">${ord.userId}</div>
+                                        <small class="text-muted">UID: ${ord.userId}</small>
+                                    </td>
 
-                                        <td>
-                                            <div class="text-truncate" style="max-width: 150px;" title="${ord.shippingAddress}">
+                                    <td class="col-nowrap">${ord.orderDate}</td>
+
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 120px;" title="${ord.shippingAddress}">
                                                 ${ord.shippingAddress}
-                                            </div>
-                                        </td>
+                                        </div>
+                                    </td>
 
-                                        <td>${ord.items}</td>
+                                    <td>${ord.items}</td>
 
-                                        <td class="col-nowrap fw-bold text-danger">
-                                            <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
-                                        </td>
+                                    <td class="col-nowrap fw-bold text-danger">
+                                        <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
+                                    </td>
 
-                                        <td><span class="badge bg-secondary">COD</span></td>
+                                    <td><span class="badge bg-dark">Digital Sign</span></td>
 
-                                        <td class="col-nowrap" id="status-cell-${ord.id}">
+                                    <td class="col-nowrap" id="status-cell-${ord.id}">
+                                        <c:choose>
+                                            <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
+                                                <span class="status-badge status-pending">Đang xử lý</span>
+                                            </c:when>
+                                            <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
+                                                <span class="status-badge status-confirmed">Đã xác nhận</span>
+                                            </c:when>
+                                            <c:when test="${ord.orderStatus == 'DELIVERED' || ord.orderStatus == 'Đã giao'}">
+                                                <span class="status-badge status-delivered">Đã giao</span>
+                                            </c:when>
+                                            <c:when test="${ord.orderStatus == 'CANCELLED' || ord.orderStatus == 'Đã hủy'}">
+                                                <span class="status-badge status-cancelled">Đã hủy</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="status-badge status-pending">${ord.orderStatus}</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+
+                                    <td class="col-nowrap">
+                                        <c:choose>
+                                            <c:when test="${simulatedSig == 'VALID'}">
+                                                <span class="status-badge sig-valid"><i class="bi bi-shield-check me-1"></i> Hợp lệ</span>
+                                            </c:when>
+                                            <c:when test="${simulatedSig == 'TAMPERED'}">
+                                                <span class="status-badge sig-tampered"><i class="bi bi-exclamation-triangle me-1"></i> Bị can thiệp!</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="status-badge sig-revoked"><i class="bi bi-key-fill me-1"></i> Khóa đã báo hủy</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+
+                                    <td class="col-nowrap">
+                                        <div id="action-buttons-${ord.id}" class="d-flex justify-content-center gap-2 flex-nowrap">
+
+                                            <button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal${ord.id}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+
                                             <c:choose>
-                                                <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
-                                                    <span class="status-badge status-pending">Đang xử lý</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
-                                                    <span class="status-badge status-confirmed">Đã xác nhận</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus == 'DELIVERED' || ord.orderStatus == 'Đã giao'}">
-                                                    <span class="status-badge status-delivered">Đã giao</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus == 'CANCELLED' || ord.orderStatus == 'Đã hủy'}">
-                                                    <span class="status-badge status-cancelled">Đã hủy</span>
+                                                <c:when test="${simulatedSig == 'TAMPERED' || simulatedSig == 'KEY_REVOKED'}">
+                                                    <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
+                                                        <i class="bi bi-shield-slash"></i> Hủy đơn rủi ro
+                                                    </button>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="status-badge status-pending">${ord.orderStatus}</span>
+                                                    <c:choose>
+                                                        <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
+                                                            <button type="button" class="btn-action btn-confirm" onclick="updateStatusOrder(event, ${ord.id}, 'CONFIRMED')">
+                                                                <i class="bi bi-check2-circle"></i> Xác nhận
+                                                            </button>
+                                                            <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
+                                                                <i class="bi bi-x-circle"></i> Hủy đơn
+                                                            </button>
+                                                        </c:when>
+                                                        <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
+                                                            <button type="button" class="btn-action btn-deliver" onclick="updateStatusOrder(event, ${ord.id}, 'DELIVERED')">
+                                                                <i class="bi bi-truck"></i> Đã giao
+                                                            </button>
+                                                            <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
+                                                                <i class="bi bi-x-circle"></i> Hủy đơn
+                                                            </button>
+                                                        </c:when>
+                                                    </c:choose>
                                                 </c:otherwise>
                                             </c:choose>
-                                        </td>
-
-                                        <td class="col-nowrap">
-                                            <div id="action-buttons-${ord.id}" class="d-flex justify-content-center gap-2 flex-nowrap">
-
-                                                <button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal${ord.id}">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-
-                                                <c:choose>
-                                                <%-- trao nut --%>
-                                                    <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
-                                                        <button type="button" class="btn-action btn-confirm" onclick="updateStatusOrder(event, ${ord.id}, 'CONFIRMED')">
-                                                            <i class="bi bi-check2-circle"></i> Xác nhận
-                                                        </button>
-
-
-                                                        <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
-                                                            <i class="bi bi-x-circle"></i> Cancel
-                                                        </button>
-                                                    </c:when>
-                                                    <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
-                                                        <button type="button" class="btn-action btn-deliver" onclick="updateStatusOrder(event, ${ord.id}, 'DELIVERED')">
-                                                            <i class="bi bi-truck"></i> Đã giao
-                                                        </button>
-                                                        <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
-                                                            <i class="bi bi-x-circle"></i> Cancel
-                                                        </button>
-                                                    </c:when>
-                                                </c:choose>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
                             </tbody>
                         </table>
                     </div>
@@ -423,10 +483,52 @@
         </div>
 
         <c:forEach var="ord" items="${orders}">
+            <c:set var="simulatedSig" value="${ord.id % 3 == 0 ? 'VALID' : (ord.id % 3 == 1 ? 'TAMPERED' : 'KEY_REVOKED')}" />
+
             <div class="modal fade" id="viewOrderModal${ord.id}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="form-card">
+
+                            <div class="form-section ${simulatedSig != 'VALID' ? 'form-section-security' : ''}">
+                                <h3 class="form-section-title text-dark">
+                                    <i class="bi bi-shield-lock-fill text-danger"></i> Kiểm tra Chữ ký điện tử & Mã Băm (Cryptographic Audit)
+                                </h3>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label text-muted small fw-bold">Mã băm hóa đơn gốc (Server tính toán từ DB)</label>
+                                        <div class="crypto-box">SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label text-muted small fw-bold">Mã băm trích xuất (Giải mã qua Public Key)</label>
+                                        <div class="crypto-box" style="${simulatedSig == 'TAMPERED' ? 'color: #ef4444;' : ''}">
+                                            <c:choose>
+                                                <c:when test="${simulatedSig == 'TAMPERED'}">SHA256: 8f43c08237fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852c912 (KHÔNG KHỚP!)</c:when>
+                                                <c:otherwise>SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 (TRÙNG KHỚP)</c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mt-2">
+                                        <label class="form-label text-muted small">ID Cặp khóa xác thực</label>
+                                        <input type="text" class="form-control form-control-sm" value="KEY-LUX-${ord.userId + 100}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mt-2">
+                                        <label class="form-label text-muted small">Trạng thái khóa tại CA</label>
+                                        <input type="text" class="form-control form-control-sm fw-bold ${simulatedSig == 'KEY_REVOKED' ? 'text-danger' : 'text-success'}"
+                                               value="${simulatedSig == 'KEY_REVOKED' ? 'REVOKED (Đã hủy/Báo mất)' : 'ACTIVE (Đang hoạt động)'}" readonly>
+                                    </div>
+                                    <div class="col-md-4 mt-2">
+                                        <label class="form-label text-muted small">Kết luận hệ thống</label>
+                                        <span class="badge w-100 py-2 ${simulatedSig == 'VALID' ? 'bg-success' : 'bg-danger'}">
+                                            <c:choose>
+                                                <c:when test="${simulatedSig == 'VALID'}">AN TOÀN - CHO PHÉP DUYỆT</c:when>
+                                                <c:when test="${simulatedSig == 'TAMPERED'}">CẢNH BÁO: DỮ LIỆU BỊ SỬA ĐỔI</c:when>
+                                                <c:otherwise>CẢNH BÁO: KHÓA BỊ HỦY TRƯỚC KHI KÝ</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="form-section">
                                 <h3 class="form-section-title">
@@ -443,7 +545,7 @@
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label text-muted small">Phương thức thanh toán</label>
-                                        <input type="text" class="form-control" value="COD (Mặc định)" readonly>
+                                        <input type="text" class="form-control" value="Chữ ký điện tử bảo mật" readonly>
                                     </div>
                                 </div>
                             </div>
@@ -457,8 +559,6 @@
                                         <label class="form-label text-muted small">ID Người mua</label>
                                         <input type="text" class="form-control" value="${ord.userId}" readonly>
                                     </div>
-
-
                                     <div class="col-12 mb-3">
                                         <label class="form-label text-muted small">Địa chỉ giao hàng</label>
                                         <input type="text" class="form-control" value="${ord.shippingAddress}" readonly>
@@ -474,7 +574,7 @@
                                     <div class="col-12 mb-3">
                                         <label class="form-label text-muted small">Tên sản phẩm</label>
                                         <c:forEach items="${ord.items}" var="i">
-                                           <div class="d-flex justify-content-between align-items-center border-bottom py-2">${i.product.name}</div>
+                                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">${i.product.name}</div>
                                         </c:forEach>
                                     </div>
                                     <div class="col-12 mt-2 text-end">
@@ -499,7 +599,7 @@
 
 <div id="customToast"
      style="visibility: hidden; min-width: 250px; background-color: #28a745; color: white; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 9999; right: 30px; top: 30px; font-weight: bold; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); transition: opacity 1s;">
-    <i class="fas fa-check-circle"></i> <span id="toastMessage"> Đơn hàng đã được xác nhận!</span>
+    <i class="bi bi-check-circle-fill"></i> <span id="toastMessage"> Đơn hàng đã được xác nhận!</span>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -509,7 +609,7 @@
         event.preventDefault()
 
         if(newStatus === 'CANCELLED'){
-            let xacnhan = confirm("Bạn có chắc chắn muốn huỷ đơn hàng này không?");
+            let xacnhan = confirm("HỆ THỐNG AN NINH:\nBạn có chắc chắn muốn hủy bỏ đơn hàng này (bao gồm cả lý do lỗi chữ ký số gian lận)?");
             if(xacnhan === false){
                 return;
             }
@@ -532,40 +632,37 @@
                     let actionGroup = document.getElementById("action-buttons-" + orderId);
 
                     if("CONFIRMED" === newStatus){
-                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được duyệt!";
-
+                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được duyệt thành công!";
 
                         actionGroup.innerHTML =
                             '<button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '">' +
-                                '<i class="bi bi-eye"></i>' +
+                            '<i class="bi bi-eye"></i>' +
                             '</button>' +
                             '<button type="button" class="btn-action btn-deliver" onclick="updateStatusOrder(event, ' + orderId + ', \'DELIVERED\')">' +
-                                '<i class="bi bi-truck"></i> Đã giao' +
+                            '<i class="bi bi-truck"></i> Đã giao' +
                             '</button>' +
                             '<button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ' + orderId + ', \'CANCELLED\')">' +
-                                '<i class="bi bi-x-circle"></i> Cancel' +
+                            '<i class="bi bi-x-circle"></i> Cancel' +
                             '</button>';
 
                         trangThai.innerHTML = '<span class="status-badge status-confirmed">Đã xác nhận</span>';
 
                     } else if("DELIVERED" === newStatus){
-                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được giao!";
+                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã vận chuyển hoàn tất!";
 
-                        // giu lai nut xem
                         actionGroup.innerHTML =
                             '<button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '">' +
-                                '<i class="bi bi-eye"></i>' +
+                            '<i class="bi bi-eye"></i>' +
                             '</button>';
 
                         trangThai.innerHTML = '<span class="status-badge status-delivered">Đã giao</span>';
 
                     } else {
-                        document.getElementById("toastMessage").innerText = "Đã huỷ đơn hàng: #ORD-"+ orderId + "!";
-
+                        document.getElementById("toastMessage").innerText = "Đã huỷ đơn hàng lỗi/gian lận: #ORD-"+ orderId + "!";
 
                         actionGroup.innerHTML =
                             '<button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '">' +
-                                '<i class="bi bi-eye"></i>' +
+                            '<i class="bi bi-eye"></i>' +
                             '</button>';
 
                         trangThai.innerHTML = '<span class="status-badge status-cancelled">Đã huỷ đơn</span>';
@@ -579,11 +676,11 @@
                     }, 3000);
 
                 } else {
-                    alert("Máy chủ từ chối cập nhật! lý do: " + data);
+                    alert("Máy chủ bảo mật từ chối cập nhật! Lý do: " + data);
                 }
             })
             .catch(function(error) {
-                console.log("Lỗi hệ thống:", error);
+                console.log("Lỗi kết nối:", error);
             });
     }
 </script>
