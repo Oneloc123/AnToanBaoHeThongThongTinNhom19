@@ -208,17 +208,15 @@ public class OrderDAO {
 
     public List<Order> getAllOrders() {
         List<Order> lstOrder = new ArrayList<>();
-
-        String query = "SELECT * FROM `order` ORDER BY id DESC";
+        // Lấy thêm trường signature và public_key
+        String query = "SELECT id, user_id, order_date, total_price, address, payment_method, order_status, signature, public_key FROM `order` ORDER BY id DESC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
                 Order ord = new Order();
-
                 ord.setId(rs.getInt("id"));
                 ord.setUserId(rs.getInt("user_id"));
                 ord.setOrderDate(rs.getTimestamp("order_date"));
@@ -226,6 +224,10 @@ public class OrderDAO {
                 ord.setShippingAddress(rs.getString("address"));
                 ord.setPaymentMethod(rs.getString("payment_method"));
                 ord.setOrderStatus(rs.getString("order_status"));
+
+                // napj dữ liệu chữ ký
+                ord.setSignature(rs.getString("signature"));
+                ord.setPublicKey(rs.getString("public_key"));
 
                 lstOrder.add(ord);
             }
