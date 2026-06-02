@@ -14,8 +14,7 @@ public class OrderService {
     OrderDAO ordDAO = new OrderDAO();
     UserService userSV = new UserService();
 
-    public Order processOrder(User user, Cart cart, String name, String phone, String shippingAddress, String paymentMethod) {
-
+    public Order processOrder(User user, Cart cart, String name, String phone, String shippingAddress, String paymentMethod, String digitalSignature, String publicKey) {
 
         if (user == null || cart == null || cart.getItems().isEmpty()) {
             return null;
@@ -30,6 +29,9 @@ public class OrderService {
         order.setShippingAddress(fullInfor);
         order.setPaymentMethod(paymentMethod);
         order.setOrderStatus("Đang xử lý");
+        //them chu ky so va khoa cong khai
+        order.setSignature(digitalSignature);
+        order.setPublicKey(publicKey);
 
 
         try {

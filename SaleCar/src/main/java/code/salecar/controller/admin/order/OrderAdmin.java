@@ -52,10 +52,9 @@ public class OrderAdmin extends HttpServlet {
                 }
 
                 //  đối xoát chữ kí
-                String rawData = "id=" + ord.getId() +
-                        "&userId=" + ord.getUserId() +
-                        "&address=" + ord.getShippingAddress() +
-                        "&total=" + ord.getTotalAmount();
+                String rawData =  "&userId=" + ord.getUserId() +
+                                "&address=" + ord.getShippingAddress() +
+                                "&total=" + ord.getTotalAmount();
 
                 String serverHashHex = hashTool.checkSum(rawData, "SHA-256");
                 ord.setServerHash("SHA256: " + serverHashHex);
@@ -65,7 +64,7 @@ public class OrderAdmin extends HttpServlet {
                     ord.setDecryptedHash("Hệ thống phát hiện đơn hàng không có chữ ký số xác thực!");
                     continue;
                 }
-
+                // Gọi hàm verify nhận diện thuật toán
                 boolean isIntegrityValid = verifySignature(rawData, ord.getSignature(), ord.getPublicKey());
 
                 if (isIntegrityValid) {
@@ -94,14 +93,63 @@ public class OrderAdmin extends HttpServlet {
 
             byte[] keyBytes = Base64.getDecoder().decode(cleanKey);
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            PublicKey publicKey = kf.generatePublic(spec);
 
-            Signature sig = Signature.getInstance("SHA256withRSA");
-            sig.initVerify(publicKey);
-            sig.update(data.getBytes(StandardCharsets.UTF_8));
+            PublicKey publicKey = null;
+            String detectedAlgo = "RSA";
 
-            return sig.verify(Base64.getDecoder().decode(signatureBase64));
+            // phân tích địng dạng khóa
+            try {
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                publicKey = kf.generatePublic(spec);
+                detectedAlgo = "RSA";
+            } catch (Exception e) {
+                KeyFactory kf = KeyFactory.getInstance("EC");
+                publicKey = kf.generatePublic(spec);
+                detectedAlgo = "EC";
+            }
+
+            byte[] sigBytes = Base64.getDecoder().decode(signatureBase64);
+            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+
+            if ("RSA".equals(detectedAlgo)) {
+                try {
+                    Signature sig = Signature.getInstance("SHA256withRSA");
+                    sig.initVerify(publicKey);
+                    sig.update(dataBytes);
+                    if (sig.verify(sigBytes)) {
+                        return true;
+                    }
+                } catch (Exception e) {
+                }
+
+                // Nếu người dùng chọn RSA-PSS trên UI
+                try {
+                    Signature sig = Signature.getInstance("RSASSA-PSS");
+                    java.security.spec.MGF1ParameterSpec mgf1Spec = java.security.spec.MGF1ParameterSpec.SHA256;
+                    java.security.spec.PSSParameterSpec pssSpec = new java.security.spec.PSSParameterSpec(
+                            "SHA-256", "MGF1", mgf1Spec, 32, 1
+                    );
+                    sig.setParameter(pssSpec);
+                    sig.initVerify(publicKey);
+                    sig.update(dataBytes);
+                    return sig.verify(sigBytes);
+                } catch (Exception e) {
+                    return false;
+                }
+
+            } else if ("EC".equals(detectedAlgo)) {
+                // Nếu người dùng chọn ECDSA trên UI
+                try {
+                    Signature sig = Signature.getInstance("SHA256withECDSA");
+                    sig.initVerify(publicKey);
+                    sig.update(dataBytes);
+                    return sig.verify(sigBytes);
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            return false;
         } catch (Exception e) {
             return false;
         }

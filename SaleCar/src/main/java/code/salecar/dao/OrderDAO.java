@@ -41,54 +41,55 @@ public class OrderDAO {
 
     public void insertOrder(Order order, Cart cart) {
 
-       try(Connection conn = DBConnection.getConnection()){
-           conn.setAutoCommit(false);
-           try{
-               String sql = "insert into `order` " +
-                       "(user_id, total_price, address, payment_method, payment_status, order_status) " +
-                       "values " +
-                       "(?,?,?,?,?,?)";
-               PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-               pstmt.setInt(1, order.getUserId());
-               pstmt.setDouble(2,order.getTotalAmount());
-               pstmt.setString(3, order.getShippingAddress());
-               pstmt.setString(4, order.getPaymentMethod());
-               pstmt.setString(5, "chưa thanh toán");
-               pstmt.setString(6, order.getOrderStatus());
+        try(Connection conn = DBConnection.getConnection()){
+            conn.setAutoCommit(false);
+            try{
+                // 1. CẬP NHẬT THÊM 2 CỘT SIGNATURE VÀ PUBLIC_KEY VÀO CÂU LỆNH SQL (Tổng cộng 8 dấu ?)
+                String sql = "insert into `order` " +
+                        "(user_id, total_price, address, payment_method, payment_status, order_status, signature, public_key) " +
+                        "values " +
+                        "(?,?,?,?,?,?,?,?)";
+                PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                pstmt.setInt(1, order.getUserId());
+                pstmt.setDouble(2, order.getTotalAmount());
+                pstmt.setString(3, order.getShippingAddress());
+                pstmt.setString(4, order.getPaymentMethod());
+                pstmt.setString(5, "chưa thanh toán");
+                pstmt.setString(6, order.getOrderStatus());
 
-               pstmt.executeUpdate();
-               ResultSet rs = pstmt.getGeneratedKeys();
-               if(rs.next()){
-                   int orderId = rs.getInt(1);
-                   order.setId(orderId);
+                // 2. GÁN GIÁ TRỊ CHỮ KÝ VÀ KHÓA CÔNG KHAI TỪ ĐỐI TƯỢNG ORDER VÀO SQL
+                pstmt.setString(7, order.getSignature());
+                pstmt.setString(8, order.getPublicKey());
 
-                   for(CartItem item : cart.getItems()){
-                       String sql1 = "insert into order_item (order_id, product_id, quantity, price, total_price) values (?, ?, ?, ?, ?)";
-                       PreparedStatement pstmtItem = conn.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
+                pstmt.executeUpdate();
+                ResultSet rs = pstmt.getGeneratedKeys();
+                if(rs.next()){
+                    int orderId = rs.getInt(1);
+                    order.setId(orderId);
 
-                       pstmtItem.setInt(1, orderId);
-                       pstmtItem.setInt(2,item.getProductId());
-                       pstmtItem.setInt(3, item.getQuantity());
-                       pstmtItem.setDouble(4, item.getPrice());
-                       pstmtItem.setDouble(5, item.getTotalPrice());
+                    for(CartItem item : cart.getItems()){
+                        String sql1 = "insert into order_item (order_id, product_id, quantity, price, total_price) values (?, ?, ?, ?, ?)";
+                        PreparedStatement pstmtItem = conn.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
 
-                       pstmtItem.executeUpdate();
-                       pstmtItem.close();
-                   }
-                   conn.commit();
-               }
-           }catch (Exception e){
-               conn.rollback();
-               e.printStackTrace();
-           }
+                        pstmtItem.setInt(1, orderId);
+                        pstmtItem.setInt(2, item.getProductId());
+                        pstmtItem.setInt(3, item.getQuantity());
+                        pstmtItem.setDouble(4, item.getPrice());
+                        pstmtItem.setDouble(5, item.getTotalPrice());
 
+                        pstmtItem.executeUpdate();
+                        pstmtItem.close();
+                    }
+                    conn.commit();
+                }
+            }catch (Exception e){
+                conn.rollback();
+                e.printStackTrace();
+            }
 
-
-       }catch (Exception e){
-
-           throw new RuntimeException();
-       }
-
+        }catch (Exception e){
+            throw new RuntimeException();
+        }
     }
 
     public List<Order> getOrdersByUserId(int userId){

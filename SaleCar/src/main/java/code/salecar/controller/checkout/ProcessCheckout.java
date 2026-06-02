@@ -29,7 +29,7 @@ public class ProcessCheckout extends HttpServlet {
         Cart targetCart = null;
 
         // check type
-        if("buynow".equals(type)){
+        if ("buynow".equals(type)) {
             targetCart = (Cart) session.getAttribute("buyNowCart");
         } else {
             targetCart = (Cart) session.getAttribute("cart");
@@ -45,10 +45,15 @@ public class ProcessCheckout extends HttpServlet {
         String shippingAddress = request.getParameter("shippingAddress");
         String paymentMethod = request.getParameter("paymentMethod");
 
+        String digitalSignature = request.getParameter("digitalSignature");
+        String publicKey = request.getParameter("publicKey");
+
         OrderService orderService = new OrderService();
 
         // CHÚ Ý: Hàm này giờ sẽ trả về đối tượng Order thay vì boolean isSuccess
-        Order newOrder = orderService.processOrder(user, targetCart, name, phone, shippingAddress, paymentMethod);
+        Order newOrder = orderService.processOrder(user, targetCart, name, phone, shippingAddress, paymentMethod, digitalSignature, publicKey
+        );
+
 
         // Nếu tạo đơn hàng thành công (newOrder != null và đã có ID từ Database)
         if (newOrder != null && newOrder.getId() > 0) {
