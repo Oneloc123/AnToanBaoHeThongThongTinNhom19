@@ -377,7 +377,7 @@
                             <tbody>
 
                             <c:forEach var="ord" items="${orders}">
-                                <c:set var="simulatedSig" value="${ord.id % 3 == 0 ? 'VALID' : (ord.id % 3 == 1 ? 'TAMPERED' : 'KEY_REVOKED')}" />
+                                <c:set var="simulatedSig" value="${ord.signatureStatus}" />
 
                                 <tr class="${simulatedSig == 'TAMPERED' ? 'row-tampered' : ''}">
                                     <td class="fw-bold col-nowrap" style="color: #0f172a;">#ORD-${ord.id}</td>
@@ -483,8 +483,7 @@
         </div>
 
         <c:forEach var="ord" items="${orders}">
-            <c:set var="simulatedSig" value="${ord.id % 3 == 0 ? 'VALID' : (ord.id % 3 == 1 ? 'TAMPERED' : 'KEY_REVOKED')}" />
-
+            <c:set var="simulatedSig" value="${ord.signatureStatus}" />
             <div class="modal fade" id="viewOrderModal${ord.id}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
@@ -497,37 +496,14 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-2">
                                         <label class="form-label text-muted small fw-bold">Mã băm hóa đơn gốc (Server tính toán từ DB)</label>
-                                        <div class="crypto-box">SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+                                        <div class="crypto-box">${ord.serverHash}</div>
                                     </div>
                                     <div class="col-md-6 mb-2">
                                         <label class="form-label text-muted small fw-bold">Mã băm trích xuất (Giải mã qua Public Key)</label>
                                         <div class="crypto-box" style="${simulatedSig == 'TAMPERED' ? 'color: #ef4444;' : ''}">
-                                            <c:choose>
-                                                <c:when test="${simulatedSig == 'TAMPERED'}">SHA256: 8f43c08237fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852c912 (KHÔNG KHỚP!)</c:when>
-                                                <c:otherwise>SHA256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 (TRÙNG KHỚP)</c:otherwise>
-                                            </c:choose>
+                                                ${ord.decryptedHash}
                                         </div>
                                     </div>
-                                    <div class="col-md-4 mt-2">
-                                        <label class="form-label text-muted small">ID Cặp khóa xác thực</label>
-                                        <input type="text" class="form-control form-control-sm" value="KEY-LUX-${ord.userId + 100}" readonly>
-                                    </div>
-                                    <div class="col-md-4 mt-2">
-                                        <label class="form-label text-muted small">Trạng thái khóa tại CA</label>
-                                        <input type="text" class="form-control form-control-sm fw-bold ${simulatedSig == 'KEY_REVOKED' ? 'text-danger' : 'text-success'}"
-                                               value="${simulatedSig == 'KEY_REVOKED' ? 'REVOKED (Đã hủy/Báo mất)' : 'ACTIVE (Đang hoạt động)'}" readonly>
-                                    </div>
-                                    <div class="col-md-4 mt-2">
-                                        <label class="form-label text-muted small">Kết luận hệ thống</label>
-                                        <span class="badge w-100 py-2 ${simulatedSig == 'VALID' ? 'bg-success' : 'bg-danger'}">
-                                            <c:choose>
-                                                <c:when test="${simulatedSig == 'VALID'}">AN TOÀN - CHO PHÉP DUYỆT</c:when>
-                                                <c:when test="${simulatedSig == 'TAMPERED'}">CẢNH BÁO: DỮ LIỆU BỊ SỬA ĐỔI</c:when>
-                                                <c:otherwise>CẢNH BÁO: KHÓA BỊ HỦY TRƯỚC KHI KÝ</c:otherwise>
-                                            </c:choose>
-                                        </span>
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="form-section">

@@ -3,7 +3,7 @@ package code.salecar.model;
 import java.util.Date;
 import java.util.List;
 
-public class Order{
+public class Order {
     private int id;
     private int userId;
 
@@ -14,8 +14,14 @@ public class Order{
     private String phone;
     private String paymentMethod;
     private String orderStatus;
-
     private List<OrderItem> items;
+
+    // them cac truong moi de xu li chu ki
+    private String signature;
+    private String publicKey;
+    private String signatureStatus;
+    private String serverHash;
+    private String decryptedHash;
 
     public int getId() {
         return id;
@@ -85,9 +91,47 @@ public class Order{
         return items;
     }
 
-
-
     public void setItems(List<OrderItem> items) {
         this.items = items;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public String getSignatureStatus() {
+        return signatureStatus;
+    }
+
+    public void setSignatureStatus(String signatureStatus) {
+        this.signatureStatus = signatureStatus;
+    }
+
+    public String getServerHash() {
+        return serverHash;
+    }
+
+    public void setServerHash(String serverHash) {
+        this.serverHash = serverHash;
+    }
+
+    public String getDecryptedHash() {
+        return decryptedHash;
+    }
+
+    public void setDecryptedHash(String decryptedHash) {
+        this.decryptedHash = decryptedHash;
     }
 }
