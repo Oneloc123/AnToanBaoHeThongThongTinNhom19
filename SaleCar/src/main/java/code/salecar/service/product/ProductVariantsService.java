@@ -3,6 +3,7 @@ package code.salecar.service.product;
 import code.salecar.dao.ExportReceiptDAO;
 import code.salecar.dao.ImportReceiptDAO;
 import code.salecar.dao.InventoryDAO;
+import code.salecar.dao.ProductDAO;
 import code.salecar.dao.ProductVariantsDAO;
 import code.salecar.model.User;
 import code.salecar.model.product.entity.ActivityLog;
@@ -15,6 +16,7 @@ import java.util.List;
 
 public class ProductVariantsService {
     ProductVariantsDAO pvd = new ProductVariantsDAO();
+    ProductDAO productDAO = new ProductDAO();
     ImportReceiptDAO ird = new ImportReceiptDAO();
     ExportReceiptDAO erd = new ExportReceiptDAO();
     InventoryDAO iv = new InventoryDAO();
@@ -32,28 +34,49 @@ public class ProductVariantsService {
         return pv;
     }
 
-    public void createImportReceipt(ProductVariants variant, User user) {
+    /**
+     * Nhập kho: tạo phiếu nhập + ghi delta vào import_receipt_items + cập nhật inventory (+delta).
+     * @param variant Biến thể nhập
+     * @param user    Người thực hiện
+     * @param quantity Số lượng NHẬP (delta), không phải tổng sau nhập
+     */
+    public void createImportReceipt(ProductVariants variant, User user, int quantity) {
         int irId = ird.createImportReceipt(user);
-
-        createImportReceiptItem(irId,variant);
+        createImportReceiptItem(irId, variant, quantity);
     }
 
-    public void createImportReceiptItem(int improtId,ProductVariants variant) {
-        ird.createImportReceiptItem(improtId,variant);
-
-        iv.update(variant);
-
+    /**
+     * Tạo chi tiết phiếu nhập: ghi import_receipt_items + cập nhật inventory (+delta).
+     */
+    public void createImportReceiptItem(int importId, ProductVariants variant, int quantity) {
+        ird.createImportReceiptItem(importId, variant, quantity);
+        iv.adjustQuantity(variant.getProductId(), variant.getId(), quantity);
     }
 
-    public void createExportReceipt(ProductVariants variants, User user) {
-        int erId = erd.createImportReceipt(user);
-        createExportReceiptItem(erId,variants);
-        pvd.update(variants);
+    /**
+     * Đồng bộ product.price với MIN variant price.
+     * Gọi sau khi variant thay đổi (thêm/sửa/xóa).
+     */
+    public void syncProductPrice(long productId) {
+        productDAO.syncProductPrice(productId);
     }
 
-    public void createExportReceiptItem(int exportID,ProductVariants variant) {
-        erd.createExportReceiptItem(exportID,variant);
-        iv.update(variant);
+    /**
+     * Xuất kho thủ công: tạo phiếu xuất + ghi delta vào export_receipt_items + cập nhật inventory (-delta).
+     * @param variant Biến thể xuất
+     * @param user    Người thực hiện
+     * @param quantity Số lượng XUẤT (delta), không phải tổng sau xuất
+     */
+    public void createExportReceipt(ProductVariants variant, User user, int quantity) {
+        int erId = erd.createExportReceipt(user);
+        createExportReceiptItem(erId, variant, quantity);
+    }
 
+    /**
+     * Tạo chi tiết phiếu xuất: ghi export_receipt_items + cập nhật inventory (-delta).
+     */
+    public void createExportReceiptItem(int exportId, ProductVariants variant, int quantity) {
+        erd.createExportReceiptItem(exportId, variant, quantity);
+        iv.adjustQuantity(variant.getProductId(), variant.getId(), -quantity);
     }
 }

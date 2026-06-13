@@ -12,10 +12,13 @@ import code.salecar.model.product.entity.ProductImage;
 import code.salecar.model.product.entity.ProductVariants;
 import code.salecar.service.Image.ImageService;
 import code.salecar.service.file.FileStorageService;
+import code.salecar.model.User;
+import code.salecar.service.file.ActivityLogger;
 import code.salecar.service.product.BrandService;
 import code.salecar.service.product.CategoryService;
 import code.salecar.service.product.DiscountService;
 import code.salecar.service.product.ProductService;
+import code.salecar.util.NotificationUtil;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
@@ -39,6 +42,7 @@ public class product_create extends HttpServlet {
     private final BrandService brandService = new BrandService();
     private final FileStorageService storageService = new FileStorageService();
     private final ProductService productService = new ProductService();
+    private final ActivityLogger activityLogger = new ActivityLogger();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -69,7 +73,7 @@ public class product_create extends HttpServlet {
         String[] skuParams = request.getParameterValues("sku[]");
         String[] priceParams = request.getParameterValues("price[]");
 
-        // Discount parameters
+        /** Tham số khuyến mãi */
         String discountNameParam = request.getParameter("discountName");
         String discountValueTypeParam = request.getParameter("discountValueType");
         String discountValueParam = request.getParameter("discountPercent");
@@ -77,7 +81,7 @@ public class product_create extends HttpServlet {
         String discountEndDateParam = request.getParameter("discountEndDate");
 
 
-        // Print all variables
+        /** In tất cả biến */
 //        System.out.println("====== ALL PARAMETERS ======");
 //        System.out.println("nameParam: " + nameParam);
 //        System.out.println("categoryIdParam: " + categoryIdParam);
@@ -94,38 +98,38 @@ public class product_create extends HttpServlet {
 //        System.out.println("discountPercentParam: " + discountPercentParam);
 //        System.out.println("=============================");
 
-        // Validation for variants
+        /** Kiểm tra biến thể */
         if (variantNameParams == null || variantNameParams.length == 0) {
-            request.setAttribute("error", "Phải có ít nhất một biến thể");
+            NotificationUtil.setError(request.getSession(), "Phải có ít nhất một biến thể");
             doGet(request, response);
             return;
         }
         if (skuParams == null || skuParams.length != variantNameParams.length) {
-            request.setAttribute("error", "Số lượng SKU phải khớp với số biến thể");
+            NotificationUtil.setError(request.getSession(), "Số lượng SKU phải khớp với số biến thể");
             doGet(request, response);
             return;
         }
         if (priceParams == null || priceParams.length != variantNameParams.length) {
-            request.setAttribute("error", "Số lượng giá biến thể phải khớp với số biến thể");
+            NotificationUtil.setError(request.getSession(), "Số lượng giá biến thể phải khớp với số biến thể");
             doGet(request, response);
             return;
         }
 
         for (int i = 0; i < variantNameParams.length; i++) {
             if (variantNameParams[i] == null || variantNameParams[i].trim().isEmpty()) {
-                request.setAttribute("error", "Tên biến thể không được để trống");
+                NotificationUtil.setError(request.getSession(), "Tên biến thể không được để trống");
                 doGet(request, response);
                 return;
             }
             if (skuParams[i] == null || skuParams[i].trim().isEmpty()) {
-                request.setAttribute("error", "SKU không được để trống");
+                NotificationUtil.setError(request.getSession(), "SKU không được để trống");
                 doGet(request, response);
                 return;
             }
             try {
                 Double.parseDouble(priceParams[i]);
             } catch (NumberFormatException e) {
-                request.setAttribute("error", "Giá biến thể không hợp lệ");
+                NotificationUtil.setError(request.getSession(), "Giá biến thể không hợp lệ");
                 doGet(request, response);
                 return;
             }
@@ -134,7 +138,7 @@ public class product_create extends HttpServlet {
 
         //validation name
         if (nameParam == null || nameParam.trim().isEmpty()) {
-            request.setAttribute("error", "Tên sản phẩm không được để trống");
+            NotificationUtil.setError(request.getSession(), "Tên sản phẩm không được để trống");
             doGet(request, response);
             return;
         }
@@ -144,7 +148,7 @@ public class product_create extends HttpServlet {
         try {
             categoryId = Integer.parseInt(categoryIdParam);
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "Danh mục không hợp lệ");
+            NotificationUtil.setError(request.getSession(), "Danh mục không hợp lệ");
             doGet(request, response);
             return;
         }
@@ -154,18 +158,18 @@ public class product_create extends HttpServlet {
         try {
             brandId = Integer.parseInt(brandIdParam);
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "Thương hiệu không hợp lệ");
+            NotificationUtil.setError(request.getSession(), "Thương hiệu không hợp lệ");
             doGet(request, response);
             return;
         }
         //validation status
         if (statusParam == null || statusParam.trim().isEmpty()) {
-            request.setAttribute("error", "Trạng thái không được để trống");
+            NotificationUtil.setError(request.getSession(), "Trạng thái không được để trống");
             doGet(request, response);
             return;
         }
         if (!statusParam.matches("^(active|inactive|hidden|draft)$")) {
-            request.setAttribute("error", "Trạng thái không hợp lệ");
+            NotificationUtil.setError(request.getSession(), "Trạng thái không hợp lệ");
             doGet(request, response);
             return;
         }
@@ -200,7 +204,7 @@ public class product_create extends HttpServlet {
                 .status(Status.fromString(statusParam))
                 .build();
 
-        // Create list of ProductVariants
+        /** Tạo danh sách biến thể */
         List<ProductVariants> variants = new ArrayList<>();
         for (int i = 0; i < variantNameParams.length; i++) {
             ProductVariants variant = ProductVariants.builder().variantName(variantNameParams[i]).sku(skuParams[i]).price(new BigDecimal(priceParams[i])).build();
@@ -208,6 +212,7 @@ public class product_create extends HttpServlet {
         }
 
         // Create product using service
+
         ProductDetailDTO productDetail = ProductDetailDTO.builder().product(product).variants(variants).build();
         long productId = productService.createProduct(productDetail);
 
@@ -266,20 +271,25 @@ public class product_create extends HttpServlet {
 
                     DiscountService discountService = new DiscountService();
                     int discountId = discountService.createProductDiscount(discount);
-
-                    if (discountId > 0) {
-                        System.out.println("Discount created successfully with ID: " + discountId);
-                    }
+//                    if (discountId > 0) {
+//                        System.out.println("Discount created successfully with ID: " + discountId);
+//                    }
                 } catch (IllegalArgumentException e) {
                     System.err.println("Invalid discount value type or date format: " + e.getMessage());
                 } catch (Exception e) {
                     System.err.println("Error creating discount: " + e.getMessage());
                 }
             }
-            // Success, redirect to product list
+            // Log activity
+            User user = (User) request.getSession().getAttribute("user");
+            String userName = (user != null) ? user.getFullname() : "Admin";
+            activityLogger.logProductCreated(productId, nameParam, userName);
+
+            // Success, redirect to product detail with notification
+            NotificationUtil.setSuccess(request.getSession(), "Tạo sản phẩm thành công!");
             response.sendRedirect(request.getContextPath() + "/admin/products/detail?id=" + productId);
         } else {
-            request.setAttribute("error", "Không thể tạo sản phẩm");
+            NotificationUtil.setError(request.getSession(), "Không thể tạo sản phẩm");
             doGet(request, response);
         }
     }

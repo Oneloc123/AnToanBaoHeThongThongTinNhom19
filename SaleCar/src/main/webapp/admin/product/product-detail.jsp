@@ -356,6 +356,23 @@
                 font-size: 1.5rem;
             }
         }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .breadcrumb-item a {
+            color: #5a6e7c;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: #2c7da0;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -366,6 +383,10 @@
         <!-- Header with Breadcrumb -->
         <header class="admin-header d-flex justify-content-between align-items-center">
             <div>
+                <h3 class="fw-bold m-0 mt-2">
+                    <i class="bi bi-box-seam me-2" style="color:#2c7da0;"></i>
+                    ${product.productName}
+                </h3>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1">
                         <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/dashboard"
@@ -375,10 +396,7 @@
                         <li class="breadcrumb-item active">${product.productName}</li>
                     </ol>
                 </nav>
-                <h3 class="fw-bold m-0 mt-2">
-                    <i class="bi bi-box-seam me-2" style="color:#2c7da0;"></i>
-                    ${product.productName}
-                </h3>
+
             </div>
             <div class="d-flex gap-2">
                 <a href="${pageContext.request.contextPath}/product-detail?id=${product.productId}" target="_blank"
@@ -788,16 +806,7 @@
 <%--                                    </button>--%>
 <%--                                </div>--%>
 
-                            </div>
-                            <c:if test="${not empty sessionScope.error}">
-
-                                <div class="alert alert-danger">
-                                        ${sessionScope.error}
-                                </div>
-
-                                <c:remove var="error" scope="session"/>
-
-                            </c:if>
+                            </div>            <!-- Error notification is now handled by flash notification in sidebar.jsp -->
 
                         </c:forEach>
 
@@ -833,6 +842,25 @@
             </div>
 
             <div class="col-md-6">
+                <style>
+                    .log-action-badge {
+                        display: inline-block;
+                        padding: 2px 10px;
+                        border-radius: 12px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        white-space: nowrap;
+                    }
+                    .log-action-create { background: #dbeafe; color: #1d4ed8; }
+                    .log-action-update { background: #e0f2fe; color: #0369a1; }
+                    .log-action-delete { background: #fee2e2; color: #dc2626; }
+                    .log-action-upload { background: #d1fae5; color: #059669; }
+                    .log-action-image  { background: #fef3c7; color: #b45309; }
+                    .log-action-inventory { background: #ede9fe; color: #6d28d9; }
+                    .log-action-variant { background: #fce7f3; color: #be185d; }
+                    .log-action-default { background: #f1f5f9; color: #475569; }
+                </style>
+
                 <div class="info-section">
                     <h5><i class="bi bi-journal-code me-2"></i>Lịch sử hoạt động</h5>
                     <div class="activity-log">
@@ -841,13 +869,21 @@
                         <c:when test="${not empty product.activityLogs}">
                             <c:forEach items="${product.activityLogs}" var="log">
                                 <div class="log-item">
-                                    <div class="d-flex justify-content-between">
-                                        <strong>${log.action}</strong>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="log-action-badge log-action-${fn:contains(log.action, 'Tạo') ? 'create' : fn:contains(log.action, 'Sửa') || fn:contains(log.action, 'Cập nhật') ? 'update' : fn:contains(log.action, 'Xoá') || fn:contains(log.action, 'xoá') ? 'delete' : fn:contains(log.action, 'Tải') || fn:contains(log.action, 'Đặt') ? 'image' : fn:contains(log.action, 'Nhập') || fn:contains(log.action, 'Xuất') ? 'inventory' : fn:contains(log.action, 'biến thể') || fn:contains(log.action, 'variant') ? 'variant' : 'default'}">
+                                            ${log.action}
+                                        </span>
                                         <small class="text-muted"><fmt:formatDate value="${log.timestamp}"
                                                                                   pattern="dd/MM/yyyy HH:mm"/></small>
                                     </div>
-                                    <div class="small text-muted">Người thực hiện: ${log.user}</div>
-                                    <div class="small">${log.details}</div>
+                                    <div class="ms-1">
+                                        <small class="text-muted">
+                                            <i class="bi bi-person-circle"></i> ${log.user}
+                                        </small>
+                                        <c:if test="${not empty log.details}">
+                                            <div class="small text-secondary mt-1">${log.details}</div>
+                                        </c:if>
+                                    </div>
                                 </div>
                             </c:forEach>
                         </c:when>
@@ -867,7 +903,7 @@
                     <h5><i class="bi bi-building me-2"></i>Thông tin thương hiệu</h5>
                     <div class="d-flex align-items-center gap-3">
                         <c:if test="${product.brandLogo != null}">
-                            <img src="${product.brandLogo}" style="width: 60px; height: 60px; object-fit: contain;"
+                            <img src="${pageContext.request.contextPath}${product.brandLogo}" style="width: 60px; height: 60px; object-fit: contain;"
                                  alt="Brand Logo">
                         </c:if>
                         <div>
@@ -1112,7 +1148,15 @@
     // Copy to clipboard function
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Đã sao chép: ' + text);
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã sao chép',
+                text: text,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+            });
         });
     }
 
@@ -1146,16 +1190,38 @@
 
     // Hide review
     function hideReview(reviewId) {
-        if (confirm('Bạn có chắc chắn muốn ẩn review này?')) {
-            window.location.href = '${pageContext.request.contextPath}/admin/reviews/' + reviewId + '/hide';
-        }
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Bạn có chắc chắn muốn ẩn review này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2c7da0',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ẩn',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '${pageContext.request.contextPath}/admin/reviews/' + reviewId + '/hide';
+            }
+        });
     }
 
     // Report spam
     function reportSpam(reviewId) {
-        if (confirm('Báo cáo review này là spam?')) {
-            window.location.href = '${pageContext.request.contextPath}/admin/reviews/' + reviewId + '/spam';
-        }
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Báo cáo review này là spam?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Báo cáo',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '${pageContext.request.contextPath}/admin/reviews/' + reviewId + '/spam';
+            }
+        });
     }
 </script>
 </body>

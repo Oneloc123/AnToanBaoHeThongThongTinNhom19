@@ -1,13 +1,16 @@
 package code.salecar.model.brand;
 
 import code.salecar.model.enumeration.Status;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 public class Brand {
     private long id;
     private String name;
     private String description;
-    private String image;
+    private String logo;
     private String linkBrand;
     private Status status;
     private LocalDateTime createdAt;
@@ -16,11 +19,11 @@ public class Brand {
     private int productCount;
 
 
-    public Brand(long id, String name, String description, String image, String linkBrand, Status status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Brand(long id, String name, String description, String logo, String linkBrand, Status status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.image = image;
+        this.logo = logo;
         this.linkBrand = linkBrand;
         this.status = status;
         this.createdAt = createdAt;
@@ -54,12 +57,12 @@ public class Brand {
         this.description = description;
     }
 
-    public String getImage() {
-        return image;
+    public String getLogo() {
+        return logo;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setLogo(String logo) {
+        this.logo = logo;
     }
 
     public String getLinkBrand() {
@@ -85,6 +88,9 @@ public class Brand {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+    public Date getCreatedAtDate() {
+        return Timestamp.valueOf(createdAt);
+    }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
@@ -92,6 +98,9 @@ public class Brand {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+    public Date getUpdatedAtDate() {
+        return Timestamp.valueOf(updatedAt);
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

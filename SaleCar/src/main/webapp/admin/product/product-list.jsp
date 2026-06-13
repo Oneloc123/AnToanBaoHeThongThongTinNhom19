@@ -346,7 +346,10 @@
             pointer-events: none;
             cursor: not-allowed;
         }
-
+        .search-btn {
+            white-space: nowrap;
+            height: 100%;
+        }
         /* ========== RESPONSIVE ========== */
         @media (max-width: 992px) {
             .sidebar {
@@ -366,6 +369,23 @@
                 font-size: 1.5rem;
             }
         }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .breadcrumb-item a {
+            color: #5a6e7c;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: #2c7da0;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -375,7 +395,15 @@
 
     <main class="main-content">
         <header class="admin-header d-flex justify-content-between align-items-center">
-            <h3 class="fw-bold m-0"><i class="bi bi-box-seam me-2" style="color:#2c7da0;"></i> Quản lý sản phẩm</h3>
+            <div>
+                <h3 class="fw-bold m-0"><i class="bi bi-box-seam me-2" style="color:#2c7da0;"></i> Quản lý sản phẩm</h3>
+                <nav aria-label="breadcrumb" class="mt-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Products</li>
+                    </ol>
+                </nav>
+            </div>
             <div>
                 <form action="/admin/products/export" method="get" style="display: inline-block;">
                     <input type="hidden" name="keyword" value="${param.keyword}">
@@ -395,18 +423,26 @@
                     <i class="bi bi-plus-lg"></i> Thêm sản phẩm
                 </a>
             </div>
+
         </header>
 
         <!-- Search & Filter Form -->
         <form action="/admin/products" method="get" id="filterForm">
             <!-- Search Bar -->
+            <!-- Search Bar -->
             <div class="mb-4">
-                <div class="input-group">
-                    <input type="text" class="admin-input" id="searchKeyword" name="keyword"
-                           placeholder="🔍 Tìm kiếm theo tên sản phẩm, SKU, danh mục..."
-                           value="${param.keyword}">
-                    <button type="submit" class="admin-btn-outline">
-                        <i class="bi bi-search"></i> Tìm
+                <div class="d-flex gap-2">
+                    <div class="flex-grow-1">
+                        <input type="text"
+                               class="admin-input"
+                               id="searchKeyword"
+                               name="keyword"
+                               placeholder="🔍 Tìm kiếm theo tên sản phẩm, SKU, danh mục..."
+                               value="${param.keyword}">
+                    </div>
+
+                    <button type="submit" class="admin-btn-primary px-4">
+                        <i class="bi bi-search"></i> Tìm kiếm
                     </button>
                 </div>
             </div>
@@ -510,7 +546,6 @@
                                 <th>ID</th>
                                 <th>Hình ảnh</th>
                                 <th>Tên sản phẩm</th>
-                                <th>id</th>
                                 <th>Giá gốc</th>
                                 <th>Giá KM</th>
                                 <th>Giảm giá</th>
@@ -526,19 +561,21 @@
                                 <tr>
                                     <td><input type="checkbox" class="product-checkbox" value="${product.id}"></td>
                                     <td>${product.id}</td>
-                                    <td><img src="${product.image != null ? product.image : '/assets/img/default-product.png'}" class="product-thumb" alt="${product.name}"></td>
+                                    <td><img src="${product.image != null && not empty product.image
+        ? pageContext.request.contextPath.concat('/uploads/').concat(product.image)
+        : pageContext.request.contextPath.concat('/assets/img/default-product.png')}"
+                                               class="product-thumb" alt="${product.name}"></td>
                                     <td class="fw-semibold">${product.name}</td>
-                                    <td><code>${product.id}</code></td>
                                     <td><fmt:formatNumber value="${product.price}" type="currency" /></td>
                                     <td class="text-primary fw-bold"><fmt:formatNumber value="${product.finalPrice}" type="currency" /></td>
                                     <td class="text-danger fw-bold">${product.discountPercent}%</td>
                                     <td>${product.categoryName}</td>
                                     <td>
-<%--                                            <span class="admin-badge-stock--%>
-<%--                                                ${product.quantity > 50 ? 'admin-badge-stock-high' :--%>
-<%--                                                  (product.quantity >= 10 ? 'admin-badge-stock-medium' : 'admin-badge-stock-low')}">--%>
-<%--                                                    ${product.quantity}--%>
-<%--                                            </span>--%>1
+                                            <span class="admin-badge-stock
+                                                ${product.quantity > 50 ? 'admin-badge-stock-high' :
+                                                  (product.quantity >= 10 ? 'admin-badge-stock-medium' : 'admin-badge-stock-low')}">
+                                                    ${product.quantity}
+                                            </span>
                                     </td>
                                     <td>
                                             <span class="admin-badge-status
@@ -555,17 +592,17 @@
                                         <a href="/admin/products/edit?id=${product.id}" class="admin-action-btn admin-action-edit text-decoration-none">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <form action="/admin/products/delete" method="post" style="display: inline-block;"
-                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
-                                            <input type="hidden" name="id" value="${product.id}">
-                                            <button type="submit" class="admin-action-btn admin-action-delete border-0">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                        <a href="/admin/products/duplicate?id=${product.id}" class="admin-action-btn admin-action-edit text-decoration-none"
-                                           onclick="return confirm('Bạn có muốn nhân bản sản phẩm này?');">
-                                            <i class="bi bi-files"></i>
-                                        </a>
+<%--                                        <form action="/admin/products/delete" method="post" style="display: inline-block;"--%>
+<%--                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">--%>
+<%--                                            <input type="hidden" name="id" value="${product.id}">--%>
+<%--                                            <button type="submit" class="admin-action-btn admin-action-delete border-0">--%>
+<%--                                                <i class="bi bi-trash"></i>--%>
+<%--                                            </button>--%>
+<%--                                        </form>--%>
+<%--                                        <a href="/admin/products/duplicate?id=${product.id}" class="admin-action-btn admin-action-edit text-decoration-none"--%>
+<%--                                           onclick="return confirm('Bạn có muốn nhân bản sản phẩm này?');">--%>
+<%--                                            <i class="bi bi-files"></i>--%>
+<%--                                        </a>--%>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -649,6 +686,67 @@
             }
         });
     });
+
+    // ========== CONFIRM DELETE WITH SWEETALERT2 ==========
+    function confirmDelete(productId, productName) {
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc chắn muốn xóa sản phẩm "' + productName + '"?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '${pageContext.request.contextPath}/admin/products/delete';
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'id';
+                input.value = productId;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+
+    // ========== CONFIRM BULK ACTION ==========
+    function confirmBulkAction(action) {
+        const checked = document.querySelectorAll('.product-checkbox:checked');
+        if (checked.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa chọn sản phẩm',
+                text: 'Vui lòng chọn ít nhất một sản phẩm',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return false;
+        }
+
+        const actionText = action === 'delete' ? 'xóa' : 'chuyển trạng thái';
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Bạn có chắc chắn muốn ' + actionText + ' ' + checked.length + ' sản phẩm đã chọn?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('bulkActionForm').submit();
+            }
+        });
+        return false;
+    }
 </script>
 </body>
 </html>

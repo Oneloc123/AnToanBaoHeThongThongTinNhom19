@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="vi">
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<fmt:setLocale value="vi_VN"/>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -12,8 +9,6 @@
     <title>Chỉnh sửa sản phẩm: ${product.productName} | LUXCAR Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Include TinyMCE for rich description editor -->
-    <script src="https://cdn.tiny.cloud/1/YOUR_API_KEY/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         /* ========== GLOBAL STYLES (consistent with product-detail.jsp) ========== */
         * {
@@ -28,9 +23,11 @@
             color: #1e293b;
         }
 
-        /* ========== SIDEBAR STYLES ========== */
+        /* ========== SIDEBAR STYLES - FIXED TO MATCH product-list.jsp ========== */
         .sidebar {
-            width: 280px;
+            width: 280px !important;
+            min-width: 280px !important;
+            flex-shrink: 0 !important;
             background-color: #ffffff;
             border-right: 1px solid #e9edf2;
             height: 100vh;
@@ -89,6 +86,24 @@
             color: #2c7da0;
             box-shadow: 0 2px 4px rgba(44, 125, 160, 0.08);
             border-left: 2px solid #2c7da0;
+        }
+
+        /* Responsive cho sidebar (giống product-list) */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px !important;
+                min-width: 80px !important;
+                padding: 1rem 0.5rem;
+            }
+            .sidebar .logo span {
+                display: none;
+            }
+            .sidebar nav ul li a span {
+                display: none;
+            }
+            .sidebar nav ul li a i {
+                font-size: 1.5rem;
+            }
         }
 
         /* ========== MAIN CONTENT ========== */
@@ -220,34 +235,530 @@
             padding: 2px 4px;
         }
 
-        .sticky-save {
-            position: sticky;
-            bottom: 20px;
-            background: white;
-            padding: 12px 24px;
-            border-radius: 60px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            z-index: 100;
-            text-align: center;
-            width: fit-content;
-            margin: 0 auto;
-        }
-
         /* loading spinner */
         .spinner-sm {
             width: 1rem;
             height: 1rem;
             border-width: 0.15em;
         }
+
+        /* ========== IMAGE GALLERY STYLES ========== */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        .image-card {
+            background: #f8fafc;
+            border: 1px solid #e9edf2;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .image-card:hover {
+            border-color: #2c7da0;
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .image-card.main-image {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+        }
+
+        .image-card-img-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 75%;
+            overflow: hidden;
+            background: #e9edf2;
+        }
+
+        .image-card-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card-img:hover {
+            transform: scale(1.08);
+        }
+
+        .main-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+            z-index: 2;
+        }
+
+        .main-badge i {
+            font-size: 0.6rem;
+        }
+
+        .image-card-actions {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 8px;
+            background: #fff;
+        }
+
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            padding: 0;
+        }
+
+        .btn-set-main {
+            color: #f59e0b;
+        }
+        .btn-set-main:hover {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .btn-delete {
+            color: #ef4444;
+        }
+        .btn-delete:hover {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        /* Upload preview */
+        .preview-thumb {
+            width: 72px;
+            height: 72px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .preview-thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #filePreview {
+            max-height: 90px;
+            overflow-y: auto;
+        }
+
+        /* Image preview modal */
+        #imagePreviewModal .modal-content {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #imagePreviewModal .modal-header {
+            padding: 8px 12px;
+        }
+
+        /* ========== DESCRIPTION SECTION ========== */
+        .description-wrapper {
+            background: #fafcff;
+            border: 1px solid #e9edf2;
+            border-radius: 16px;
+            padding: 1.25rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .description-wrapper:focus-within {
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.06);
+        }
+
+        .description-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .description-header .desc-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .description-header .desc-label i {
+            color: #2c7da0;
+            font-size: 1rem;
+        }
+
+        .description-header .desc-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .description-header .desc-hint i {
+            font-size: 0.85rem;
+        }
+
+        /* Description textarea */
+        .desc-textarea {
+            border-radius: 12px !important;
+            border: 1.5px solid #e2e8f0 !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.9rem !important;
+            line-height: 1.6 !important;
+            transition: all 0.2s ease !important;
+            background: #fff !important;
+            resize: vertical;
+            min-height: 120px;
+            width: 100%;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .desc-textarea:focus {
+            border-color: #2c7da0 !important;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1) !important;
+            outline: none !important;
+        }
+
+        .desc-textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        /* ========== VARIANTS TABLE ========== */
+        .variants-table-wrap {
+            border: 1px solid #e9edf2;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .variants-table {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .variants-table thead th {
+            background: #f8fafc;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+            padding: 0.9rem 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .variants-table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        .variants-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .variants-table tbody tr.variant-new-row {
+            animation: fadeSlideIn 0.3s ease;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .variants-table tbody td {
+            padding: 0.6rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .variants-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Variant form controls */
+        .variant-input {
+            border-radius: 10px !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s ease !important;
+            background: #fff;
+        }
+
+        .variant-input:focus {
+            border-color: #2c7da0 !important;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1) !important;
+        }
+
+        .variant-input::placeholder {
+            color: #cbd5e1;
+            font-size: 0.8rem;
+        }
+
+        .variant-quantity-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            color: #0369a1;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(44, 125, 160, 0.15);
+        }
+
+        .variant-new-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            background: linear-gradient(135deg, #f0fdf4, #bbf7d0);
+            color: #15803d;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-radius: 12px;
+            border: 1px solid rgba(21, 128, 61, 0.15);
+        }
+
+        .variant-new-badge i {
+            font-size: 0.65rem;
+        }
+
+        /* Remove variant button */
+        .remove-variant-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px !important;
+            border: 1px solid #fee2e2 !important;
+            background: #fff !important;
+            color: #ef4444 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .remove-variant-btn:hover {
+            background: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #dc2626 !important;
+            transform: scale(1.05);
+        }
+
+        .remove-variant-btn i {
+            font-size: 0.75rem;
+        }
+
+        /* Add variant button */
+        #addVariantBtn {
+            border-radius: 12px;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        #addVariantBtn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(44, 125, 160, 0.12);
+        }
+
+        /* ========== STICKY SAVE BAR ========== */
+        .sticky-save {
+            position: sticky;
+            bottom: 24px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 14px 28px;
+            border-radius: 60px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(233, 237, 242, 0.8);
+            z-index: 100;
+            width: fit-content;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .sticky-save:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* ========== SECTION CARD ENHANCEMENTS ========== */
+        .info-section {
+            transition: all 0.3s ease;
+        }
+
+        .info-section:hover {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .info-section h5 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: #1e293b;
+            border-left: 3px solid #2c7da0;
+            padding-left: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-section h5 i {
+            color: #2c7da0;
+            font-size: 1.1rem;
+        }
+
+        /* ========== FORM CONTROL ENHANCEMENTS ========== */
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
+            background: #fff;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        .form-label.fw-semibold {
+            font-size: 0.85rem;
+            color: #334155;
+            margin-bottom: 0.4rem;
+        }
+
+        /* ========== BREADCRUMB ========== */
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb-item a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #2c7da0;
+        }
+
+        .breadcrumb-item.active {
+            color: #2c7da0;
+            font-weight: 500;
+        }
+
+        /* ========== MODAL ========== */
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            border-radius: 20px 20px 0 0;
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-header.bg-danger {
+            background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e9edf2;
+            padding: 1rem 1.5rem;
+        }
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .breadcrumb-item a {
+            color: #5a6e7c;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: #2c7da0;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
 <div class="d-flex">
     <%@ include file="/admin/sidebar/sidebar.jsp" %>
+
     <main class="main-content">
         <!-- Header -->
         <header class="admin-header d-flex justify-content-between align-items-center">
             <div>
+
+                <h3 class="fw-bold m-0 mt-2">
+                    <i class="bi bi-pencil-square me-2" style="color:#2c7da0;"></i>
+                    Chỉnh sửa sản phẩm
+                </h3>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1">
                         <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/dashboard" class="text-decoration-none">Dashboard</a></li>
@@ -255,10 +766,6 @@
                         <li class="breadcrumb-item active">Chỉnh sửa: ${product.productName}</li>
                     </ol>
                 </nav>
-                <h3 class="fw-bold m-0 mt-2">
-                    <i class="bi bi-pencil-square me-2" style="color:#2c7da0;"></i>
-                    Chỉnh sửa sản phẩm
-                </h3>
             </div>
             <div class="d-flex gap-2">
                 <a href="${pageContext.request.contextPath}/product-detail?id=${product.productId}" target="_blank" class="admin-btn-outline">
@@ -270,175 +777,137 @@
             </div>
         </header>
 
-        <!-- Unsaved changes warning will be managed by JS -->
-        <form id="globalFormWatcher"></form>
-
-        <!-- 1. BASIC INFORMATION SECTION -->
-        <div class="info-section" id="basicInfoSection">
-            <h5><i class="bi bi-info-circle me-2"></i>Thông tin cơ bản</h5>
-            <form id="basicInfoForm" action="${pageContext.request.contextPath}/admin/product/update-basic-info" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="name" value="${product.productName}" placeholder="${product.productName}" required minlength="3" maxlength="255">
-                        <div class="invalid-feedback">Tên phải từ 3-255 ký tự</div><div id="nameError" class="text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">SKU <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control sku-input" name="sku" value="${product.sku}" required pattern="[A-Za-z0-9-]+" placeholder="Chức năng đang phát triển">
-                        <div class="invalid-feedback">SKU chỉ gồm chữ, số và dấu gạch ngang, phải duy nhất</div><div id="skuError" class="text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Danh mục</label>
-                        <select class="form-select" name="categoryId">
-                            <option value="">-- Chọn danh mục --</option>
-                           <c:forEach var="cat" items="${categoryList}">
-                                <option value="${cat.id}" ${product.categoryId == cat.id ? 'selected' : ''}>${cat.name}</option>
-                            </c:forEach>
-                        </select>
-                        <div id="categoryIdError" class="text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Thương hiệu</label>
-                        <select class="form-select" name="brandId">
-                            <option value="">-- Chọn thương hiệu --</option>
-                            <c:forEach var="brand" items="${brandList}">
-                                <option value="${brand.id}" ${product.brandId == brand.id ? 'selected' : ''}>${brand.name}</option>
-                            </c:forEach>
-                        </select>
-                        <div id="brandIdError" class="text-danger"></div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Trạng thái</label>
-                        <select class="form-select" name="status">
-                            <option value="1" ${product.status.code == 1? 'selected' : ''}>Hoạt động (Active)</option>
-                            <option value="0" ${product.status.code == 0 ? 'selected' : ''}>Không hoạt động (Inactive)</option>
-                        </select>
-                        <small class="text-muted">Inactive: sản phẩm tạm ẩn trên shop</small>
-                        <div id="statusError" class="text-danger"></div>
-                    </div>
-                </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="basicInfoForm"><i class="bi bi-save"></i> Lưu thông tin</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- 2. PRICE & DISCOUNT SECTION -->
-        <div class="info-section" id="priceSection">
-            <h5><i class="bi bi-tag me-2"></i>Giá & khuyến mãi</h5>
-            <h5 class="text-danger">chức năng đang phát triển</h5>
-
-            <form id="priceForm" action="${pageContext.request.contextPath}/admin/product/update-price" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
-                <div class="row">
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Giá gốc (VND)</label>
-                        <fmt:formatNumber value="${product.price}" pattern="0" var="priceValue"/>
-
-                        <input
-                                type="number"
-                                step="1000"
-                                class="form-control"
-                                name="price"
-                                value="${priceValue}"
-                                placeholder="${formattedPrice}"
-                                required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Giá khuyến mãi (VND)</label>
-                        <fmt:formatNumber value="${product.finalPrice}" pattern="0" var="priceValue"/>
-
-                        <input
-                                type="number"
-                                step="1000"
-                                class="form-control"
-                                name="finalPrice"
-                                value="${priceValue}"
-                                placeholder="${formattedPrice}"
-                                required>
-                        <small class="text-muted">Phải nhỏ hơn giá gốc</small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">% giảm</label>
-                        <input type="number" step="0.01" class="form-control" name="discountPercent" value="${product.discountPercent}" readonly disabled>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Ngày bắt đầu khuyến mãi</label>
-                        <input type="datetime-local" class="form-control" name="saleStartDate" value="${saleStartDateValue}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Ngày kết thúc khuyến mãi</label>
-                        <input type="datetime-local" class="form-control" name="saleEndDate" value="${saleEndDateValue}">
-                    </div>
-                </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="priceForm"><i class="bi bi-save"></i> Cập nhật giá</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- 3. IMAGE GALLERY with upload, delete, set main -->
+        <!-- 3. IMAGE GALLERY with upload, delete, set main, preview -->
         <div class="info-section" id="imageSection">
             <h5><i class="bi bi-images me-2"></i>Thư viện ảnh</h5>
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <form id="uploadImageForm" action="${pageContext.request.contextPath}/admin/product/upload-image" method="post" enctype="multipart/form-data">
+
+            <!-- Upload form -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <form id="uploadImageForm" action="${pageContext.request.contextPath}/admin/products/upload-image" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="productId" value="${product.productId}">
                         <div class="input-group">
-                            <input type="file" class="form-control" name="imageFile" accept="image/jpeg,image/png,image/webp" multiple>
-                            <button class="admin-btn-primary" type="submit">Tải ảnh lên</button>
+                            <input type="file" class="form-control" id="imageFileInput" name="imageFile" accept="image/jpeg,image/png,image/webp" multiple>
+                            <button class="admin-btn-primary" type="submit" id="uploadBtn">
+                                <i class="bi bi-cloud-upload"></i> Tải ảnh lên
+                            </button>
                         </div>
                         <small class="text-muted">Hỗ trợ JPG, PNG, WEBP, tối đa 5MB/ảnh</small>
+                        <!-- Preview area for newly selected files -->
+                        <div id="filePreview" class="d-flex flex-wrap gap-2 mt-2"></div>
                     </form>
                 </div>
+            </div>
+
+            <!-- Image grid -->
+            <div class="row">
                 <div class="col-md-12">
-                    <div class="d-flex flex-wrap gap-3">
-                        <c:forEach items="${product.images}" var="imgUrl" varStatus="status">
-                            <div class="position-relative" style="width: 100px;">
-                                <img src="${imgUrl}" class="gallery-thumb w-100 h-auto" style="height: 80px;">
-                                <div class="mt-1 d-flex gap-1 justify-content-center">
-                                    <form action="${pageContext.request.contextPath}/admin/product/set-main-image" method="post">
-                                        <input type="hidden" name="productId" value="${product.productId}">
-                                        <input type="hidden" name="imageUrl" value="${imgUrl}">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Đặt làm ảnh chính"><i class="bi bi-star-fill"></i></button>
-                                    </form>
-                                    <form action="${pageContext.request.contextPath}/admin/product/delete-image" method="post" onsubmit="return confirm('Xóa ảnh này?')">
-                                        <input type="hidden" name="productId" value="${product.productId}">
-                                        <input type="hidden" name="imageUrl" value="${imgUrl}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                    </form>
-                                </div>
+                    <c:choose>
+                        <c:when test="${not empty product.images}">
+                            <div class="image-grid">
+                                <c:forEach items="${product.images}" var="imgUrl" varStatus="status">
+                                    <c:set var="imgSrc" value="${pageContext.request.contextPath}/uploads/${imgUrl}"/>
+                                    <div class="image-card ${status.first ? 'main-image' : ''}">
+                                        <div class="image-card-img-wrapper">
+                                            <img src="${imgSrc}" alt="Ảnh ${status.count}" class="image-card-img" onclick="previewImage('${imgSrc}')">
+                                            <c:if test="${status.first}">
+                                                <span class="main-badge"><i class="bi bi-star-fill"></i> Chính</span>
+                                            </c:if>
+                                        </div>
+                                        <div class="image-card-actions">
+                                            <c:if test="${not status.first}">
+                                                <form action="${pageContext.request.contextPath}/admin/products/set-main-image" method="post" class="d-inline">
+                                                    <input type="hidden" name="productId" value="${product.productId}">
+                                                    <input type="hidden" name="imageUrl" value="${imgUrl}">
+                                                    <button type="submit" class="btn-action btn-set-main" title="Đặt làm ảnh chính">
+                                                        <i class="bi bi-star"></i>
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                            <form action="${pageContext.request.contextPath}/admin/products/delete-image" method="post" class="d-inline delete-image-form">
+                                                <input type="hidden" name="productId" value="${product.productId}">
+                                                <input type="hidden" name="imageUrl" value="${imgUrl}">
+                                                <button type="button" class="btn-action btn-delete" title="Xóa ảnh" onclick="confirmDeleteImage(this)">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </c:forEach>
                             </div>
-                        </c:forEach>
-                        <c:if test="${empty product.images}"><div class="text-muted">Chưa có ảnh</div></c:if>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                <p class="mt-2">Chưa có ảnh nào. Hãy tải ảnh lên để hiển thị.</p>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Preview Modal -->
+        <div class="modal fade" id="imagePreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center p-0">
+                        <img id="previewModalImage" src="" alt="Preview" class="img-fluid" style="max-height: 80vh;">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 4. PRODUCT DESCRIPTION (WYSIWYG) -->
-        <div class="info-section">
-            <h5><i class="bi bi-file-text me-2"></i>Mô tả sản phẩm</h5>
-            <form id="descForm" action="${pageContext.request.contextPath}/admin/product/update-description" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
-                <div class="mb-3">
-                    <label class="form-label">Mô tả chi tiết</label>
-                    <textarea id="tinyDescription" name="description">${product.description}</textarea>
-                </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="descForm"><i class="bi bi-save"></i> Lưu mô tả</button>
-                </div>
-            </form>
-        </div>
+        <!-- 1. MAIN PRODUCT EDIT FORM (basic info + attributes + description + variants) -->
+        <form id="productEditForm" action="${pageContext.request.contextPath}/admin/products/edit" method="post">
+            <input type="hidden" name="productId" value="${product.productId}">
 
-        <!-- 5. ATTRIBUTES SECTION (Scale, Material, Origin, etc.) -->
-        <div class="info-section">
-            <h5><i class="bi bi-sliders2 me-2"></i>Thuộc tính sản phẩm (Model Car)</h5>
-            <form id="attributeForm" action="${pageContext.request.contextPath}/admin/product/update-attributes" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
+            <!-- Basic Info -->
+            <div class="info-section" id="basicInfoSection">
+                <h5><i class="bi bi-info-circle me-2"></i>Thông tin cơ bản</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control ${not empty errors.name ? 'is-invalid' : ''}" name="name" value="${product.productName}" required minlength="3" maxlength="255">
+                        <div class="invalid-feedback">${errors.name != null ? errors.name : 'Tên phải từ 3-255 ký tự'}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Danh mục</label>
+                        <select class="form-select ${not empty errors.categoryId ? 'is-invalid' : ''}" name="categoryId">
+                            <option value="">-- Chọn danh mục --</option>
+                            <c:forEach var="cat" items="${categoryList}">
+                                <option value="${cat.id}" ${product.categoryId == cat.id ? 'selected' : ''}>${cat.name}</option>
+                            </c:forEach>
+                        </select>
+                        <div class="invalid-feedback">${errors.categoryId != null ? errors.categoryId : ''}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Thương hiệu</label>
+                        <select class="form-select ${not empty errors.brandId ? 'is-invalid' : ''}" name="brandId">
+                            <option value="">-- Chọn thương hiệu --</option>
+                            <c:forEach var="brand" items="${brandList}">
+                                <option value="${brand.id}" ${product.brandId == brand.id ? 'selected' : ''}>${brand.name}</option>
+                            </c:forEach>
+                        </select>
+                        <div class="invalid-feedback">${errors.brandId != null ? errors.brandId : ''}</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Trạng thái</label>
+                        <select class="form-select" name="status">
+                            <option value="1" ${product.status.code == 1 ? 'selected' : ''}>Hoạt động (Active)</option>
+                            <option value="0" ${product.status.code == 0 ? 'selected' : ''}>Không hoạt động (Inactive)</option>
+                        </select>
+                        <small class="text-muted">Inactive: sản phẩm tạm ẩn trên shop</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attributes -->
+            <div class="info-section" id="attributesSection">
+                <h5><i class="bi bi-sliders2 me-2"></i>Thuộc tính sản phẩm</h5>
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Tỷ lệ (Scale)</label>
@@ -457,85 +926,100 @@
                         <input type="text" class="form-control" name="origin" value="${product.origin}">
                     </div>
                 </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="attributeForm"><i class="bi bi-save"></i> Lưu thuộc tính</button>
-                </div>
-            </form>
-        </div>
+            </div>
 
-        <!-- 6. INVENTORY MANAGEMENT -->
-        <div class="info-section">
-            <h5><i class="bi bi-boxes me-2"></i>Quản lý kho</h5>
-            <h5 class="text-danger">chức năng đang phát triển</h5>
-
-            <form id="inventoryForm" action="${pageContext.request.contextPath}/admin/product/update-inventory" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Số lượng tồn kho</label>
-                        <input type="number" class="form-control" name="quantity" value="${product.quantity}" min="0" required>
-                        <c:if test="${product.quantity < 5 && product.quantity > 0}"><span class="badge bg-warning">Cảnh báo: tồn kho thấp</span></c:if>
+            <!-- Description -->
+            <div class="info-section" id="descriptionSection">
+                <h5><i class="bi bi-file-text me-2"></i>Mô tả sản phẩm</h5>
+                <div class="description-wrapper">
+                    <div class="description-header">
+                        <span class="desc-label">
+                            <i class="bi bi-pencil-square"></i>
+                            Nội dung mô tả
+                        </span>
+                        <span class="desc-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Nội dung hiển thị ở trang chi tiết sản phẩm
+                        </span>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Mã kho / Warehouse</label>
-                        <input type="text" class="form-control" name="warehouseCode" value="${warehouseCode}">
+                    <textarea class="desc-textarea" id="productDescription" name="description" rows="6" placeholder="Nhập mô tả sản phẩm...">${product.description}</textarea>
+                </div>
+            </div>
+
+            <!-- Variants -->
+            <div class="info-section" id="variantsSection">
+                <h5><i class="bi bi-diagram-3 me-2"></i>Biến thể (Variants)</h5>
+                <div class="variants-table-wrap">
+                    <div class="table-responsive" style="margin: 0;">
+                        <table class="table variants-table align-middle" id="variantsTable">
+                            <thead>
+                            <tr>
+                                <th style="width:28%;">Tên biến thể <span class="text-danger">*</span></th>
+                                <th style="width:18%;">SKU</th>
+                                <th style="width:22%;">Giá (VND) <span class="text-danger">*</span></th>
+                                <th style="width:12%;">Tồn kho</th>
+                                <th style="width:8%;"></th>
+                            </tr>
+                            </thead>
+                            <tbody id="variantsBody">
+                            <c:forEach var="variant" items="${product.variants}" varStatus="vs">
+                                <tr class="variant-row">
+                                    <td>
+                                        <input type="hidden" name="variantId[]" value="${variant.id}">
+                                        <input type="text" class="form-control variant-input" name="variantName[]"
+                                               value="${variant.variantName}" required placeholder="VD: Đỏ, Xanh">
+                                        <c:set var="vk" value="variant_${vs.index}"/>
+                                        <c:if test="${not empty errors[vk]}">
+                                            <div class="text-danger small mt-1">${errors[vk]}</div>
+                                        </c:if>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control variant-input" name="variantSku[]"
+                                               value="${variant.sku}" placeholder="Mã SKU">
+                                    </td>
+                                    <td>
+                                        <input type="number" step="1000" class="form-control variant-input variant-price"
+                                               name="variantPrice[]" value="${variant.price}" required min="1" placeholder="VD: 500000">
+                                        <c:set var="pvk" value="variantPrice_${vs.index}"/>
+                                        <c:if test="${not empty errors[pvk]}">
+                                            <div class="text-danger small mt-1">${errors[pvk]}</div>
+                                        </c:if>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="variant-quantity-badge">
+                                            <i class="bi bi-box-seam me-1" style="font-size:0.7rem;"></i>
+                                            ${variant.quantity}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="remove-variant-btn" title="Xoá biến thể">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Ngưỡng cảnh báo</label>
-                        <input type="number" class="form-control" name="stockWarningLevel" value="${stockWarningLevel != null ? stockWarningLevel : 5}">
-                    </div>
                 </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="inventoryForm"><i class="bi bi-save"></i> Cập nhật kho</button>
-                </div>
-            </form>
-        </div>
+                <button type="button" id="addVariantBtn" class="admin-btn-primary mt-3">
+                    <i class="bi bi-plus-circle"></i> Thêm biến thể mới
+                </button>
+            </div>
 
-        <!-- 7. TAGS & PROMOTION -->
-        <div class="info-section">
-            <h5><i class="bi bi-tags me-2"></i>Tags / Khuyến mãi đặc biệt</h5>
-            <h5 class="text-danger">chức năng đang phát triển</h5>
+            <!-- Submit -->
+            <div class="mt-3 d-flex justify-content-end gap-2">
+                <button type="submit" class="admin-btn-primary save-btn" id="mainSaveBtn">
+                    <i class="bi bi-save"></i> Lưu thông tin
+                </button>
+                <button type="reset" class="admin-btn-outline">
+                    <i class="bi bi-arrow-repeat"></i> Đặt lại
+                </button>
+            </div>
+        </form>
 
-            <form id="tagsForm" action="${pageContext.request.contextPath}/admin/product/update-tags" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
-                <div class="mb-3">
-                    <label class="form-label">Tags (cách nhau bằng dấu phẩy)</label>
-                    <input type="text" class="form-control" name="tags" value="${tagString}" placeholder="VD: mới, hot, best-seller">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Chương trình khuyến mãi đặc biệt</label>
-                    <select class="form-select" name="promotionId">
-                        <option value="">-- Không áp dụng --</option>
-                        <c:forEach items="${promotionList}" var="promo">
-                            <option value="${promo.id}" ${selectedPromoId == promo.id ? 'selected' : ''}>${promo.name}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="tagsForm"><i class="bi bi-save"></i> Lưu tags</button>
-                </div>
-            </form>
-        </div>
 
-        <!-- 8. PRODUCT URL / SEO -->
-        <div class="info-section">
-            <h5><i class="bi bi-link-45deg me-2"></i>SEO & URL</h5>
-            <form id="seoForm" action="${pageContext.request.contextPath}/admin/product/update-seo" method="post">
-                <input type="hidden" name="productId" value="${product.productId}">
-                <div class="mb-3">
-                    <label class="form-label">Đường dẫn tĩnh (Slug)</label>
-                    <input type="text" class="form-control" name="slug" value="${productSlug}" placeholder="ten-san-pham-dep">
-                    <small class="text-muted">Để trống hệ thống tự sinh</small>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Liên kết thương hiệu (Brand Link)</label>
-                    <input type="url" class="form-control" name="brandLink" value="${product.brandLink}">
-                </div>
-                <div class="mt-3 d-flex justify-content-end">
-                    <button type="submit" class="admin-btn-primary save-btn" data-form="seoForm"><i class="bi bi-save"></i> Cập nhật URL</button>
-                </div>
-            </form>
-        </div>
+
 
         <!-- 9. EDIT HISTORY & INFO -->
         <div class="info-section">
@@ -549,32 +1033,16 @@
                         <thead><tr><th>Thời gian</th><th>Giá cũ</th><th>Giá mới</th><th>Người thay đổi</th></tr></thead>
                         <tbody>
                         <c:forEach items="${priceHistoryList}" var="hist">
-                            <tr><td><fmt:formatDate value="${hist.changedAt}" pattern="dd/MM/yyyy HH:mm"/></td><td><fmt:formatNumber value="${hist.oldPrice}" type="currency"/></td><td><fmt:formatNumber value="${hist.newPrice}" type="currency"/></td><td>${hist.changedBy}</td></tr>
+                            <tr><td><fmt:formatDate value="${hist.changedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
+                                <td><fmt:formatNumber value="${hist.oldPrice}" type="currency"/></td>
+                                <td><fmt:formatNumber value="${hist.newPrice}" type="currency"/></td>
+                                <td>${hist.changedBy}</td>
+                            </tr>
                         </c:forEach>
                         </tbody>
                     </table>
                 </div>
             </c:if>
-        </div>
-
-        <!-- 10. DANGER ZONE: DUPLICATE & DELETE -->
-        <div class="info-section border-danger">
-            <h5 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Vùng nguy hiểm</h5>
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
-                    <div class="fw-bold">Nhân bản sản phẩm</div>
-                    <div class="small text-muted">Tạo bản sao với tên mới</div>
-                    <form action="${pageContext.request.contextPath}/admin/product/duplicate" method="post">
-                        <input type="hidden" name="productId" value="${product.productId}">
-                        <button type="submit" class="admin-btn-outline mt-1"><i class="bi bi-files"></i> Duplicate</button>
-                    </form>
-                </div>
-                <div>
-                    <div class="fw-bold">Xóa sản phẩm vĩnh viễn</div>
-                    <div class="small text-muted">Hành động không thể hoàn tác</div>
-                    <button type="button" class="admin-btn-danger mt-1" data-bs-toggle="modal" data-bs-target="#deleteProductModal"><i class="bi bi-trash3"></i> Xóa sản phẩm</button>
-                </div>
-            </div>
         </div>
 
         <!-- Sticky Save Bar -->
@@ -597,7 +1065,7 @@
                 <p>Xóa sản phẩm <strong>${product.productName}</strong> (ID: ${product.productId})</p>
                 <p>Vui lòng gõ <strong class="text-danger">DELETE</strong> để xác nhận:</p>
                 <input type="text" id="deleteConfirmText" class="form-control" placeholder="DELETE">
-                <form id="deleteProductForm" action="${pageContext.request.contextPath}/admin/product/delete" method="post">
+                <form id="deleteProductForm" action="${pageContext.request.contextPath}/admin/products/delete" method="post">
                     <input type="hidden" name="productId" value="${product.productId}">
                 </form>
             </div>
@@ -611,26 +1079,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Initialize TinyMCE
-    tinymce.init({
-        selector: '#tinyDescription',
-        height: 300,
-        menubar: false,
-        plugins: 'advlist autolink lists link image charmap preview anchor',
-        toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link',
-        content_style: 'body { font-family:Inter, sans-serif; }'
-    });
-
-    // Unsaved changes tracking
+    // ===== Unsaved changes tracking =====
     let formChanged = false;
-    const allForms = document.querySelectorAll('form');
-    const inputs = document.querySelectorAll('input, select, textarea:not(#tinyDescription)');
+    const editForm = document.getElementById('productEditForm');
+    const formInputs = editForm ? editForm.querySelectorAll('input, select, textarea') : [];
     function markChanged() { formChanged = true; }
-    inputs.forEach(el => el.addEventListener('change', markChanged));
-    // TinyMCE change detection
-    if(tinymce.get('tinyDescription')) {
-        tinymce.get('tinyDescription').on('change', markChanged);
-    }
+    formInputs.forEach(el => el.addEventListener('change', markChanged));
+    formInputs.forEach(el => el.addEventListener('input', markChanged));
 
     window.addEventListener('beforeunload', function (e) {
         if (formChanged) {
@@ -640,50 +1095,138 @@
         }
     });
 
-    // Handle each form submit separately, clear changed flag after save
-    document.querySelectorAll('.save-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            const formId = this.getAttribute('data-form');
-            if(formId) {
-                const form = document.getElementById(formId);
-                if(form && form.checkValidity()) {
-                    formChanged = false;
-                } else if(form) {
-                    form.reportValidity();
-                    e.preventDefault();
+    // Validate variant rows on submit
+    editForm?.addEventListener('submit', function(e) {
+        // Validate variant rows
+        const variantRows = document.querySelectorAll('#variantsBody .variant-row');
+        let variantValid = true;
+        variantRows.forEach(row => {
+            const nameInput = row.querySelector('[name="variantName[]"]');
+            const priceInput = row.querySelector('[name="variantPrice[]"]');
+            if (!nameInput.value.trim()) {
+                nameInput.classList.add('is-invalid');
+                variantValid = false;
+            } else {
+                nameInput.classList.remove('is-invalid');
+            }
+            if (!priceInput.value || parseFloat(priceInput.value) <= 0) {
+                priceInput.classList.add('is-invalid');
+                variantValid = false;
+            } else {
+                priceInput.classList.remove('is-invalid');
+            }
+        });
+        if (!variantValid) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Vui lòng kiểm tra lại',
+                text: 'Có lỗi ở phần biến thể. Vui lòng điền đầy đủ thông tin.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return false;
+        }
+        formChanged = false;
+    });
+
+    // ===== Variant rows: add / remove =====
+    const variantsBody = document.getElementById('variantsBody');
+
+    // Remove variant row
+    variantsBody?.addEventListener('click', function(e) {
+        const removeBtn = e.target.closest('.remove-variant-btn');
+        if (!removeBtn) return;
+        const row = removeBtn.closest('tr');
+        if (row && row.parentNode === variantsBody) {
+            Swal.fire({
+                title: 'Xoá biến thể?',
+                text: 'Biến thể này sẽ bị xoá khỏi sản phẩm.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Xoá',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    row.remove();
+                    formChanged = true;
                 }
+            });
+        }
+    });
+
+    // Add new variant row
+    document.getElementById('addVariantBtn')?.addEventListener('click', function() {
+        const row = document.createElement('tr');
+        row.className = 'variant-row variant-new-row';
+        row.innerHTML = `
+            <td>
+                <input type="hidden" name="variantId[]" value="0">
+                <input type="text" class="form-control variant-input" name="variantName[]" required placeholder="VD: Đỏ, Xanh">
+            </td>
+            <td>
+                <input type="text" class="form-control variant-input" name="variantSku[]" placeholder="Mã SKU">
+            </td>
+            <td>
+                <input type="number" step="1000" class="form-control variant-input variant-price" name="variantPrice[]" required min="1" placeholder="VD: 500000">
+            </td>
+            <td class="text-center">
+                <span class="variant-new-badge">
+                    <i class="bi bi-plus-lg"></i>
+                    Mới
+                </span>
+            </td>
+            <td class="text-center">
+                <button type="button" class="remove-variant-btn" title="Xoá biến thể">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </td>
+        `;
+        variantsBody.appendChild(row);
+        formChanged = true;
+    });
+
+    // ===== Sticky Save (submit main form) =====
+    document.getElementById('globalResetBtn')?.addEventListener('click', () => {
+        Swal.fire({
+            title: 'Đặt lại thay đổi?',
+            text: 'Đặt lại tất cả thay đổi chưa lưu. Trang sẽ tải lại.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#6c757d',
+            cancelButtonColor: '#2c7da0',
+            confirmButtonText: 'Đặt lại',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if(result.isConfirmed) {
+                window.location.reload();
             }
         });
     });
 
-    // Global reset: reload page to original state
-    document.getElementById('globalResetBtn').addEventListener('click', () => {
-        if(confirm('Đặt lại tất cả thay đổi chưa lưu? Trang sẽ tải lại.')) {
-            window.location.reload();
+    document.getElementById('globalSaveBtn')?.addEventListener('click', async () => {
+        if (!editForm) return;
+        if (!editForm.checkValidity()) {
+            editForm.reportValidity();
+            return;
         }
-    });
-
-    // Global save: iterate all forms and submit sequentially (simple trigger)
-    document.getElementById('globalSaveBtn').addEventListener('click', async () => {
-        let allValid = true;
-        for(let form of allForms) {
-            if(form.id && !form.checkValidity()) {
-                form.reportValidity();
-                allValid = false;
-                break;
-            }
-        }
-        if(allValid && confirm('Lưu tất cả thay đổi?')) {
-            for(let form of allForms) {
-                if(form.id && form.id !== 'globalFormWatcher') {
-                    await fetch(form.action, {
-                        method: form.method,
-                        body: new FormData(form)
-                    });
-                }
-            }
-            alert('Đã lưu tất cả thay đổi. Trang sẽ tải lại.');
-            window.location.reload();
+        const result = await Swal.fire({
+            title: 'Xác nhận lưu',
+            text: 'Lưu tất cả thay đổi?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2c7da0',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy'
+        });
+        if(result.isConfirmed) {
+            formChanged = false;
+            editForm.submit();
         }
     });
 
@@ -694,76 +1237,102 @@
         if(deleteConfirmInput.value === 'DELETE') {
             document.getElementById('deleteProductForm').submit();
         } else {
-            alert('Vui lòng gõ DELETE để xác nhận');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Xác nhận thất bại',
+                text: 'Vui lòng gõ DELETE để xác nhận',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
         }
     });
 
-    // SKU uniqueness client hint (simple)
-    const skuInput = document.querySelector('.sku-input');
-    if(skuInput) {
-        skuInput.addEventListener('blur', function() {
-            let sku = this.value;
-            if(sku) {
-                fetch('${pageContext.request.contextPath}/admin/product/check-sku?sku='+encodeURIComponent(sku)+'&productId=${product.productId}')
-                    .then(res => res.json())
-                    .then(data => {
-                        if(data.exists) {
-                            skuInput.setCustomValidity('SKU đã tồn tại');
-                            skuInput.classList.add('is-invalid');
-                        } else {
-                            skuInput.setCustomValidity('');
-                            skuInput.classList.remove('is-invalid');
-                        }
-                    });
+    // ===== IMAGE GALLERY: File preview before upload =====
+    const imageFileInput = document.getElementById('imageFileInput');
+    const filePreview = document.getElementById('filePreview');
+
+    if (imageFileInput) {
+        imageFileInput.addEventListener('change', function() {
+            filePreview.innerHTML = '';
+            const files = this.files;
+            if (files.length === 0) return;
+
+            for (let i = 0; i < Math.min(files.length, 10); i++) {
+                const file = files[i];
+                const ext = file.name.split('.').pop().toLowerCase();
+                const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+
+                if (!allowed.includes(ext)) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-danger';
+                    badge.textContent = file.name + ' (không hỗ trợ)';
+                    filePreview.appendChild(badge);
+                    continue;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-warning text-dark';
+                    badge.textContent = file.name + ' (>5MB)';
+                    filePreview.appendChild(badge);
+                    continue;
+                }
+
+                const reader = new FileReader();
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'preview-thumb';
+                imgWrapper.title = file.name;
+
+                reader.onload = function(e) {
+                    imgWrapper.innerHTML = '<img src="' + e.target.result + '" class="preview-thumb-img">';
+                };
+                reader.readAsDataURL(file);
+                filePreview.appendChild(imgWrapper);
+            }
+
+            if (files.length > 10) {
+                const more = document.createElement('span');
+                more.className = 'badge bg-secondary';
+                more.textContent = '+' + (files.length - 10) + ' ảnh nữa';
+                filePreview.appendChild(more);
             }
         });
     }
 
-    // base info
-    const errors = {
-        name: "${errors.name}",
-        sku: "${errors.sku}",
-        categoryId: "${errors.categoryId}",
-        brandId: "${errors.brandId}",
-        status: "${errors.status}"
-    };
-
-    for (const key in errors) {
-
-        const message = errors[key];
-
-        if (message && message !== "null" && message !== "") {
-
-            const errorElementId = key + "Error";
-
-            const element = document.getElementById(errorElementId);
-
-            if (element) {
-                element.innerText = message;
-            }
-
-        }
+    // ===== IMAGE GALLERY: Preview modal =====
+    function previewImage(src) {
+        const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        document.getElementById('previewModalImage').src = src;
+        modal.show();
     }
 
-
-
-
-    // Price validation
-    const priceForm = document.getElementById('priceForm');
-    if(priceForm) {
-        const basePrice = priceForm.querySelector('input[name="price"]');
-        const salePrice = priceForm.querySelector('input[name="finalPrice"]');
-        function validatePrice() {
-            if(parseFloat(salePrice.value) >= parseFloat(basePrice.value) && salePrice.value !== '') {
-                salePrice.setCustomValidity('Giá khuyến mãi phải nhỏ hơn giá gốc');
-            } else {
-                salePrice.setCustomValidity('');
+    // ===== IMAGE GALLERY: SweetAlert2 delete confirm =====
+    function confirmDeleteImage(btn) {
+        const form = btn.closest('form');
+        Swal.fire({
+            title: 'Xóa ảnh?',
+            text: 'Ảnh sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
             }
-        }
-        basePrice.addEventListener('input', validatePrice);
-        salePrice.addEventListener('input', validatePrice);
+        });
     }
 
+    // ===== IMAGE GALLERY: Show processing state on upload button =====
+    document.getElementById('uploadImageForm')?.addEventListener('submit', function() {
+        const btn = document.getElementById('uploadBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang tải...';
+    });
 
 </script>
 </body>

@@ -3,8 +3,9 @@ package code.salecar.controller.home;
 import code.salecar.model.brand.Brand;
 import code.salecar.model.category.Category;
 import code.salecar.model.product.dto.ProductItemDTO;
-import code.salecar.model.product.entity.Discount;
+import code.salecar.model.product.entity.Banner;
 import code.salecar.model.product.entity.Product;
+import code.salecar.model.product.entity.Voucher;
 import code.salecar.service.home.HomeService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -33,11 +34,11 @@ public class home extends HttpServlet {
         List<Product> productByFavorites = hs.getProductByFavorites(1);
         request.setAttribute("productByFavorites", productByFavorites);
 
-        List<Product> productSale = hs.getProductSale();
+        List<ProductItemDTO> productSale = hs.getProductSale();
         request.setAttribute("productSale", productSale);
 
-        List<Discount> discounts = hs.getVoucher();
-        request.setAttribute("discounts", discounts);
+        List<Voucher> vouchers = hs.getVouchers();
+        request.setAttribute("vouchers", vouchers);
 
         List<Brand> brands = hs.getAllBrands();
         request.setAttribute("brands", brands);
@@ -45,8 +46,8 @@ public class home extends HttpServlet {
         List<Category> categories = hs.getCategory();
         request.setAttribute("categories",categories);
 
-
-
+        List<Banner> banners = hs.getActiveBanners();
+        request.setAttribute("banners", banners);
 
         request.getRequestDispatcher("index.jsp").forward(request, response);
 

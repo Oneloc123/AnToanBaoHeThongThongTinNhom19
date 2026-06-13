@@ -3,25 +3,19 @@ package code.salecar.model;
 import java.util.Date;
 import java.util.List;
 
-public class Order {
+public class Order{
     private int id;
     private int userId;
-
-
     private Date orderDate;
     private double totalAmount;
     private String shippingAddress;
     private String phone;
     private String paymentMethod;
     private String orderStatus;
+    private double shippingFee;
+    private String note;
+    private String shippingMethod;
     private List<OrderItem> items;
-
-    // them cac truong moi de xu li chu ki
-    private String signature;
-    private String publicKey;
-    private String signatureStatus;
-    private String serverHash;
-    private String decryptedHash;
 
     public int getId() {
         return id;
@@ -87,51 +81,37 @@ public class Order {
         this.orderStatus = orderStatus;
     }
 
+    public double getShippingFee() {
+        return shippingFee;
+    }
+
+    public void setShippingFee(double shippingFee) {
+        this.shippingFee = shippingFee;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String getShippingMethod() {
+        return shippingMethod;
+    }
+
+    public void setShippingMethod(String shippingMethod) {
+        this.shippingMethod = shippingMethod;
+    }
+
     public List<OrderItem> getItems() {
         return items;
     }
 
+
+
     public void setItems(List<OrderItem> items) {
         this.items = items;
-    }
-
-    public String getSignature() {
-        return signature;
-    }
-
-    public void setSignature(String signature) {
-        this.signature = signature;
-    }
-
-    public String getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
-    }
-
-    public String getSignatureStatus() {
-        return signatureStatus;
-    }
-
-    public void setSignatureStatus(String signatureStatus) {
-        this.signatureStatus = signatureStatus;
-    }
-
-    public String getServerHash() {
-        return serverHash;
-    }
-
-    public void setServerHash(String serverHash) {
-        this.serverHash = serverHash;
-    }
-
-    public String getDecryptedHash() {
-        return decryptedHash;
-    }
-
-    public void setDecryptedHash(String decryptedHash) {
-        this.decryptedHash = decryptedHash;
     }
 }

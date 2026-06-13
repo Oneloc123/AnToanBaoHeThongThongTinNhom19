@@ -18,10 +18,56 @@ import java.util.List;
 public class ProductDAO {
 
 
+    /**
+     * Lấy danh sách ID sản phẩm theo BrandId.
+     */
+    public List<Long> getProductIdsByBrandId(int brandId) {
+        List<Long> ids = new ArrayList<>();
+        String sql = "SELECT id FROM product WHERE brand_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, brandId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ids.add(rs.getLong("id"));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return ids;
+    }
+
+    /**
+     * Lấy danh sách ID sản phẩm theo CategoryId.
+     */
+    public List<Long> getProductIdsByCategoryId(long categoryId) {
+        List<Long> ids = new ArrayList<>();
+        String sql = "SELECT id FROM product WHERE category_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, categoryId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ids.add(rs.getLong("id"));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return ids;
+    }
+
     // Lấy danh sách sản phẩm mới nhất (dùng cho trang chủ)
+    /**
+     * Lấy sản phẩm mới — chỉ lấy product có tồn tại variant.
+     */
     public List<ProductItemDTO> getProductNew() {
         List<ProductItemDTO> products = new ArrayList<>();
-        String query = "select * from product where status = 1 order by created_at desc limit 4";
+        String query = "select pr.id, pr.name, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio, " +
+                "COALESCE((SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = pr.id), pr.price) AS price, " +
+                "COALESCE((SELECT MIN(COALESCE(pv.final_price, pv.price)) FROM product_variants pv WHERE pv.product_id = pr.id), pr.final_price) AS final_price " +
+                "from product pr where pr.status = 1 " +
+                "and exists (select 1 from product_variants pv where pv.product_id = pr.id) " +
+                "order by pr.created_at desc limit 4";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ResultSet rs = ps.executeQuery();
@@ -45,10 +91,17 @@ public class ProductDAO {
 
     }
 
-    //
+    /**
+     * Lấy sản phẩm hot — chỉ lấy product có tồn tại variant.
+     */
     public List<ProductItemDTO> getProductHot() {
         List<ProductItemDTO> products = new ArrayList<>();
-        String query = "select * from product where status = 1 order by price desc limit 4";
+        String query = "select pr.id, pr.name, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio, " +
+                "COALESCE((SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = pr.id), pr.price) AS price, " +
+                "COALESCE((SELECT MIN(COALESCE(pv.final_price, pv.price)) FROM product_variants pv WHERE pv.product_id = pr.id), pr.final_price) AS final_price " +
+                "from product pr where pr.status = 1 " +
+                "and exists (select 1 from product_variants pv where pv.product_id = pr.id) " +
+                "order by price desc limit 4";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ResultSet rs = ps.executeQuery();
@@ -71,16 +124,52 @@ public class ProductDAO {
         return products;
     }
 
+
+    /**
+     * Lấy sản phẩm khuyến mãi — chỉ lấy product có discount_percent > 0 và có variant.
+     */
+    public List<ProductItemDTO> getProductSale() {
+        List<ProductItemDTO> products = new ArrayList<>();
+        String query = "select pr.id, pr.name, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio, " +
+                "COALESCE((SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = pr.id), pr.price) AS price, " +
+                "COALESCE((SELECT MIN(COALESCE(pv.final_price, pv.price)) FROM product_variants pv WHERE pv.product_id = pr.id), pr.final_price) AS final_price " +
+                "from product pr where pr.status = 1 " +
+                "and pr.discount_percent > 0 " +
+                "and exists (select 1 from product_variants pv where pv.product_id = pr.id) " +
+                "order by pr.discount_percent desc limit 4";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ProductItemDTO p = new ProductItemDTO.Builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .price(rs.getDouble("price"))
+                        .finalPrice(rs.getDouble("final_price"))
+                        .discountPercent(rs.getDouble("discount_percent"))
+                        .brandId(rs.getInt("brand_id"))
+                        .categoryId(rs.getInt("category_id"))
+                        .ratio(rs.getString("ratio"))
+                        .build();
+                products.add(p);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return products;
+    }
 
     //Tổng số lượng sản phẩm theo filter (không phân trang)
     public int getTotalProduct(ProductFilter filter) {
 
         List<Object> params = new ArrayList<>();
 
-        String sql = "select   count(*) from product pr  " +
-                " join brand br on pr.brand_id = br.id  " +
+        String sql = "select count(*) from product pr " +
+                " left join (select product_id, MIN(price) as min_price, MIN(COALESCE(final_price, price)) as min_final_price from product_variants group by product_id) mp on mp.product_id = pr.id " +
+                " join brand br on pr.brand_id = br.id " +
                 " join category ct on pr.category_id = ct.id " +
-                " where 1=1 ";
+                " where 1=1 " +
+                " and exists (select 1 from product_variants pv where pv.product_id = pr.id) ";
 
         StringBuilder query = new StringBuilder(sql);
 
@@ -111,11 +200,11 @@ public class ProductDAO {
         }
 
         if (filter.getMaxPrice() != null) {
-            query.append(" and pr.final_price <= ? ");
+            query.append(" and COALESCE(mp.min_final_price, pr.final_price) <= ? ");
             params.add(filter.getMaxPrice().doubleValue());
         }
         if (filter.getMinPrice() != null) {
-            query.append(" and pr.final_price >= ? ");
+            query.append(" and COALESCE(mp.min_final_price, pr.final_price) >= ? ");
             params.add(filter.getMinPrice().doubleValue());
         }
 
@@ -123,10 +212,10 @@ public class ProductDAO {
         if (filter.getSortBy() != null) {
             switch (filter.getSortBy()) {
                 case PRICE_DESC:
-                    query.append(" order by pr.price desc");
+                    query.append(" order by price desc");
                     break;
                 case PRICE_ASC:
-                    query.append(" order by pr.price asc");
+                    query.append(" order by price asc");
                     break;
                 case NEWEST:
                     query.append(" order by pr.created_at desc");
@@ -159,10 +248,15 @@ public class ProductDAO {
         List<ProductItemDTO> products = new ArrayList<>();
         List<Object> params = new ArrayList<>();
 
-        String sql = "select   pr.* from product pr  " +
-                " join brand br on pr.brand_id = br.id  " +
+        String sql = "select pr.id, pr.name, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio, pr.created_at, " +
+                "COALESCE(mp.min_price, pr.price) AS price, " +
+                "COALESCE(mp.min_final_price, pr.final_price) AS final_price " +
+                "from product pr " +
+                "left join (select product_id, MIN(price) as min_price, MIN(COALESCE(final_price, price)) as min_final_price from product_variants group by product_id) mp on mp.product_id = pr.id " +
+                " join brand br on pr.brand_id = br.id " +
                 " join category ct on pr.category_id = ct.id " +
-                " where 1=1 ";
+                " where 1=1 " +
+                " and exists (select 1 from product_variants pv where pv.product_id = pr.id) ";
 
         StringBuilder query = new StringBuilder(sql);
 
@@ -193,11 +287,11 @@ public class ProductDAO {
         }
 
         if (filter.getMaxPrice() != null) {
-            query.append(" and pr.final_price <= ? ");
+            query.append(" and COALESCE(mp.min_final_price, pr.final_price) <= ? ");
             params.add(filter.getMaxPrice().doubleValue());
         }
         if (filter.getMinPrice() != null) {
-            query.append(" and pr.final_price >= ? ");
+            query.append(" and COALESCE(mp.min_final_price, pr.final_price) >= ? ");
             params.add(filter.getMinPrice().doubleValue());
         }
 
@@ -205,10 +299,10 @@ public class ProductDAO {
         if (filter.getSortBy() != null) {
             switch (filter.getSortBy()) {
                 case PRICE_DESC:
-                    query.append(" order by pr.price desc");
+                    query.append(" order by price desc");
                     break;
                 case PRICE_ASC:
-                    query.append(" order by pr.price asc");
+                    query.append(" order by price asc");
                     break;
                 case NEWEST:
                     query.append(" order by pr.created_at desc");
@@ -298,11 +392,15 @@ public class ProductDAO {
     }
 
     //Lấy danh sách ID sản phẩm liên quan cùng chất liệu (material) để hiển thị ở phần sản phẩm liên quan trong trang chi tiết sản phẩm
+    /**
+     * Lấy sản phẩm liên quan — chỉ lấy product có tồn tại variant.
+     */
     public List<Integer> getRelatedProductMaterial(String byWith) {
         List<Integer> products = new ArrayList<>();
-        String query = "select * from product where  status = 1 " +
-                " and  material = ? " +
-                " order by created_at desc limit 4";
+        String query = "select pr.id from product pr where pr.status = 1 " +
+                " and pr.material = ? " +
+                " and exists (select 1 from product_variants pv where pv.product_id = pr.id) " +
+                " order by pr.created_at desc limit 4";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, byWith);
@@ -431,9 +529,13 @@ public class ProductDAO {
     }
 
     // Lấy các sản phẩm liên quan cùng thương hiệu
+    /**
+     * Lấy sản phẩm liên quan cùng brand — chỉ lấy product có tồn tại variant.
+     */
     public List<ProductItemDTO> getRelatedProductBrand(long brandId) {
         List<ProductItemDTO> products = new ArrayList<>();
-        String query = "select * from product where brand_id = ? ";
+        String query = "select pr.* from product pr where pr.brand_id = ? " +
+                " and exists (select 1 from product_variants pv where pv.product_id = pr.id) ";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -488,13 +590,22 @@ public class ProductDAO {
         }
 
         if (filter.getStatus() != -1) {
-            query.append(" and pr.status like ? ");
-            params.add("%" + filter.getStatus() + "%");
+            query.append(" and pr.status = ? ");
+            params.add(filter.getStatus());
         }
 
         if (filter.getStock() != null && !filter.getStock().isEmpty()) {
-            query.append(" and pr.stock like ? ");
-            params.add("%" + filter.getStock() + "%");
+            switch (filter.getStock()) {
+                case "high":
+                    query.append(" and (SELECT COALESCE(SUM(inv.quantity), 0) FROM inventory inv WHERE inv.product_id = pr.id) > 50 ");
+                    break;
+                case "medium":
+                    query.append(" and (SELECT COALESCE(SUM(inv.quantity), 0) FROM inventory inv WHERE inv.product_id = pr.id) BETWEEN 10 AND 50 ");
+                    break;
+                case "low":
+                    query.append(" and (SELECT COALESCE(SUM(inv.quantity), 0) FROM inventory inv WHERE inv.product_id = pr.id) < 10 ");
+                    break;
+            }
         }
 
 
@@ -608,13 +719,22 @@ public class ProductDAO {
         }
 
         if (filter.getStatus() != -1) {
-            query.append(" and pr.status like ? ");
-            params.add("%" + filter.getStatus() + "%");
+            query.append(" and pr.status = ? ");
+            params.add(filter.getStatus());
         }
 
         if (filter.getStock() != null && !filter.getStock().isEmpty()) {
-            query.append(" and pr.stock like ? ");
-            params.add("%" + filter.getStock() + "%");
+            switch (filter.getStock()) {
+                case "high":
+                    query.append(" and (SELECT COALESCE(SUM(inv.quantity), 0) FROM inventory inv WHERE inv.product_id = pr.id) > 50 ");
+                    break;
+                case "medium":
+                    query.append(" and (SELECT COALESCE(SUM(inv.quantity), 0) FROM inventory inv WHERE inv.product_id = pr.id) BETWEEN 10 AND 50 ");
+                    break;
+                case "low":
+                    query.append(" and (SELECT COALESCE(SUM(inv.quantity), 0) FROM inventory inv WHERE inv.product_id = pr.id) < 10 ");
+                    break;
+            }
         }
 
 
@@ -676,6 +796,89 @@ public class ProductDAO {
         return 0;
     }
 
+    /**
+     * Lấy sản phẩm gợi ý dựa trên danh sách category (loại trừ các sản phẩm đã mua).
+     * Dùng cho trang thankyou.jsp - gợi ý sản phẩm sau khi đặt hàng.
+     */
+    public List<ProductItemDTO> getSuggestedProducts(List<Long> categoryIds, List<Integer> excludeProductIds) {
+        List<ProductItemDTO> products = new ArrayList<>();
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return getProductNew();
+        }
+
+        StringBuilder query = new StringBuilder(
+                "select pr.id, pr.name, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio, " +
+                "COALESCE((SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = pr.id), pr.price) AS price, " +
+                "COALESCE((SELECT MIN(COALESCE(pv.final_price, pv.price)) FROM product_variants pv WHERE pv.product_id = pr.id), pr.final_price) AS final_price " +
+                "from product pr where pr.status = 1 " +
+                "and exists (select 1 from product_variants pv where pv.product_id = pr.id) "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        query.append(" and pr.category_id in (");
+        for (int i = 0; i < categoryIds.size(); i++) {
+            query.append(i > 0 ? ",?" : "?");
+            params.add(categoryIds.get(i));
+        }
+        query.append(") ");
+
+        if (excludeProductIds != null && !excludeProductIds.isEmpty()) {
+            query.append(" and pr.id not in (");
+            for (int i = 0; i < excludeProductIds.size(); i++) {
+                query.append(i > 0 ? ",?" : "?");
+                params.add(excludeProductIds.get(i));
+            }
+            query.append(") ");
+        }
+
+        query.append(" order by pr.discount_percent desc, pr.created_at desc limit 4");
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ProductItemDTO p = new ProductItemDTO.Builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .price(rs.getDouble("price"))
+                        .finalPrice(rs.getDouble("final_price"))
+                        .discountPercent(rs.getDouble("discount_percent"))
+                        .brandId(rs.getInt("brand_id"))
+                        .categoryId(rs.getInt("category_id"))
+                        .ratio(rs.getString("ratio"))
+                        .build();
+                products.add(p);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (products.size() < 4) {
+            List<ProductItemDTO> fallback = getProductNew();
+            for (ProductItemDTO fb : fallback) {
+                if (products.size() >= 4) break;
+                boolean alreadyExists = false;
+                for (ProductItemDTO existing : products) {
+                    if (existing.getId() == fb.getId()) {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+                if (!alreadyExists) {
+                    products.add(fb);
+                }
+            }
+        }
+
+        return products;
+    }
+
     //Cập nhật thông tin cơ bản của sản phẩm (tên, danh mục, thương hiệu, trạng thái)
     public void updateBasicInfo(ProductDetailDTO product) {
         String query = "update product  " +
@@ -696,6 +899,37 @@ public class ProductDAO {
             throw new RuntimeException(e);
         }
 
+    }
+
+    /**
+     * Cập nhật toàn bộ thông tin sản phẩm (bao gồm thuộc tính, mô tả)
+     */
+    public void updateProductDetail(long productId, String name, int categoryId, int brandId,
+                                     int status, String ratio, String size,
+                                     String material, String origin, String description) {
+        String query = "UPDATE product SET name = ?, category_id = ?, brand_id = ?, status = ?, " +
+                "ratio = ?, size = ?, material = ?, origin = ?, description = ?, " +
+                "updated_at = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, name);
+            ps.setInt(2, categoryId);
+            ps.setInt(3, brandId);
+            ps.setInt(4, status);
+            ps.setString(5, ratio);
+            ps.setString(6, size);
+            ps.setString(7, material);
+            ps.setString(8, origin);
+            ps.setString(9, description);
+            ps.setTimestamp(10, new Timestamp(System.currentTimeMillis()));
+            ps.setLong(11, productId);
+
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //Thêm sản phẩm mới vào cơ sở dữ liệu và trả về ID của sản phẩm vừa được thêm
@@ -775,16 +1009,117 @@ public class ProductDAO {
 
     //
     public void insertVariant(ProductVariants variant) {
-        String query = "INSERT INTO product_variants (product_id, name, price, sku) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO product_variants (product_id, name, price, sku, final_price) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setLong(1, variant.getProductId());
             ps.setString(2, variant.getVariantName());
             ps.setBigDecimal(3, variant.getPrice());
             ps.setString(4, variant.getSku());
+            // Nếu variant đã có finalPrice thì dùng, nếu không thì mặc định bằng price
+            BigDecimal finalPrice = variant.getFinalPrice() != null ? variant.getFinalPrice() : variant.getPrice();
+            ps.setBigDecimal(5, finalPrice);
             ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Chỉ cập nhật trạng thái sản phẩm (không cần brand/category).
+     * Dùng khi tự động set INACTIVE cho product không variant.
+     */
+    public void updateStatus(long productId, Status status) {
+        String query = "UPDATE product SET status = ? WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, status.getCode());
+            ps.setLong(2, productId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Xoá variant theo ID
+     */
+    public void deleteVariant(long variantId) {
+        String sql = "DELETE FROM product_variants WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, variantId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Đồng bộ product.price với MIN variant price.
+     * Đảm bảo product luôn hiển thị giá khởi điểm từ variant rẻ nhất.
+     */
+    public void syncProductPrice(long productId) {
+        String sql = "UPDATE product p " +
+                "SET p.price = (SELECT COALESCE(MIN(pv.price), 0) FROM product_variants pv WHERE pv.product_id = p.id), " +
+                "p.updated_at = NOW() " +
+                "WHERE p.id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Xóa sản phẩm và các bản ghi liên quan.
+     * Xóa theo thứ tự: inventory, product_variants, product_images, reviews, discounts, product
+     */
+    public boolean deleteProduct(long productId) {
+        String[] deleteQueries = {
+                "DELETE FROM inventory WHERE product_id = ?",
+                "DELETE FROM product_variants WHERE product_id = ?",
+                "DELETE FROM product_images WHERE product_id = ?",
+                "DELETE FROM reviews WHERE product_id = ?",
+                "DELETE FROM discount WHERE entity_type = 'PRODUCT' AND entity_id = ?",
+                "DELETE FROM product WHERE id = ?"
+        };
+
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
+
+            for (String sql : deleteQueries) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setLong(1, productId);
+                    ps.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            throw new RuntimeException("Error deleting product with id: " + productId, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 }

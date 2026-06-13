@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -9,349 +10,233 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý đơn hàng - LUXCAR Admin</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --admin-primary: #1e81b0;
-            --admin-bg: #f5f7f9;
-            --admin-sidebar: #ffffff;
-            --admin-text: #333333;
-            --admin-border: #eaedf1;
-        }
-
+        /* ========== RESET & GLOBAL ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--admin-bg);
-            color: var(--admin-text);
-            margin: 0;
-            overflow-x: hidden;
+            background-color: #f1f5f9;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
         }
 
-        .admin-layout {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
-
+        /* ========== SIDEBAR ========== */
         .sidebar {
-            width: 260px;
-            flex-shrink: 0;
-            background-color: var(--admin-sidebar);
-            border-right: 1px solid var(--admin-border);
+            width: 280px;
+            background-color: #ffffff;
+            border-right: 1px solid #e9edf2;
             height: 100vh;
             position: sticky;
             top: 0;
-            padding: 20px 15px;
-            overflow-y: auto;
+            padding: 2rem 1.2rem;
+            transition: all 0.3s;
         }
 
         .logo {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            color: #1a365d;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            padding-left: 10px;
+            background: linear-gradient(135deg, #1e2a3a, #2c7da0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.5px;
         }
 
         .logo i {
-            color: var(--admin-primary);
+            background: none;
+            color: #2c7da0;
         }
 
-        .sidebar nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar nav ul li {
-            margin-bottom: 5px;
-        }
-
+        .sidebar nav ul { list-style: none; padding: 0; }
+        .sidebar nav ul li { margin-bottom: 0.6rem; }
         .sidebar nav ul li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 15px;
-            border-radius: 50px;
-            color: #64748b;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s;
-            font-size: 0.95rem;
+            display: flex; align-items: center; gap: 14px; padding: 12px 18px;
+            border-radius: 14px; color: #5a6e7c; font-weight: 500; text-decoration: none;
+            transition: all 0.2s ease; font-size: 0.95rem;
         }
-
-        .sidebar nav ul li a i {
-            font-size: 1.2rem;
-        }
-
-        .sidebar nav ul li a:hover {
-            background-color: #f8fafc;
-            color: var(--admin-primary);
-        }
-
+        .sidebar nav ul li a i { font-size: 1.3rem; width: 24px; }
+        .sidebar nav ul li a:hover,
         .sidebar nav ul li a.active {
-            background-color: #eff6ff;
-            color: var(--admin-primary);
+            background-color: #f0f9ff; color: #2c7da0;
+            box-shadow: 0 2px 4px rgba(44,125,160,0.08);
+            border-left: 2px solid #2c7da0;
         }
 
+        /* ========== MAIN CONTENT ========== */
         .main-content {
-            flex: 1;
-            padding: 30px;
-            max-width: calc(100% - 260px);
+            flex: 1; padding: 2rem 2rem 3rem 2rem;
+            background-color: #f1f5f9; overflow-y: auto;
         }
 
-        .content-card {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-            padding: 25px;
-            border: 1px solid var(--admin-border);
+        /* ========== ADMIN HEADER ========== */
+        .admin-header {
+            background: #ffffff; padding: 1rem 1.8rem;
+            border-radius: 24px; margin-bottom: 2rem;
+            border: 1px solid #e9edf2; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
-
-        .page-header-block {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .page-title {
-            font-size: 20px;
+        .admin-header h3 {
             font-weight: 700;
-            color: #1e293b;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: linear-gradient(135deg, #1e293b, #2c7da0);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
 
-        .page-title i {
-            color: var(--admin-primary);
+        .breadcrumb { background: transparent; padding: 0; margin: 0; font-size: 0.85rem; }
+        .breadcrumb-item a { color: #5a6e7c; text-decoration: none; }
+        .breadcrumb-item.active { color: #2c7da0; font-weight: 500; }
+
+        /* ========== BUTTONS ========== */
+        .admin-btn-primary {
+            background-color: #2c7da0; border: none;
+            padding: 8px 20px; font-weight: 600;
+            border-radius: 40px; color: #ffffff; transition: 0.2s; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .admin-btn-primary:hover {
+            background-color: #1f5e7a; transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(44,125,160,0.2); color: #fff;
         }
 
-        .search-input, .custom-select, .btn-pill {
-            border-radius: 50px !important;
-            padding: 10px 20px !important;
-            box-shadow: none !important;
-            border-color: #cbd5e1;
+        /* ========== FORM CONTROLS ========== */
+        .admin-input, .admin-select {
+            background-color: #ffffff; border: 1px solid #e2e8f0;
+            color: #1e293b; border-radius: 14px; padding: 10px 16px; width: 100%;
+        }
+        .admin-input:focus, .admin-select:focus {
+            background-color: #ffffff; border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.1); color: #1e293b; outline: none;
         }
 
-        .search-input:focus, .custom-select:focus {
-            border-color: var(--admin-primary);
+        /* ========== ADMIN CARD ========== */
+        .admin-card {
+            background: #ffffff; border: 1px solid #e9edf2;
+            border-radius: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
+        .admin-card-body { padding: 1.2rem; }
 
-        .btn-pill {
-            background-color: var(--admin-primary);
-            color: white;
-            border: none;
-            font-weight: 500;
+        /* ========== ADMIN TABLE ========== */
+        .admin-table { color: #1e293b; border-color: #e9edf2; width: 100%; table-layout: fixed; }
+        .admin-table thead { background-color: #f8fafc; }
+        .admin-table th {
+            font-weight: 600; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.3px;
         }
+        .admin-table td { font-size: 13px; vertical-align: middle; overflow: hidden; }
+        .admin-table-hover tbody tr:hover { background-color: #f8fafc; }
 
-        .btn-pill:hover {
-            background-color: #15658e;
-            color: white;
+        .col-nowrap { white-space: nowrap; }
+        .text-truncate-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* ========== BADGES ========== */
+        .badge-status {
+            padding: 5px 14px; border-radius: 50px;
+            font-size: 11px; font-weight: 600;
+            border: 1px solid transparent; display: inline-block; 
+            white-space: nowrap; letter-spacing: 0.3px;
         }
+        .badge-pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .badge-confirmed { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .badge-shipping { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
+        .badge-delivered { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .badge-cancelled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
 
-        .table > thead > tr > th {
-            text-transform: uppercase;
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 600;
-            padding: 15px;
-            border-bottom: 2px solid var(--admin-border);
-            background-color: transparent;
-            white-space: nowrap;
+        /* ========== ACTION BUTTONS ========== */
+        .admin-action-btn {
+            padding: 6px 14px; border-radius: 40px;
+            font-size: 12px; font-weight: 500;
+            transition: all 0.2s; border: none;
+            display: inline-flex; align-items: center;
+            gap: 5px; cursor: pointer;
         }
-
-        .table > tbody > tr > td {
-            vertical-align: middle;
-            font-size: 14px;
-            padding: 15px;
-            color: #334155;
-            border-bottom: 1px solid var(--admin-border);
+        .admin-action-view {
+            background-color: #eef2ff; color: #2c7da0;
         }
-
-        /* Thêm hiệu ứng highlight dòng lỗi can thiệp hệ thống */
-        .row-tampered {
-            background-color: #fffff0;
+        .admin-action-view:hover { background-color: #e0e8f5; color: #1f5e7a; }
+        .admin-action-confirm {
+            background-color: #e6f7ec; color: #2e7d5e;
         }
-
-        .col-nowrap {
-            white-space: nowrap;
+        .admin-action-confirm:hover { background-color: #d1f0d6; color: #1f6b45; }
+        .admin-action-shipping {
+            background-color: #e0f2fe; color: #0284c7;
         }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 500;
-            border: 1px solid transparent;
-            display: inline-block;
-            white-space: nowrap;
+        .admin-action-shipping:hover { background-color: #bae6fd; color: #0369a1; }
+        .admin-action-delete {
+            background-color: #fff0f0; color: #c75c5c;
         }
+        .admin-action-delete:hover { background-color: #ffe0e0; color: #b84c4c; }
 
-        .status-pending { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-        .status-confirmed { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-        .status-delivered { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-        .status-cancelled { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-
-        /* THÊM MỚI CSS: Trạng thái đối soát chữ ký số */
-        .sig-valid { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-        .sig-tampered { background: #fef2f2; color: #991b1b; border-color: #fecaca; font-weight: bold; }
-        .sig-revoked { background: #fff7ed; color: #9a3412; border-color: #ffedd5; }
-
-        .btn-action {
-            border-radius: 50px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 500;
-            background: transparent;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            border: 1px solid;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-view { border-color: #64748b; color: #64748b; }
-        .btn-view:hover { background: #64748b; color: white; }
-        .btn-confirm { border-color: #0ea5e9; color: #0ea5e9; }
-        .btn-confirm:hover { background: #0ea5e9; color: white; }
-        .btn-deliver { border-color: #22c55e; color: #22c55e; }
-        .btn-deliver:hover { background: #22c55e; color: white; }
-        .btn-cancel { border-color: #ef4444; color: #ef4444; }
-        .btn-cancel:hover { background: #ef4444; color: white; }
-
-        /* Nút Xem mới */
-        .action-view {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            border-radius: 50px;
-            padding: 6px 14px;
-            transition: 0.2s;
-        }
-        .action-view:hover {
-            background: #64748b;
-            color: white;
-        }
-
-        /* CSS CHO MODAL CHI TIẾT ĐƠN HÀNG */
+        /* ========== MODAL ========== */
         .form-card { padding: 25px; }
         .form-section {
-            background: #fefefe;
-            border: 1px solid #eef2f6;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: #fefefe; border: 1px solid #eef2f6;
+            border-radius: 20px; padding: 20px; margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .form-section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #2c7da0;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 14px; font-weight: 600;
+            color: #2c7da0; margin-bottom: 15px;
+            display: flex; align-items: center; gap: 8px;
         }
-
-        /* THÊM MỚI CSS: Khung mã hóa đối soát dữ liệu */
-        .form-section-security {
-            border-left: 4px solid #ef4444 !important;
-            background: #fffafb;
-        }
-        .crypto-box {
-            background: #1e293b;
-            color: #38bdf8;
-            border-radius: 10px;
-            padding: 12px 15px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12.5px;
-            word-break: break-all;
-            margin-top: 5px;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         .btn-cancel-modal {
-            border: 1px solid #e2e8f0;
-            padding: 8px 18px;
-            border-radius: 30px;
-            color: #64748b;
-            text-decoration: none;
-            background: transparent;
+            border: 1px solid #e2e8f0; padding: 8px 18px;
+            border-radius: 30px; color: #64748b;
+            text-decoration: none; background: transparent; transition: 0.2s;
         }
-        .btn-cancel-modal:hover {
-            border-color: #2c7da0;
-            color: #2c7da0;
-        }
-        .form-control:read-only {
-            background-color: #f8fafc;
-            color: #475569;
+        .btn-cancel-modal:hover { border-color: #2c7da0; color: #2c7da0; }
+        .form-control:read-only { background-color: #f8fafc; color: #475569; }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; padding: 1rem 0.5rem; }
+            .sidebar .logo span { display: none; }
+            .sidebar nav ul li a span { display: none; }
+            .sidebar nav ul li a i { font-size: 1.5rem; }
+            .main-content { padding: 1rem; }
         }
     </style>
 </head>
 <body>
 
-<div class="admin-layout">
+<div class="d-flex">
 
     <%@ include file="sidebar/sidebar.jsp"%>
 
     <main class="main-content">
-        <div class="content-card">
-            <div class="page-header-block">
-                <h2 class="page-title"><i class="bi bi-receipt"></i> Quản lý đơn hàng</h2>
-                <button class="btn btn-pill"><i class="bi bi-download me-1"></i> Xuất dữ liệu</button>
+        <header class="admin-header d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold m-0"><i class="bi bi-receipt me-2" style="color:#2c7da0;"></i> Quản lý đơn hàng</h3>
+                <nav aria-label="breadcrumb" class="mt-1">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+                    </ol>
+                </nav>
             </div>
+        </header>
 
-            <form action="order-admin" method="GET" class="row g-3 mb-4 align-items-center">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-transparent border-end-0" style="border-radius: 50px 0 0 50px; border-color: #cbd5e1; padding-left: 20px;">
-                            <i class="bi bi-search text-muted"></i>
-                        </span>
-                        <input type="text" name="search" class="form-control search-input border-start-0 ps-0" style="border-radius: 0 50px 50px 0 !important;" placeholder="Tìm kiếm mã đơn...">
+        <div class="admin-card">
+            <div class="admin-card-body">
+
+                <!-- Filter by Status -->
+                <form action="${pageContext.request.contextPath}/order-admin" method="GET" class="row g-3 align-items-end mb-4">
+                    <div class="col-md-8">
+                        <select name="status" class="admin-select">
+                            <option value="" ${empty currentStatus ? 'selected' : ''}>Tất cả trạng thái</option>
+                            <option value="PENDING" ${currentStatus == 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
+                            <option value="CONFIRMED" ${currentStatus == 'CONFIRMED' ? 'selected' : ''}>Đã xác nhận</option>
+                            <option value="SHIPPING" ${currentStatus == 'SHIPPING' ? 'selected' : ''}>Đang vận chuyển</option>
+                            <option value="DELIVERED" ${currentStatus == 'DELIVERED' ? 'selected' : ''}>Đã giao</option>
+                            <option value="CANCELLED" ${currentStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
+                        </select>
                     </div>
-                </div>
-
-                <div class="col-md-3">
-                    <select name="status" class="form-select custom-select">
-                        <option value="">Tất cả trạng thái đơn</option>
-                        <option value="PENDING">Chờ xử lý</option>
-                        <option value="CONFIRMED">Đã xác nhận</option>
-                        <option value="DELIVERED">Đã giao</option>
-                        <option value="CANCELLED">Đã hủy</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <select name="signatureStatus" class="form-select custom-select">
-                        <option value="">Tất cả trạng thái chữ ký</option>
-                        <option value="VALID">Chữ ký hợp lệ (Valid)</option>
-                        <option value="TAMPERED">Dữ liệu bị can thiệp (Tampered)</option>
-                        <option value="KEY_REVOKED">Khóa đã báo hủy (Key Revoked)</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-pill w-100"><i class="bi bi-funnel me-1"></i> Lọc</button>
-                </div>
-            </form>
+                    <div class="col-md-4">
+                        <button type="submit" class="admin-btn-primary w-100"><i class="bi bi-funnel me-1"></i> Lọc dữ liệu</button>
+                    </div>
+                </form>
 
             <c:choose>
                 <c:when test="${empty orders}">
@@ -359,152 +244,146 @@
                 </c:when>
                 <c:otherwise>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                            <tr class="text-uppercase small">
-                                <th>Mã ĐH</th>
-                                <th>Mã Khách hàng</th>
-                                <th>Ngày đặt</th>
-                                <th style="width: 12%;">Địa chỉ</th>
-                                <th>Sản phẩm</th>
-                                <th>Tổng tiền</th>
-                                <th>Thanh toán</th>
-                                <th>Trạng thái</th>
-                                <th>Xác thực chữ ký</th>
-                                <th class="text-center">Hành động</th>
-                            </tr>
+                        <table class="admin-table table table-hover align-middle mb-0">
+                            <colgroup>
+                                <col style="width: 105px;">
+                                <col style="width: 120px;">
+                                <col style="width: 100px;">
+                                <col>
+                                <col>
+                                <col style="width: 110px;">
+                                <col style="width: 60px;">
+                                <col style="width: 140px;">
+                                <col style="width: 120px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Mã ĐH</th>
+                                    <th>Khách hàng</th>
+                                    <th>Ngày đặt</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Thanh toán</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-center">Hành động</th>
+                                </tr>
                             </thead>
                             <tbody>
 
-                            <c:forEach var="ord" items="${orders}">
-                                <c:set var="simulatedSig" value="${ord.signatureStatus}" />
+                                <c:forEach var="ord" items="${orders}">
+                                    <tr>
+                                        <td class="fw-bold col-nowrap" style="color: #0f172a;">#ORD-${ord.id}</td>
 
-                                <tr class="${simulatedSig == 'TAMPERED' ? 'row-tampered' : ''}">
-                                    <td class="fw-bold col-nowrap" style="color: #0f172a;">#ORD-${ord.id}</td>
+                                        <td>
+                                            <div class="text-truncate-cell fw-semibold" style="color: #334155;" title="${customerNameMap[ord.userId]}">${customerNameMap[ord.userId]}</div>
+                                            <small class="text-muted" style="font-size: 10px;">UID: ${ord.userId}</small>
+                                        </td>
 
-                                    <td>
-                                        <div class="fw-semibold" style="color: #334155;">${ord.userId}</div>
-                                        <small class="text-muted">UID: ${ord.userId}</small>
-                                    </td>
+                                        <td class="col-nowrap">${ord.orderDate}</td>
 
-                                    <td class="col-nowrap">${ord.orderDate}</td>
-
-                                    <td>
-                                        <div class="text-truncate" style="max-width: 120px;" title="${ord.shippingAddress}">
+                                        <td>
+                                            <div class="text-truncate-cell" title="${ord.shippingAddress}">
                                                 ${ord.shippingAddress}
-                                        </div>
-                                    </td>
+                                            </div>
+                                        </td>
 
-                                    <td>${ord.items}</td>
+                                        <td style="overflow: hidden; text-overflow: ellipsis;">
+                                            <c:set var="itemCount" value="0"/>
+                                            <c:set var="totalItems" value="${fn:length(ord.items)}"/>
+                                            <c:forEach var="item" items="${ord.items}" varStatus="stat">
+                                                <c:if test="${stat.index < 2}">
+                                                    <div class="text-truncate-cell" style="max-width: 100%;">
+                                                        <span class="fw-semibold text-dark" style="font-size: 12px;">${item.product.name}</span>
+                                                        <span class="text-danger fw-bold ms-1" style="font-size: 11px;">x${item.quantity}</span>
+                                                    </div>
+                                                </c:if>
+                                            </c:forEach>
+                                            <c:if test="${totalItems > 2}">
+                                                <span class="badge bg-secondary" style="font-size: 10px; border-radius: 10px; padding: 2px 8px;">+${totalItems - 2} cái</span>
+                                            </c:if>
+                                            <c:if test="${totalItems <= 2 && totalItems == 0}">
+                                                <span class="text-muted" style="font-size: 11px;">(trống)</span>
+                                            </c:if>
+                                        </td>
 
-                                    <td class="col-nowrap fw-bold text-danger">
-                                        <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
-                                    </td>
+                                        <td class="col-nowrap fw-bold text-danger">
+                                            <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
+                                        </td>
 
-                                    <td><span class="badge bg-dark">Digital Sign</span></td>
+                                        <td><span class="badge bg-secondary">COD</span></td>
 
-                                    <td class="col-nowrap" id="status-cell-${ord.id}">
-                                        <c:choose>
-                                            <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
-                                                <span class="status-badge status-pending">Đang xử lý</span>
-                                            </c:when>
-                                            <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
-                                                <span class="status-badge status-confirmed">Đã xác nhận</span>
-                                            </c:when>
-                                            <c:when test="${ord.orderStatus == 'DELIVERED' || ord.orderStatus == 'Đã giao'}">
-                                                <span class="status-badge status-delivered">Đã giao</span>
-                                            </c:when>
-                                            <c:when test="${ord.orderStatus == 'CANCELLED' || ord.orderStatus == 'Đã hủy'}">
-                                                <span class="status-badge status-cancelled">Đã hủy</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="status-badge status-pending">${ord.orderStatus}</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-
-                                    <td class="col-nowrap">
-                                        <c:choose>
-                                            <c:when test="${simulatedSig == 'VALID'}">
-                                                <span class="status-badge sig-valid"><i class="bi bi-shield-check me-1"></i> Hợp lệ</span>
-                                            </c:when>
-                                            <c:when test="${simulatedSig == 'TAMPERED'}">
-                                                <span class="status-badge sig-tampered"><i class="bi bi-exclamation-triangle me-1"></i> Bị can thiệp!</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="status-badge sig-revoked"><i class="bi bi-key-fill me-1"></i> Khóa đã báo hủy</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-
-                                    <td class="col-nowrap">
-                                        <div id="action-buttons-${ord.id}" class="d-flex justify-content-center gap-2 flex-nowrap">
-
-                                            <button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal${ord.id}">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-
+                                        <td class="col-nowrap" id="status-cell-${ord.id}">
                                             <c:choose>
-                                                <c:when test="${simulatedSig == 'TAMPERED' || simulatedSig == 'KEY_REVOKED'}">
-                                                    <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
-                                                        <i class="bi bi-shield-slash"></i> Hủy đơn rủi ro
-                                                    </button>
+                                                <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
+                                                    <span class="badge-status badge-pending">Đang xử lý</span>
+                                                </c:when>
+                                                <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
+                                                    <span class="badge-status badge-confirmed">Đã xác nhận</span>
+                                                </c:when>
+                                                <c:when test="${ord.orderStatus == 'SHIPPING' || ord.orderStatus == 'Đang vận chuyển'}">
+                                                    <span class="badge-status badge-shipping">Đang vận chuyển</span>
+                                                </c:when>
+                                                <c:when test="${ord.orderStatus == 'DELIVERED' || ord.orderStatus == 'Đã giao'}">
+                                                    <span class="badge-status badge-delivered">Đã giao</span>
+                                                </c:when>
+                                                <c:when test="${ord.orderStatus == 'CANCELLED' || ord.orderStatus == 'Đã hủy'}">
+                                                    <span class="badge-status badge-cancelled">Đã hủy</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <c:choose>
-                                                        <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
-                                                            <button type="button" class="btn-action btn-confirm" onclick="updateStatusOrder(event, ${ord.id}, 'CONFIRMED')">
-                                                                <i class="bi bi-check2-circle"></i> Xác nhận
-                                                            </button>
-                                                            <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
-                                                                <i class="bi bi-x-circle"></i> Hủy đơn
-                                                            </button>
-                                                        </c:when>
-                                                        <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
-                                                            <button type="button" class="btn-action btn-deliver" onclick="updateStatusOrder(event, ${ord.id}, 'DELIVERED')">
-                                                                <i class="bi bi-truck"></i> Đã giao
-                                                            </button>
-                                                            <button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')">
-                                                                <i class="bi bi-x-circle"></i> Hủy đơn
-                                                            </button>
-                                                        </c:when>
-                                                    </c:choose>
+                                                    <span class="badge-status badge-pending">${ord.orderStatus}</span>
                                                 </c:otherwise>
                                             </c:choose>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </c:forEach>
+                                        </td>
+
+                                        <td class="col-nowrap" style="text-align: center;">
+                                            <div id="action-buttons-${ord.id}" class="d-flex justify-content-center gap-1 flex-nowrap">
+
+                                                <button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal${ord.id}" title="Xem chi tiết">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+
+                                                <c:choose>
+                                                    <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
+                                                        <button type="button" class="admin-action-btn admin-action-confirm" onclick="updateStatusOrder(event, ${ord.id}, 'CONFIRMED')" title="Xác nhận">
+                                                            <i class="bi bi-check2-circle"></i>
+                                                        </button>
+                                                        <button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')" title="Hủy đơn">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </button>
+                                                    </c:when>
+                                                    <c:when test="${ord.orderStatus == 'CONFIRMED' || ord.orderStatus == 'Đã xác nhận'}">
+                                                        <button type="button" class="admin-action-btn admin-action-shipping" onclick="updateStatusOrder(event, ${ord.id}, 'SHIPPING')" title="Giao ĐVVC">
+                                                            <i class="bi bi-truck"></i>
+                                                        </button>
+                                                        <button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')" title="Hủy đơn">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </button>
+                                                    </c:when>
+                                                    <c:when test="${ord.orderStatus == 'SHIPPING' || ord.orderStatus == 'Đang vận chuyển'}">
+                                                        <span class="badge bg-info text-white" style="font-size: 10px; border-radius: 10px;">Đang giao</span>
+                                                        <button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')" title="Hủy đơn">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </button>
+                                                    </c:when>
+                                                </c:choose>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
                             </tbody>
                         </table>
                     </div>
                 </c:otherwise>
             </c:choose>
+            </div>
         </div>
 
         <c:forEach var="ord" items="${orders}">
-            <c:set var="simulatedSig" value="${ord.signatureStatus}" />
             <div class="modal fade" id="viewOrderModal${ord.id}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="form-card">
-
-                            <div class="form-section ${simulatedSig != 'VALID' ? 'form-section-security' : ''}">
-                                <h3 class="form-section-title text-dark">
-                                    <i class="bi bi-shield-lock-fill text-danger"></i> Kiểm tra Chữ ký điện tử & Mã Băm (Cryptographic Audit)
-                                </h3>
-                                <div class="row">
-                                    <div class="col-md-6 mb-2">
-                                        <label class="form-label text-muted small fw-bold">Mã băm hóa đơn gốc (Server tính toán từ DB)</label>
-                                        <div class="crypto-box">${ord.serverHash}</div>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <label class="form-label text-muted small fw-bold">Mã băm trích xuất (Giải mã qua Public Key)</label>
-                                        <div class="crypto-box" style="${simulatedSig == 'TAMPERED' ? 'color: #ef4444;' : ''}">
-                                                ${ord.decryptedHash}
-                                        </div>
-                                    </div>
-                            </div>
 
                             <div class="form-section">
                                 <h3 class="form-section-title">
@@ -516,13 +395,24 @@
                                         <input type="text" class="form-control" value="${ord.orderDate}" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
+                                        <label class="form-label text-muted small">Tên khách hàng</label>
+                                        <input type="text" class="form-control fw-semibold" value="${customerNameMap[ord.userId]}" readonly>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
                                         <label class="form-label text-muted small">Trạng thái</label>
                                         <input type="text" class="form-control text-primary fw-bold" value="${ord.orderStatus}" readonly>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label text-muted small">Phương thức thanh toán</label>
-                                        <input type="text" class="form-control" value="Chữ ký điện tử bảo mật" readonly>
+                                        <input type="text" class="form-control" value="COD (Mặc định)" readonly>
                                     </div>
+                                    <c:if test="${not empty ord.shippingMethod}">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-muted small">Phương thức giao hàng</label>
+                                        <input type="text" class="form-control" value="${ord.shippingMethod}" readonly>
+                                    </div>
+                                    </c:if>
                                 </div>
                             </div>
 
@@ -535,6 +425,8 @@
                                         <label class="form-label text-muted small">ID Người mua</label>
                                         <input type="text" class="form-control" value="${ord.userId}" readonly>
                                     </div>
+
+
                                     <div class="col-12 mb-3">
                                         <label class="form-label text-muted small">Địa chỉ giao hàng</label>
                                         <input type="text" class="form-control" value="${ord.shippingAddress}" readonly>
@@ -546,17 +438,44 @@
                                 <h3 class="form-section-title">
                                     <i class="bi bi-box-seam"></i> Chi tiết Sản phẩm
                                 </h3>
-                                <div class="row">
+
+                                  <div class="row">
                                     <div class="col-12 mb-3">
-                                        <label class="form-label text-muted small">Tên sản phẩm</label>
-                                        <c:forEach items="${ord.items}" var="i">
-                                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">${i.product.name}</div>
-                                        </c:forEach>
+                                       <%-- Vòng lặp in từng sản phẩm có kèm ảnh --%>
+                                       <c:forEach items="${ord.items}" var="item">
+                                          <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+
+                                              <%-- Phần bên trái: Ảnh + Tên + Số lượng --%>
+                                              <div class="d-flex align-items-center gap-3">
+                                                  <%-- Khối hình ảnh giống order-detail.jsp --%>
+                                                  <div style="width: 65px; height: 65px; background: #f8f9fa; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                     <img src="${not empty item.imageUrl ? pageContext.request.contextPath.concat('/uploads/').concat(item.imageUrl) : 'https://placehold.co/100?text=LUXCAR'}" alt="${item.product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://placehold.co/100?text=LUXCAR'">
+                                                  </div>
+
+                                                  <%-- Thông tin tên xe --%>
+                                                  <div>
+                                                     <div class="fw-bold" style="color: #1e293b; font-size: 15px;">${item.product.name}</div>
+                                                        <div class="text-muted small mt-1">
+                                                           Mã SP: LUX-${item.productId} | <span class="text-danger fw-bold">Số lượng: x${item.quantity}</span>
+                                                        </div>
+                                                     </div>
+                                                  </div>
+
+                                                  <%-- Phần bên phải: Đơn giá --%>
+                                                  <div class="fw-bold" style="color: #475569; font-size: 14px;">
+                                                      <fmt:formatNumber value="${item.price}" type="number" groupingUsed="true"/> ₫
+                                                  </div>
+
+                                          </div>
+                                       </c:forEach>
                                     </div>
+
                                     <div class="col-12 mt-2 text-end">
-                                        <h4 class="text-danger fw-bold m-0">Tổng tiền: <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫</h4>
-                                    </div>
+                                        <h4 class="text-danger fw-bold m-0" style="font-size: 18px;">
+                                           Tổng tiền: <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
+                                        </h4>
                                 </div>
+                              </div>
                             </div>
 
                             <div class="form-actions">
@@ -585,7 +504,7 @@
         event.preventDefault()
 
         if(newStatus === 'CANCELLED'){
-            let xacnhan = confirm("HỆ THỐNG AN NINH:\nBạn có chắc chắn muốn hủy bỏ đơn hàng này (bao gồm cả lý do lỗi chữ ký số gian lận)?");
+            let xacnhan = confirm("Bạn có chắc chắn muốn huỷ đơn hàng này không?");
             if(xacnhan === false){
                 return;
             }
@@ -608,40 +527,57 @@
                     let actionGroup = document.getElementById("action-buttons-" + orderId);
 
                     if("CONFIRMED" === newStatus){
-                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được duyệt thành công!";
+                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được duyệt!";
+
 
                         actionGroup.innerHTML =
-                            '<button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '">' +
-                            '<i class="bi bi-eye"></i>' +
+                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
+                                '<i class="bi bi-eye"></i>' +
                             '</button>' +
-                            '<button type="button" class="btn-action btn-deliver" onclick="updateStatusOrder(event, ' + orderId + ', \'DELIVERED\')">' +
-                            '<i class="bi bi-truck"></i> Đã giao' +
+                            '<button type="button" class="admin-action-btn admin-action-shipping" onclick="updateStatusOrder(event, ' + orderId + ', \'SHIPPING\')" title="Giao ĐVVC">' +
+                                '<i class="bi bi-truck"></i>' +
                             '</button>' +
-                            '<button type="button" class="btn-action btn-cancel" onclick="updateStatusOrder(event, ' + orderId + ', \'CANCELLED\')">' +
-                            '<i class="bi bi-x-circle"></i> Cancel' +
+                            '<button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ' + orderId + ', \'CANCELLED\')" title="Hủy đơn">' +
+                                '<i class="bi bi-x-circle"></i>' +
                             '</button>';
 
-                        trangThai.innerHTML = '<span class="status-badge status-confirmed">Đã xác nhận</span>';
+                        trangThai.innerHTML = '<span class="badge-status badge-confirmed">Đã xác nhận</span>';
+
+                    } else if("SHIPPING" === newStatus){
+                        document.getElementById("toastMessage").innerText = "Đã bàn giao cho đơn vị vận chuyển!";
+
+                        actionGroup.innerHTML =
+                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
+                                '<i class="bi bi-eye"></i>' +
+                            '</button>' +
+                            '<span class="badge bg-info text-white" style="font-size: 10px; border-radius: 10px;">Đang giao</span>' +
+                            '<button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ' + orderId + ', \'CANCELLED\')" title="Hủy đơn">' +
+                                '<i class="bi bi-x-circle"></i>' +
+                            '</button>';
+
+                        trangThai.innerHTML = '<span class="badge-status badge-shipping">Đang vận chuyển</span>';
 
                     } else if("DELIVERED" === newStatus){
-                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã vận chuyển hoàn tất!";
+                        document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được giao!";
 
+                        // giu lai nut xem
                         actionGroup.innerHTML =
-                            '<button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '">' +
-                            '<i class="bi bi-eye"></i>' +
+                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
+                                '<i class="bi bi-eye"></i>' +
                             '</button>';
 
-                        trangThai.innerHTML = '<span class="status-badge status-delivered">Đã giao</span>';
+                        trangThai.innerHTML = '<span class="badge-status badge-delivered">Đã giao</span>';
 
                     } else {
-                        document.getElementById("toastMessage").innerText = "Đã huỷ đơn hàng lỗi/gian lận: #ORD-"+ orderId + "!";
+                        document.getElementById("toastMessage").innerText = "Đã huỷ đơn hàng: #ORD-"+ orderId + "!";
+
 
                         actionGroup.innerHTML =
-                            '<button class="action-btn action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '">' +
-                            '<i class="bi bi-eye"></i>' +
+                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
+                                '<i class="bi bi-eye"></i>' +
                             '</button>';
 
-                        trangThai.innerHTML = '<span class="status-badge status-cancelled">Đã huỷ đơn</span>';
+                        trangThai.innerHTML = '<span class="badge-status badge-cancelled">Đã huỷ đơn</span>';
                     }
 
                     setTimeout(function(){
@@ -652,11 +588,11 @@
                     }, 3000);
 
                 } else {
-                    alert("Máy chủ bảo mật từ chối cập nhật! Lý do: " + data);
+                    alert("Máy chủ từ chối cập nhật! lý do: " + data);
                 }
             })
             .catch(function(error) {
-                console.log("Lỗi kết nối:", error);
+                console.log("Lỗi hệ thống:", error);
             });
     }
 </script>

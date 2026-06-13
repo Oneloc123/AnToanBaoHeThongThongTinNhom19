@@ -21,24 +21,42 @@
 <%--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">--%>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <!-- Font luxury -->
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
       rel="stylesheet">
 
 <!-- noUiSlider for price range -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css" rel="stylesheet">
 
 <style>
-    /* ================= GLOBAL ================= */
+    /* =============================================
+       DARK LUXURY AUTOMOTIVE THEME
+       SaleCar — LUXCAR Product Listing
+       ============================================= */
+
+    /* ================= DESIGN TOKENS ================= */
     :root {
-        --black: #1a1a1a;
-        --gold: #C5A028;
-        --white: #FFFFFF;
-        --light-gold: #e9d6b0;
-        --dark-gold: #9e7e2c;
-        --gray-light: #f5f5f5;
-        --gray-border: #e0e0e0;
-        --text-primary: #2c2c2c;
-        --text-secondary: #666666;
+        --black: #0a0a0a;        --bg-primary: #101010;
+            --bg-surface: #1a1a1a;
+            --bg-elevated: #222222;
+            --bg-elevated-hover: #2a2a2a;
+        --bg-image: #111111;
+        --gold: #D4AF37;
+        --gold-dark: #b8960f;
+        --gold-light: #e9d6b0;
+        --text-primary: #f0f0f0;
+        --text-secondary: #9f9f9f;
+        --text-muted: #666666;        --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-gold: rgba(212, 175, 55, 0.30);
+            --border-gold-strong: rgba(212, 175, 55, 0.55);        --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 25px rgba(212, 175, 55, 0.08);
+            --shadow-card-hover: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 45px rgba(212, 175, 55, 0.15);
+        --shadow-gold: rgba(212, 175, 55, 0.12);
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --radius-xl: 28px;
+        --transition-fast: 0.2s ease;
+        --transition-base: 0.3s ease;
+        --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     * {
@@ -50,20 +68,18 @@
     html, body {
         height: 100%;
         font-family: 'Inter', sans-serif;
-        background-color: var(--gray-light);
+        background: var(--bg-primary);
         color: var(--text-primary);
     }
 
-    h1, h2, h3, h4, h5 {
-        font-family: 'Cormorant Garamond', serif;
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Playfair Display', serif;
         font-weight: 600;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
     }
 
     .container-fluid {
-        /*min-height: 100vh;*/
         height: 100vh;
-        /*overflow: hidden;*/
     }
 
     .row {
@@ -71,505 +87,551 @@
         margin: 0;
     }
 
-    /* ================= SIDEBAR ================= */
+    /* ================= SIDEBAR (DARK SURFACE — MATCHES PROFILE SIDEBAR) ================= */
     .sidebar {
-        background: #fff;
-        padding: 30px 25px;
-        border-right: 1px solid var(--gray-border);
+        background-color: #0a0a0a;
+        padding: 30px 0;
+        border-right: 1px solid var(--border-subtle);
         height: 100%;
         overflow-y: auto;
-        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.03);
+        z-index: 1;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
     }
-
 
     .sidebar::-webkit-scrollbar {
-        width: 8px;
+        width: 4px;
     }
-
     .sidebar::-webkit-scrollbar-track {
-        background: #f1f1f1;
+        background: transparent;
     }
-
     .sidebar::-webkit-scrollbar-thumb {
-        background: var(--gold);
+        background: rgba(212, 175, 55, 0.25);
         border-radius: 4px;
     }
 
-    .filter-body::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .filter-body::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-
-    .filter-body::-webkit-scrollbar-thumb {
-        background: var(--gold);
-        border-radius: 4px;
-    }
-
-    .sidebar-footer {
-        /*position: sticky;*/
-        bottom: 0;
-        background: #fff;
-        padding: 20px 0 10px;
-        margin-top: 20px;
-        border-top: 1px solid var(--gray-border);
-        z-index: 10;
+    /* ================= FILTER HEADER ================= */
+    .filter-header {
+        padding: 0 20px 20px;
+        border-bottom: 1px solid var(--border-subtle);
+        text-align: center;
         flex-shrink: 0;
-        background: #fff;
     }
-
-    /* ================= FILTER STYLE ================= */
-    .filter-section {
-        margin-bottom: 20px;
-        border-bottom: 1px solid var(--gray-border);
-        padding-bottom: 15px;
-    }
-
-    .filter-title {
+    .filter-header h5 {
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
         font-weight: 600;
-        font-size: 16px;
-        margin-bottom: 12px;
-        color: var(--text-primary);
+        color: #fff;
+        margin: 0;
         letter-spacing: 0.3px;
-        display: flex;
-        justify-content: space-between;
+    }
+    .filter-header h5 i {
+        color: var(--gold);
+        margin-right: 8px;
+    }
+    .filter-header .active-filters-badge {
+        display: inline-flex;
         align-items: center;
-        cursor: pointer;
-        transition: 0.2s;
-        text-transform: uppercase;
-        font-family: 'Inter', sans-serif;
+        gap: 4px;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-left: 8px;
+        box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
     }
 
-    .filter-title:hover {
+    /* ================= SEARCH ================= */
+    .filter-search {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border-subtle);
+        flex-shrink: 0;
+    }
+    .filter-search .search-wrap {
+        position: relative;
+    }
+    .filter-search .search-wrap i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 14px;
+        transition: color var(--transition-fast);
+    }
+    .filter-search .search-wrap:focus-within i {
         color: var(--gold);
     }
-
-    .filter-title i {
-        transition: transform 0.3s ease;
-        color: var(--text-secondary);
-        font-size: 14px;
+    .filter-search .search-wrap input {
+        width: 100%;
+        padding: 10px 14px 10px 40px;
+        border: 1.5px solid var(--border-subtle);
+        border-radius: 30px;
+        font-size: 13px;
+        background: var(--bg-elevated);
+        transition: all var(--transition-base);
+        color: var(--text-primary);
+    }
+    .filter-search .search-wrap input::placeholder {
+        color: var(--text-muted);
+    }
+    .filter-search .search-wrap input:focus {
+        outline: none;
+        border-color: var(--border-gold-strong);
+        background: var(--bg-elevated-hover);
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.06);
     }
 
-    .filter-title[aria-expanded="true"] i {
-        transform: rotate(180deg);
-    }
-
-    .filter-scroll {
-        max-height: 200px;
+    /* ================= FILTER BODY ================= */
+    .filter-body {
+        flex: 1;
         overflow-y: auto;
-        padding-right: 5px;
-        margin-top: 5px;
+        padding: 6px 0;
     }
-
-    .filter-scroll::-webkit-scrollbar {
+    .filter-body::-webkit-scrollbar {
         width: 3px;
     }
-
-    .filter-scroll::-webkit-scrollbar-thumb {
-        background: var(--gold);
+    .filter-body::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.2);
         border-radius: 3px;
     }
 
-    /* Custom checkbox and radio */
-    .form-check {
-        margin-bottom: 8px;
-        padding-left: 24px;
+    /* ================= FILTER SECTION ================= */
+    .filter-section {
+        border-bottom: none;
+        transition: background var(--transition-fast);
+    }
+    .filter-section:last-child {
+        border-bottom: none;
     }
 
-    .form-check-input {
-        width: 16px;
-        height: 16px;
-        margin-left: -24px;
-        border: 1.5px solid #d0d0d0;
-        transition: all 0.2s;
+    .filter-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 25px;
+        margin: 5px 10px;
+        border-radius: var(--radius-sm);
         cursor: pointer;
+        transition: all var(--transition-fast);
+        user-select: none;
+        gap: 12px;
     }
-
-    .form-check-input:checked {
-        background-color: var(--gold);
-        border-color: var(--gold);
-    }
-
-    .form-check-input:focus {
-        box-shadow: none;
-        border-color: var(--gold);
-    }
-
-    .form-check-label {
-        font-size: 14px;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .form-check-label:hover {
+    .filter-title:hover {
+        background-color: rgba(212, 175, 55, 0.06);
         color: var(--gold);
     }
-
-    /* Price Range Slider */
-    .price-range-container {
-        padding: 5px 5px 15px;
+    .filter-title .title-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .filter-title .title-left i {
+        color: var(--gold);
+        font-size: 14px;
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+        opacity: 0.8;
+    }
+    .filter-title .title-left span {
+        font-weight: 500;
+        font-size: 13px;
+        color: var(--text-primary);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .filter-title .title-left .count-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 400;
+        text-transform: none;
+        margin-left: 2px;
+    }
+    .filter-title .title-right {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .filter-title .title-right .filter-active-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--gold);
+        display: none;
+        box-shadow: 0 0 6px rgba(212, 175, 55, 0.3);
+    }
+    .filter-title .title-right .filter-active-dot.show {
+        display: block;
+        animation: popDot 0.3s ease;
+    }
+    .filter-title .title-right i.chevron {
+        color: var(--text-muted);
+        font-size: 11px;
+        transition: transform var(--transition-base);
+    }
+    .filter-title.active .title-right i.chevron {
+        transform: rotate(180deg);
     }
 
+    @keyframes popDot {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+
+    /* ================= FILTER CONTENT (collapsible) ================= */
+    .filter-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.35s ease;
+        padding: 0 25px;
+    }
+    .filter-content.open {
+        max-height: 280px;
+        padding: 0 25px 14px;
+        overflow-y: auto;
+    }
+    .filter-content.open::-webkit-scrollbar {
+        width: 3px;
+    }
+    .filter-content.open::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.2);
+        border-radius: 3px;
+    }
+
+    /* ================= CHECKBOXES (DARK) ================= */
+    .filter-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        margin-bottom: 2px;
+    }
+    .filter-checkbox:hover {
+        background: rgba(212, 175, 55, 0.04);
+    }
+    .filter-checkbox input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        cursor: pointer;
+        flex-shrink: 0;
+        position: relative;
+        transition: all var(--transition-fast);
+        background: transparent;
+    }
+    .filter-checkbox input[type="checkbox"]:checked {
+        background: var(--gold);
+        border-color: var(--gold);
+    }
+    .filter-checkbox input[type="checkbox"]:checked::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 5px;
+        height: 9px;
+        border: solid #101010;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+    .filter-checkbox input[type="checkbox"]:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+    .filter-checkbox label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        flex: 1;
+        min-width: 0;
+        transition: color var(--transition-fast);
+    }
+    .filter-checkbox:hover label {
+        color: var(--text-primary);
+    }
+    .filter-checkbox input[type="checkbox"]:checked ~ label {
+        color: var(--gold);
+        font-weight: 500;
+    }
+
+    /* ================= PRICE RANGE (DARK) ================= */
+    .price-range-wrap {
+        padding: 8px 4px 4px;
+    }
     #price-range {
-        margin: 15px 0 20px;
+        margin: 10px 0 18px;
         height: 4px;
     }
-
     .noUi-connect {
-        background: var(--gold);
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
     }
-
     .noUi-handle {
-        border: 2px solid var(--gold);
+        border: 2.5px solid var(--gold);
         border-radius: 50%;
-        background: #fff;
+        background: var(--bg-elevated-hover);
         cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        width: 18px !important;
-        height: 18px !important;
-        right: -9px !important;
-        top: -7px !important;
+        box-shadow: 0 2px 8px rgba(212, 175, 55, 0.15);
+        width: 20px !important;
+        height: 20px !important;
+        right: -10px !important;
+        top: -8px !important;
+        transition: transform var(--transition-base), box-shadow var(--transition-base);
     }
-
     .noUi-handle:before,
     .noUi-handle:after {
         display: none;
     }
-
     .noUi-handle:hover {
-        transform: scale(1.1);
+        transform: scale(1.15);
+        box-shadow: 0 3px 12px rgba(212, 175, 55, 0.25);
+    }
+    .noUi-handle.noUi-active {
+        transform: scale(1.2);
+        box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+    }
+    .noUi-target {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+        border: none;
+        box-shadow: none;
     }
 
-    .price-inputs {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .price-row {
+    .price-display {
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: space-between;
+        gap: 10px;
+        background: var(--bg-elevated);
+        border-radius: var(--radius-md);
+        padding: 10px 16px;
+        border: 1px solid var(--border-subtle);
     }
-
-    .price-row p {
-        margin: 0;
-        min-width: 30px;
+    .price-display .price-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
     }
-
-    .price-input {
-        /*flex: 1;*/
-        margin-bottom: 10px;
-        padding: 8px 10px;
-        border: 1px solid var(--gray-border);
-        border-radius: 4px;
-        font-size: 13px;
-        transition: 0.2s;
-        background: #fafafa;
-        color: var(--text-primary);
+    .price-display .price-item .price-label {
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         font-weight: 500;
     }
-
-    .price-input:focus {
-        outline: none;
-        border-color: var(--gold);
+    .price-display .price-item .price-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--gold);
+        font-family: 'Playfair Display', serif;
+    }
+    .price-display .price-sep {
+        color: rgba(255, 255, 255, 0.1);
+        font-size: 14px;
     }
 
-    /* ================= SORT BAR ================= */
+    /* ================= SIDEBAR FOOTER ================= */
+    .sidebar-footer {
+        flex-shrink: 0;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border-subtle);
+        background: transparent;
+    }
+    .sidebar-footer .btn-apply {
+        flex: 1;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        transition: all var(--transition-base);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        letter-spacing: 0.3px;
+    }
+    .sidebar-footer .btn-apply:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.25);
+    }
+    .sidebar-footer .btn-apply:active {
+        transform: translateY(0);
+    }
+    .sidebar-footer .btn-reset-filter {
+        width: 44px;
+        height: 44px;
+        border: 1.5px solid var(--border-subtle);
+        border-radius: 50%;
+        background: var(--bg-elevated);
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all var(--transition-base);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .sidebar-footer .btn-reset-filter:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(212, 175, 55, 0.08);
+        transform: rotate(-30deg);
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.12);
+    }
+
+    /* ================= VOUCHER MINI (DARK) ================= */
+    .voucher-mini {
+        padding: 14px 22px;
+        border-top: 1px solid var(--border-subtle);
+        flex-shrink: 0;
+    }
+    .voucher-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 12px 16px;
+        background: var(--bg-elevated);
+        border: 1px dashed var(--border-gold-strong);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-base);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    .voucher-toggle:hover {
+        background: var(--bg-elevated-hover);
+        border-color: rgba(212, 175, 55, 0.35);
+        transform: translateY(-1px);
+    }
+    .voucher-toggle i {
+        color: var(--gold);
+        font-size: 14px;
+    }
+    .voucher-toggle .v-badge {
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+    .voucher-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+    .voucher-content.open {
+        max-height: 400px;
+        padding-top: 10px;
+    }
+    .voucher-item {
+        background: var(--bg-elevated);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        margin-bottom: 6px;
+        border-left: 3px solid var(--gold);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all var(--transition-fast);
+    }
+    .voucher-item:hover {
+        background: rgba(212, 175, 55, 0.04);
+    }
+    .voucher-code {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 12px;
+    }
+    .voucher-discount {
+        color: var(--gold);
+        font-weight: 500;
+        font-size: 11px;
+    }
+    .voucher-empty {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    /* ================= SORT BAR (DARK SURFACE) ================= */
     .sort-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 25px;
-        padding: 12px 20px;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        padding: 10px 24px;
+        background: var(--bg-surface);
+        border-radius: 50px;
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--border-subtle);
+        position: relative;
+        min-height: 60px;
     }
-
     .sort-buttons {
         display: flex;
-        gap: 8px;
+        gap: 6px;
+        flex-wrap: wrap;
     }
-
     .sort-btn {
-        padding: 6px 16px;
-        border: 1px solid var(--gray-border);
-        background: #fff;
-        border-radius: 30px;
-        font-size: 13px;
+        padding: 8px 20px;
+        border: none;
+        background: var(--bg-elevated);
+        border-radius: 50px;
+        font-size: 12px;
         font-weight: 500;
-        transition: all 0.2s;
+        transition: all var(--transition-base);
         cursor: pointer;
         color: var(--text-secondary);
+        white-space: nowrap;
+        position: relative;
     }
-
     .sort-btn:hover {
-        border-color: var(--gold);
+        background: var(--bg-elevated-hover);
         color: var(--gold);
+        transform: translateY(-1px);
     }
-
     .sort-btn.active {
-        background: var(--black);
-        border-color: var(--black);
-        color: #fff;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(212, 175, 55, 0.2);
     }
-
     .result-count {
-        color: var(--text-secondary);
-        font-size: 20px;
+        color: var(--text-muted);
+        font-size: 16px;
+        font-weight: 400;
+        white-space: nowrap;
     }
-
     .result-count span {
         color: var(--gold);
         font-weight: 700;
-        font-size: 25px;
-    }
-
-    /* ================= PRODUCT WRAPPER ================= */
-
-    .product-wrapper {
-        height: 100%;
-        overflow-y: auto;
-        /*padding: 2rem 2rem 1rem;*/
-        padding: 2rem;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-wrapper > .row {
-        flex: 1 0 auto;
-    }
-
-    .product-wrapper > .pagination-container {
-        flex-shrink: 0;
-    }
-
-    .product-wrapper::-webkit-scrollbar {
-        width: 10px;
-    }
-
-    .product-wrapper::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-
-    .product-wrapper::-webkit-scrollbar-thumb {
-        background: var(--gold);
-        border-radius: 4px;
-    }
-
-    /* ================= PRODUCT CARD ================= */
-    .product-card {
-        border: none;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: 0.3s;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background: #fff;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.02);
-        position: relative;
-    }
-
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
-    }
-
-    .product-image-wrapper {
-        height: 240px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .product-image-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: 0.5s;
-    }
-
-    .product-card:hover .product-image-wrapper img {
-        transform: scale(1.03);
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: var(--gold);
-        color: #fff;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        z-index: 2;
+        font-size: 20px;
+        font-family: 'Playfair Display', serif;
         letter-spacing: 0.3px;
-    }
-
-    .product-badge.discount {
-        background: #d32f2f;
-    }
-
-    .card-body {
-        padding: 16px 15px 15px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-category {
-        font-size: 11px;
-        color: var(--gold);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
-    }
-
-    .product-name {
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-size: 28px;
-        color: var(--text-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-family: 'Cormorant Garamond', serif;
-    }
-
-    .product-model {
-        font-size: 12px;
-        color: var(--text-secondary);
-        margin-bottom: 8px;
-    }
-
-    .product-model i {
-        color: var(--gold);
-        margin-right: 3px;
-        font-size: 11px;
-    }
-
-    .product-price-section {
-        margin: 8px 0;
-    }
-
-    .product-price-old {
-        font-size: 12px;
-        text-decoration: line-through;
-        color: #999;
-        display: block;
-    }
-
-    .product-price-current {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--black);
-        font-family: 'Cormorant Garamond', serif;
-        line-height: 1.2;
-    }
-
-    .product-actions {
-        display: flex;
-        gap: 6px;
-        margin-top: auto;
-        border-top: 1px solid #f0f0f0;
-        padding-top: 12px;
-    }
-
-    .btn-buy {
-        flex: 2;
-        background: var(--black);
-        color: #fff;
-        border: none;
-        padding: 8px 0;
-        border-radius: 30px;
-        font-size: 12px;
-        font-weight: 500;
-        transition: 0.2s;
-    }
-
-    .btn-buy:hover {
-        background: var(--gold);
-    }
-
-    .btn-action {
-        flex: 1;
-        background: #f8f8f8;
-        color: var(--text-secondary);
-        border: none;
-        padding: 8px 0;
-        border-radius: 30px;
-        transition: 0.2s;
-    }
-
-    .btn-action:hover {
-        background: var(--gold);
-        color: #fff;
-    }
-
-    /* ================= RATING STYLE ================= */
-    .rating {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 13px;
-        color: var(--gold);
-        margin: 8px 0;
-    }
-
-    .rating i {
-        font-size: 12px;
-    }
-
-    .rating span {
-        color: var(--text-secondary);
-        margin-right: 5px;
-        font-weight: 500;
-    }
-
-    /* ================= EMPTY STATE ================= */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: #fff;
-        border-radius: 12px;
-    }
-
-    .empty-state i {
-        font-size: 60px;
-        color: var(--gold);
-        opacity: 0.3;
-        margin-bottom: 15px;
-    }
-
-    .empty-state h4 {
-        font-size: 22px;
-        margin-bottom: 8px;
-        color: var(--text-primary);
-    }
-
-    .empty-state p {
-        color: var(--text-secondary);
-        margin-bottom: 20px;
-        font-size: 14px;
-    }
-
-    .btn-reset {
-        background: var(--gold);
-        color: #fff;
-        border: none;
-        padding: 10px 30px;
-        border-radius: 30px;
-        font-weight: 500;
-        transition: 0.2s;
-    }
-
-    .btn-reset:hover {
-        background: var(--dark-gold);
     }
 
     /* ================= PRODUCT WRAPPER ================= */
@@ -579,116 +641,428 @@
         padding: 2rem 2rem 0;
         display: flex;
         flex-direction: column;
+        background: var(--bg-primary);
     }
-
-    /* Phần content chính (sort bar + products) */
+    .product-wrapper::-webkit-scrollbar {
+        width: 6px;
+    }
+    .product-wrapper::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .product-wrapper::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.15);
+        border-radius: 3px;
+    }
     .product-content {
         flex: 1 0 auto;
     }
-
-    /* Product grid */
     .product-grid {
         margin-bottom: 30px;
     }
 
-    /* ================= PAGINATION ================= */
-    .pagination-container {
-        /*flex-shrink: 0;*/
-        /*margin-top: 20px;*/
-        margin-top: auto;
-        padding: 30px 0;
-        padding: 30px 0 40px;
+    /* ================= PRODUCT CARD (DARK LUXURY) ================= */        .product-card {
+        border: 1px solid var(--border-gold);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all var(--transition-slow);
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-elevated);
+        box-shadow: var(--shadow-card);
+        position: relative;
+    }
+    .product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        opacity: 0.6;
+        z-index: 5;
+        transition: opacity 0.5s ease;
+    }        .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), 0 0 50px rgba(212, 175, 55, 0.12);
+        border-color: var(--border-gold-strong);
+        background: var(--bg-elevated-hover);
+    }
+    .product-card:hover::before {
+        opacity: 1;
+    }
+
+    /* ================= IMAGE AREA (DARK GRADIENT PEDESTAL) ================= */
+    .product-image-wrapper {
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(135deg, #141414 0%, #0d0d0d 50%, #161616 100%);
+    }
+    .product-image-wrapper::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.04) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 1;
+    }
+    .product-image-wrapper::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 0 50px 15px rgba(0, 0, 0, 0.45);
+        pointer-events: none;
+        z-index: 3;
+    }
+    .product-image-wrapper img {
         width: 100%;
-        border-top: 2px solid var(--gray-border);
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        z-index: 2;
+    }
+    .product-card:hover .product-image-wrapper img {
+        transform: scale(1.08);
+    }
+
+    /* ================= BADGE ================= */
+    .product-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        z-index: 4;
+        letter-spacing: 0.3px;
+        box-shadow: 0 3px 10px rgba(212, 175, 55, 0.2);
+        text-transform: uppercase;
+    }
+    .product-badge.discount {
+        background: linear-gradient(135deg, #d32f2f, #b71c1c);
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(211, 47, 47, 0.25);
+    }
+
+    /* ================= CARD BODY (DARK CONTENT) ================= */
+    .card-body {
+        padding: 16px 18px 18px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 2;
         background: transparent;
     }
 
+    .product-category {
+        font-size: 10px;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        margin-bottom: 4px;
+        font-weight: 600;
+        opacity: 0.7;
+    }
+    .product-name {
+        font-weight: 700;
+        margin-bottom: 4px;
+        font-size: 17px;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: 'Playfair Display', serif;
+        line-height: 1.3;
+        transition: color var(--transition-base);
+        letter-spacing: 0.2px;
+    }
+    .product-card:hover .product-name {
+        color: var(--gold);
+        text-shadow: 0 0 20px rgba(212, 175, 55, 0.08);
+    }
+    .product-model {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        font-weight: 400;
+    }
+    .product-model i {
+        color: var(--gold);
+        margin-right: 3px;
+        font-size: 11px;
+        opacity: 0.7;
+    }
+
+    .product-price-section {
+        margin: 8px 0 4px;
+        padding: 10px 0 0;
+        border-top: 1px solid var(--border-subtle);
+    }
+    .product-price-row {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .product-price-old {
+        font-size: 13px;
+        text-decoration: line-through;
+        color: var(--text-muted);
+        font-weight: 400;
+        font-family: 'Inter', sans-serif;
+        opacity: 0.5;
+    }
+    .product-price-current {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--gold);
+        font-family: 'Playfair Display', serif;
+        line-height: 1.2;
+        text-shadow: 0 2px 12px rgba(212, 175, 55, 0.1);
+        transition: all var(--transition-base);
+        letter-spacing: -0.3px;
+    }
+    .product-card:hover .product-price-current {
+        text-shadow: 0 0 30px rgba(212, 175, 55, 0.2), 0 3px 12px rgba(212, 175, 55, 0.1);
+        transform: scale(1.03);
+    }
+
+    /* ================= PRODUCT ACTIONS ================= */
+    .product-actions {
+        display: flex;
+        gap: 6px;
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-subtle);
+    }
+    .btn-buy {
+        flex: 2;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
+        border: none;
+        padding: 9px 0;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        transition: all var(--transition-base);
+        cursor: pointer;
+        letter-spacing: 0.3px;
+    }
+    .btn-buy:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+    }
+    .btn-action {
+        flex: 1;
+        background: rgba(212, 175, 55, 0.06);
+        color: var(--gold);
+        border: 1.5px solid rgba(212, 175, 55, 0.2);
+        padding: 8px 0;
+        border-radius: 30px;
+        transition: all var(--transition-base);
+        cursor: pointer;
+        box-shadow: 0 0 8px rgba(212, 175, 55, 0.06);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+    .btn-action:hover {
+        background: rgba(212, 175, 55, 0.16);
+        color: #fff;
+        border-color: var(--gold);
+        transform: translateY(-2px);
+        box-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+    }
+
+    /* ================= RATING (DARK) ================= */
+    .rating {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 12px;
+        color: var(--gold);
+        margin: 6px 0 10px;
+    }
+    .rating span {
+        color: var(--text-muted);
+        margin-right: 6px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+    .rating i {
+        color: #f0c040;
+        font-size: 13px;
+    }
+
+    /* ================= EMPTY STATE (DARK) ================= */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--bg-elevated);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-subtle);
+    }
+    .empty-state i {
+        font-size: 60px;
+        color: var(--gold);
+        opacity: 0.15;
+        margin-bottom: 15px;
+    }
+    .empty-state h4 {
+        font-size: 22px;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+    }
+    .empty-state p {
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+    .btn-reset {
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
+        border: none;
+        padding: 10px 30px;
+        border-radius: 30px;
+        font-weight: 700;
+        transition: all var(--transition-base);
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+    }
+    .btn-reset:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.25);
+    }
+
+    /* ================= PAGINATION (DARK) ================= */
+    .pagination-container {
+        margin-top: auto;
+        padding: 30px 0 40px;
+        width: 100%;
+        border-top: 1px solid var(--border-subtle);
+        background: transparent;
+    }
     .pagination {
         display: flex;
         justify-content: center;
-        gap: 8px;
+        gap: 6px;
         margin: 0;
         padding: 0;
         list-style: none;
         flex-wrap: wrap;
     }
-
     .pagination .page-item {
         margin: 0;
     }
-
     .pagination .page-link {
         color: var(--text-secondary);
-        border: 1px solid var(--gray-border);
-        border-radius: 8px;
-        transition: all 0.25s ease;
-        width: 42px;
-        height: 42px;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-base);
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 500;
         padding: 0;
         text-decoration: none;
-        background: #fff;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+        background: var(--bg-elevated);
+        position: relative;
     }
-
     .pagination .page-link:hover {
-        background: var(--gold);
-        color: #fff;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #101010;
         border-color: var(--gold);
-        transform: translateY(-3px);
-        box-shadow: 0 5px 12px rgba(197, 160, 40, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(212, 175, 55, 0.2);
     }
-
     .pagination .page-item.active .page-link {
-        background: var(--gold);
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
         border-color: var(--gold);
-        color: #fff;
-        font-weight: 600;
-        box-shadow: 0 4px 10px rgba(197, 160, 40, 0.25);
+        color: #101010;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
     }
-
     .pagination .page-item.disabled .page-link {
-        background: #f8f8f8;
-        color: #ccc;
-        border-color: #eee;
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(255, 255, 255, 0.15);
+        border-color: transparent;
         pointer-events: none;
         box-shadow: none;
         transform: none;
     }
 
-
-    /* ================= VOUCHER ================= */
-    .voucher-box {
-        background: linear-gradient(135deg, #fff 0%, #fcf9f0 100%);
-        padding: 20px;
-        border: 1px dashed var(--gold);
-        border-radius: 8px;
-        margin-top: 20px;
+    /* ================= RESPONSIVE (DARK) ================= */
+    @media (max-width: 1200px) {
+        .product-image-wrapper {
+            height: 200px;
+        }
     }
-
-    .voucher-item {
-        background: #fff;
-        border-radius: 6px;
-        padding: 10px;
-        margin-bottom: 8px;
-        border-left: 3px solid var(--gold);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    @media (max-width: 991px) {
+        .sidebar {
+            border-right: none;
+            border-bottom: 1px solid var(--border-subtle);
+            height: auto;
+            max-height: 400px;
+        }
+        .filter-body {
+            max-height: 250px;
+        }
+        .product-wrapper {
+            padding: 1.5rem 1rem 0;
+        }
+        .sort-bar {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+        }
+        .sort-buttons {
+            justify-content: center;
+        }
+        .result-count {
+            text-align: center;
+        }
+        .product-price-current {
+            font-size: 22px;
+        }
+        .product-image-wrapper {
+            height: 190px;
+        }
     }
-
-    .voucher-code {
-        font-weight: 600;
-        color: var(--text-primary);
-        font-size: 13px;
-    }
-
-    .voucher-discount {
-        color: var(--gold);
-        font-weight: 500;
-        font-size: 12px;
+    @media (max-width: 767px) {
+        .sidebar {
+            max-height: 350px;
+        }
+        .product-card {
+            border-radius: 16px;
+        }
+        .product-image-wrapper {
+            height: 180px;
+        }
+        .product-price-current {
+            font-size: 20px;
+        }
+        .card-body {
+            padding: 14px;
+        }
+        .sort-bar {
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+        }
+        .sort-btn {
+            font-size: 11px;
+            padding: 6px 14px;
+        }
     }
 </style>
 
@@ -703,194 +1077,184 @@
         <!-- ================= SIDEBAR FILTER ================= -->
         <div class="col-lg-3 col-md-4 sidebar p-0">
             <form id="filterForm" action="products" method="get"
-                  style="height: 90%; display: flex; flex-direction: column;">
-                <div class="filter-body" style="flex: 1; overflow-y: auto; padding: 25px 20px 10px; margin-right:1px">
-                    <!-- Tìm kiếm -->
-                    <div class="filter-section">
-                        <div class="filter-title">
-                            <span><i class="bi bi-search me-2"></i>Tìm kiếm</span>
-                        </div>
-                        <input name="keyword" value="${find}" type="text" class="form-control form-control-sm"
-                               placeholder="Tìm kiếm sản phẩm..."
-                               style="border-radius: 30px; padding: 8px 15px; font-size: 13px;">
-                    </div>
+                  style="height: 100%; display: flex; flex-direction: column;">
 
-                    <!-- Sort (hidden inputs) -->
-                    <input type="hidden" name="sort" id="sortInput" value="${param.sort != null ? param.sort : ''}">
-                    <input type="hidden" name="minPrice" id="minPriceInput" value="${param.minPrice}">
-                    <input type="hidden" name="maxPrice" id="maxPriceInput" value="${param.maxPrice}">
-
-                    <!-- Phân loại theo Model Scale -->
-                    <div class="filter-section">
-                        <div class="filter-title" data-bs-toggle="collapse" data-bs-target="#scaleCollapse"
-                             aria-expanded="true" aria-controls="scaleCollapse">
-                            <span><i class="bi bi-grid-3x3-gap me-2"></i>Tỉ lệ mô hình (${totalScale})</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="collapse show" id="scaleCollapse">
-                            <div class="filter-scroll">
-                                <c:forEach items="${scaleName}" var="scale">
-                                    <c:set var="checked" value="false"/>
-                                    <c:forEach items="${paramValues.scale}" var="s">
-                                        <c:if test="${s == scale}">
-                                            <c:set var="checked" value="true"/>
-                                        </c:if>
-                                    </c:forEach>
-                                    <div class="form-check">
-                                        <input name="scale" value="${scale}" class="form-check-input"
-                                               type="checkbox" ${checked ? 'checked' : ''}>
-                                        <label class="form-check-label">Tỉ lệ ${scale}</label>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Phân loại theo Hãng -->
-                    <div class="filter-section">
-                        <div class="filter-title" data-bs-toggle="collapse" data-bs-target="#brandCollapse"
-                             aria-expanded="false" aria-controls="brandCollapse">
-                            <span><i class="bi bi-tags me-2"></i>Thương hiệu (${totalBrand})</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="collapse" id="brandCollapse">
-                            <div class="filter-scroll">
-                                <c:forEach var="bn" items="${brandName}">
-                                    <c:set var="checked" value="false"/>
-                                    <c:forEach items="${paramValues.brand}" var="b">
-                                        <c:if test="${b == bn}">
-                                            <c:set var="checked" value="true"/>
-                                        </c:if>
-                                    </c:forEach>
-                                    <div class="form-check">
-                                        <input name="brand" value="${bn}" class="form-check-input"
-                                               type="checkbox" ${checked ? 'checked' : ''}>
-                                        <label class="form-check-label">${bn}</label>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Phân loại theo Loại -->
-                    <div class="filter-section">
-                        <div class="filter-title" data-bs-toggle="collapse" data-bs-target="#categoryCollapse"
-                             aria-expanded="false" aria-controls="categoryCollapse">
-                            <span><i class="bi bi-collection me-2"></i>Danh mục (${totalCategory})</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="collapse" id="categoryCollapse">
-                            <div class="filter-scroll">
-                                <c:forEach var="cn" items="${categoryName}">
-                                    <c:set var="checked" value="false"/>
-                                    <c:forEach items="${paramValues.category}" var="c">
-                                        <c:if test="${c == cn}">
-                                            <c:set var="checked" value="true"/>
-                                        </c:if>
-                                    </c:forEach>
-                                    <div class="form-check">
-                                        <input name="category" value="${cn}" class="form-check-input"
-                                               type="checkbox" ${checked ? 'checked' : ''}>
-                                        <label class="form-check-label">${cn}</label>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Price Range Slider -->
-                    <div class="filter-section">
-                        <div class="filter-title" data-bs-toggle="collapse" data-bs-target="#priceCollapse"
-                             aria-expanded="true" aria-controls="priceCollapse">
-                            <span><i class="bi bi-currency-dollar me-2"></i>Khoảng giá</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="collapse show" id="priceCollapse">
-                            <div class="price-range-container">
-                                <div id="price-range"></div>
-                                <div class="price-inputs">
-
-                                    <div class="price-row">
-                                        <p class="form-check-label">Từ</p>
-                                        <input type="text"
-                                               class="price-input"
-                                               id="min-price"
-                                               value="${param.minPrice != null ? param.minPrice : 0}"
-                                               readonly>
-                                    </div>
-
-                                    <div class="price-row">
-                                        <p class="form-check-label">Đến</p>
-                                        <input type="text"
-                                               class="price-input"
-                                               id="max-price"
-                                               value="${param.maxPrice != null ? param.maxPrice : requestScope.maxPrice}"
-                                               readonly>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Discount Options -->
-                    <%--                                        <div class="filter-section">--%>
-                    <%--                                            <div class="filter-title" data-bs-toggle="collapse" data-bs-target="#discountCollapse"--%>
-                    <%--                                                 aria-expanded="false">--%>
-                    <%--                                                <span><i class="bi bi-gift me-2"></i>Khuyến mãi</span>--%>
-                    <%--                                                <i class="bi bi-chevron-down"></i>--%>
-                    <%--                                            </div>--%>
-                    <%--                                            <div class="collapse" id="discountCollapse">--%>
-                    <%--                                                <div class="form-check">--%>
-                    <%--                                                    <input name="discount" value="newest" class="form-check-input" type="checkbox"--%>
-                    <%--                                                    ${param.discount == 'newest' ? 'checked' : ''}>--%>
-                    <%--                                                    <label class="form-check-label">Giảm giá mới nhất <img--%>
-                    <%--                                                            src="https://nettruyen.work/assets/images/icon-hot.gif"--%>
-                    <%--                                                            style="height: 12px; margin-left: 3px;"></label>--%>
-                    <%--                                                </div>--%>
-                    <%--                                                <div class="form-check">--%>
-                    <%--                                                    <input name="discount" value="highest" class="form-check-input" type="checkbox"--%>
-                    <%--                                                    ${param.discount == 'highest' ? 'checked' : ''}>--%>
-                    <%--                                                    <label class="form-check-label">Giảm giá nhiều nhất <img--%>
-                    <%--                                                            src="https://nettruyen.work/assets/images/icon-hot.gif"--%>
-                    <%--                                                            style="height: 12px; margin-left: 3px;"></label>--%>
-                    <%--                                                </div>--%>
-                    <%--                                            </div>--%>
-                    <%--                                        </div>--%>
+                <!-- Header -->
+                <div class="filter-header">
+                    <h5>
+                        <i class="bi bi-funnel"></i>Bộ lọc
+                        <span class="active-filters-badge" id="activeFilterCount" style="display:none;">0</span>
+                    </h5>
                 </div>
 
-                <!-- Footer buttons - always at bottom -->
-                <div class="sidebar-footer px-3">
+                <!-- Search -->
+                <div class="filter-search">
+                    <div class="search-wrap">
+                        <i class="bi bi-search"></i>
+                        <input name="keyword" value="${find}" type="text"
+                               placeholder="Tìm sản phẩm..."
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Sort (hidden inputs) -->
+                <input type="hidden" name="sort" id="sortInput" value="${param.sort != null ? param.sort : ''}">
+                <input type="hidden" name="minPrice" id="minPriceInput" value="${param.minPrice}">
+                <input type="hidden" name="maxPrice" id="maxPriceInput" value="${param.maxPrice}">
+
+                <!-- Filter Body -->
+                <div class="filter-body">
+
+                    <!-- Tỉ lệ mô hình -->
+                    <div class="filter-section">
+                        <div class="filter-title active" onclick="toggleFilter(this)" role="button" aria-expanded="true" aria-controls="content-scale">
+                            <div class="title-left">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                                <span>Tỉ lệ <span class="count-label">(${totalScale})</span></span>
+                            </div>
+                            <div class="title-right">
+                                <span class="filter-active-dot" id="dot-scale"></span>
+                                <i class="bi bi-chevron-down chevron"></i>
+                            </div>
+                        </div>
+                        <div class="filter-content open" id="content-scale">
+                            <c:forEach items="${scaleName}" var="scale">
+                                <c:set var="checked" value="false"/>
+                                <c:forEach items="${paramValues.scale}" var="s">
+                                    <c:if test="${s == scale}">
+                                        <c:set var="checked" value="true"/>
+                                    </c:if>
+                                </c:forEach>
+                                <div class="filter-checkbox">
+                                    <input name="scale" value="${scale}" type="checkbox" ${checked ? 'checked' : ''} id="scale-${fn:replace(scale, ' ', '-')}">
+                                    <label for="scale-${fn:replace(scale, ' ', '-')}">Tỉ lệ ${scale}</label>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+
+                    <!-- Thương hiệu -->
+                    <div class="filter-section">
+                        <div class="filter-title" onclick="toggleFilter(this)" role="button" aria-expanded="false" aria-controls="content-brand">
+                            <div class="title-left">
+                                <i class="bi bi-tags"></i>
+                                <span>Thương hiệu <span class="count-label">(${totalBrand})</span></span>
+                            </div>
+                            <div class="title-right">
+                                <span class="filter-active-dot" id="dot-brand"></span>
+                                <i class="bi bi-chevron-down chevron"></i>
+                            </div>
+                        </div>
+                        <div class="filter-content" id="content-brand">
+                            <c:forEach var="bn" items="${brandName}">
+                                <c:set var="checked" value="false"/>
+                                <c:forEach items="${paramValues.brand}" var="b">
+                                    <c:if test="${b == bn}">
+                                        <c:set var="checked" value="true"/>
+                                    </c:if>
+                                </c:forEach>
+                                <div class="filter-checkbox">
+                                    <input name="brand" value="${bn}" type="checkbox" ${checked ? 'checked' : ''} id="brand-${fn:replace(bn, ' ', '-')}">
+                                    <label for="brand-${fn:replace(bn, ' ', '-')}">${bn}</label>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+
+                    <!-- Danh mục -->
+                    <div class="filter-section">
+                        <div class="filter-title" onclick="toggleFilter(this)" role="button" aria-expanded="false" aria-controls="content-category">
+                            <div class="title-left">
+                                <i class="bi bi-collection"></i>
+                                <span>Danh mục <span class="count-label">(${totalCategory})</span></span>
+                            </div>
+                            <div class="title-right">
+                                <span class="filter-active-dot" id="dot-category"></span>
+                                <i class="bi bi-chevron-down chevron"></i>
+                            </div>
+                        </div>
+                        <div class="filter-content" id="content-category">
+                            <c:forEach var="cn" items="${categoryName}">
+                                <c:set var="checked" value="false"/>
+                                <c:forEach items="${paramValues.category}" var="c">
+                                    <c:if test="${c == cn}">
+                                        <c:set var="checked" value="true"/>
+                                    </c:if>
+                                </c:forEach>
+                                <div class="filter-checkbox">
+                                    <input name="category" value="${cn}" type="checkbox" ${checked ? 'checked' : ''} id="category-${fn:replace(cn, ' ', '-')}">
+                                    <label for="category-${fn:replace(cn, ' ', '-')}">${cn}</label>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+
+                    <!-- Khoảng giá -->
+                    <div class="filter-section">
+                        <div class="filter-title active" onclick="toggleFilter(this)" role="button" aria-expanded="true" aria-controls="content-price">
+                            <div class="title-left">
+                                <i class="bi bi-currency-dollar"></i>
+                                <span>Khoảng giá</span>
+                            </div>
+                            <div class="title-right">
+                                <span class="filter-active-dot" id="dot-price"></span>
+                                <i class="bi bi-chevron-down chevron"></i>
+                            </div>
+                        </div>
+                        <div class="filter-content open" id="content-price">
+                            <div class="price-range-wrap">
+                                <div id="price-range"></div>
+                                <div class="price-display">
+                                    <div class="price-item">
+                                        <span class="price-label">Từ</span>
+                                        <span class="price-value" id="display-min-price">
+                                            <fmt:formatNumber value="${param.minPrice != null ? param.minPrice : 0}" type="number" groupingUsed="true"/> ₫
+                                        </span>
+                                    </div>
+                                    <span class="price-sep">—</span>
+                                    <div class="price-item">
+                                        <span class="price-label">Đến</span>
+                                        <span class="price-value" id="display-max-price">
+                                            <fmt:formatNumber value="${param.maxPrice != null ? param.maxPrice : requestScope.maxPrice}" type="number" groupingUsed="true"/> ₫
+                                        </span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="min-price" value="${param.minPrice != null ? param.minPrice : 0}">
+                                <input type="hidden" id="max-price" value="${param.maxPrice != null ? param.maxPrice : requestScope.maxPrice}">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer buttons -->
+                <div class="sidebar-footer">
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn w-75"
-                                style="background: var(--black); color: #fff; border-radius: 30px; padding: 10px; font-size: 14px;">
-                            <i class="bi bi-funnel me-2"></i>Áp dụng
+                        <button type="submit" class="btn-apply">
+                            <i class="bi bi-funnel"></i>Áp dụng
                         </button>
-                        <button type="button" class="btn w-25"
-                                style="border: 1px solid var(--black); border-radius: 30px; padding: 10px; background: #fff;"
-                                onclick="resetFilters()">
+                        <button type="button" class="btn-reset-filter" onclick="resetFilters()" title="Đặt lại">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </button>
                     </div>
                 </div>
             </form>
 
-            <!-- Voucher Section -->
-            <div class="voucher-box mx-3 mb-3">
-                <button class="btn w-100"
-                        style="background: var(--gold); color: #fff; border-radius: 30px; padding: 10px; font-size: 13px; font-weight: 500;"
-                        data-bs-toggle="collapse" data-bs-target="#voucherArea">
-                    <i class="bi bi-ticket-perforated me-2"></i>Xem Voucher
-                </button>
-                <div class="collapse mt-2" id="voucherArea">
+            <!-- Voucher Mini -->
+            <div class="voucher-mini">
+                <div class="voucher-toggle" onclick="toggleVoucher()">
+                    <span><i class="bi bi-ticket-perforated me-2"></i>Voucher khuyến mãi</span>
+                    <span class="v-badge">${fn:length(vouchers)}</span>
+                </div>
+                <div class="voucher-content" id="voucherContent">
                     <c:forEach var="v" items="${vouchers}">
                         <div class="voucher-item">
-                            <div class="voucher-code">${v.code}</div>
-                            <div class="voucher-discount">Giảm ${v.maxDiscount}</div>
+                            <span class="voucher-code">${v.code}</span>
+                            <span class="voucher-discount">-${v.maxDiscount}</span>
                         </div>
                     </c:forEach>
                     <c:if test="${empty vouchers}">
-                        <p class="text-center text-muted small mt-2">Bạn chưa có voucher nào</p>
+                        <div class="voucher-empty">Bạn chưa có voucher nào</div>
                     </c:if>
                 </div>
             </div>
@@ -925,11 +1289,11 @@
                     <c:choose>
                         <c:when test="${not empty products}">
                             <c:forEach var="p" items="${products}">
-                                <div class="col-xl-4 col-lg-6 col-md-6">
+                                <div class="col-xl-3 col-lg-4 col-md-6">
                                     <div class="card product-card">
                                         <div class="product-image-wrapper">
                                             <a href="${pageContext.request.contextPath}/product-detail?id=${p.id}">
-                                                <img src="${p.image}"
+                                                <img src="${pageContext.request.contextPath}/uploads/${p.image}"
                                                      class="card-img-top" alt="${p.name}">
                                             </a>
                                             <c:if test="${p.discountPercent > 0}">
@@ -958,15 +1322,17 @@
                                                 </c:forEach>
                                             </div>
                                             <div class="product-price-section">
-                                                <c:if test="${p.discountPercent > 0}">
-                                                    <span class="product-price-old">
-                                                    <fmt:formatNumber value="${p.price}" type="number"
-                                                                      groupingUsed="true"/> ₫
-                                                </span>
-                                                </c:if>
-                                                <div class="product-price-current">
-                                                    <fmt:formatNumber value="${p.finalPrice}" type="number"
-                                                                      groupingUsed="true"/> ₫
+                                                <div class="product-price-row">
+                                                    <c:if test="${p.discountPercent > 0}">
+                                                        <span class="product-price-old">
+                                                        <fmt:formatNumber value="${p.price}" type="number"
+                                                                          groupingUsed="true"/> ₫
+                                                    </span>
+                                                    </c:if>
+                                                    <div class="product-price-current">
+                                                        <fmt:formatNumber value="${p.finalPrice}" type="number"
+                                                                          groupingUsed="true"/> ₫
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -975,7 +1341,7 @@
 
 
                                                     <button type="button" class="btn-buy"
-                                                            onclick="addToCartAjax(event,'${p.id}', '${p.name}', true)">
+                                                            onclick="addToCartAjax(event,'${p.id}', '${fn:replace(p.name, "'", "\\'")}', true)">
                                                         <i class="bi bi-lightning-charge me-1"></i>Mua
                                                     </button>
 
@@ -985,14 +1351,14 @@
 
                                                     <!--sua type act thanh btt -->
                                                     <button type="button" class="btn-action"
-                                                            onclick="addToCartAjax(event,'${p.id}', '${p.name}', false)">
+                                                            onclick="addToCartAjax(event,'${p.id}', '${fn:replace(p.name, "'", "\\'")}', false)">
                                                         <i class="bi bi-cart-plus"></i>
                                                     </button>
 
 
 
 
-                                                <form method="post" action="/favorites" style="display: contents;">
+                                                <form method="post" action="${pageContext.request.contextPath}/favorites" style="display: contents;">
                                                     <button class="btn-action" name="productid" value="${p.id}">
                                                         <i class="bi bi-star"></i>
                                                     </button>
@@ -1174,12 +1540,83 @@
     }
 
 
-    // Initialize price range slider
+    /* ================= FILTER TOGGLE ================= */
+    function toggleFilter(header) {
+        const isActive = header.classList.toggle('active');
+        const content = header.nextElementSibling;
+        if (content && content.classList.contains('filter-content')) {
+            content.classList.toggle('open');
+            header.setAttribute('aria-expanded', isActive);
+        }
+    }
+
+    /* ================= VOUCHER TOGGLE ================= */
+    function toggleVoucher() {
+        const content = document.getElementById('voucherContent');
+        content.classList.toggle('open');
+    }
+
+    /* ================= ACTIVE FILTER COUNT ================= */
+    function updateActiveFilterCount() {
+        const checkboxes = document.querySelectorAll('.filter-checkbox input[type="checkbox"]:checked');
+        const badge = document.getElementById('activeFilterCount');
+
+        // Check price filter - only count if different from defaults
+        const minVal = document.getElementById('minPriceInput').value;
+        const maxVal = document.getElementById('maxPriceInput').value;
+        const hasPrice = (minVal && minVal !== '0') || (maxVal && maxVal !== String(${maxPrice}));
+
+        // Check keyword
+        const kw = document.querySelector('input[name="keyword"]').value;
+        const hasKeyword = kw && kw.trim().length > 0;
+
+        let totalActive = checkboxes.length;
+        if (hasPrice) totalActive++;
+        if (hasKeyword) totalActive++;
+
+        if (totalActive > 0) {
+            badge.textContent = totalActive;
+            badge.style.display = 'inline-flex';
+            badge.style.animation = 'none';
+            setTimeout(function() { badge.style.animation = 'popDot 0.3s ease'; }, 10);
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    /* ================= ACTIVE DOTS ================= */
+    function updateActiveDots() {
+        const sections = [
+            { checkboxes: 'input[name="scale"]', dotId: 'dot-scale' },
+            { checkboxes: 'input[name="brand"]', dotId: 'dot-brand' },
+            { checkboxes: 'input[name="category"]', dotId: 'dot-category' }
+        ];
+        sections.forEach(function(s) {
+            const checked = document.querySelectorAll(s.checkboxes + ':checked').length;
+            const dot = document.getElementById(s.dotId);
+            if (checked > 0) {
+                dot.classList.add('show');
+            } else {
+                dot.classList.remove('show');
+            }
+        });
+        // Price dot
+        const minVal = document.getElementById('minPriceInput').value;
+        const maxVal = document.getElementById('maxPriceInput').value;
+        const priceDot = document.getElementById('dot-price');
+        if (minVal || maxVal) {
+            priceDot.classList.add('show');
+        } else {
+            priceDot.classList.remove('show');
+        }
+    }
+
+    /* ================= PRICE RANGE SLIDER ================= */
     const priceSlider = document.getElementById('price-range');
-    const minPriceInput = document.getElementById('min-price');
-    const maxPriceInput = document.getElementById('max-price');
     const minPriceHidden = document.getElementById('minPriceInput');
     const maxPriceHidden = document.getElementById('maxPriceInput');
+    const displayMin = document.getElementById('display-min-price');
+    const displayMax = document.getElementById('display-max-price');
 
     const urlParams = new URLSearchParams(window.location.search);
     const minPrice = urlParams.get('minPrice') ? parseInt(urlParams.get('minPrice')) : 0;
@@ -1203,12 +1640,14 @@
     priceSlider.noUiSlider.on('update', function (values, handle) {
         const value = values[handle].replace(/[^0-9]/g, '');
         if (handle) {
-            maxPriceInput.value = values[handle];
+            displayMax.textContent = values[handle];
             maxPriceHidden.value = value;
         } else {
-            minPriceInput.value = values[handle];
+            displayMin.textContent = values[handle];
             minPriceHidden.value = value;
         }
+        updateActiveDots();
+        updateActiveFilterCount();
     });
 
     function setSort(sortValue) {
@@ -1229,6 +1668,20 @@
         form.appendChild(pageInput);
         form.submit();
     }
+
+    /* ================= INIT ================= */
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update active dot and count on checkbox change
+        document.querySelectorAll('.filter-checkbox input[type="checkbox"]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                updateActiveDots();
+                updateActiveFilterCount();
+            });
+        });
+        // Initial update
+        updateActiveDots();
+        updateActiveFilterCount();
+    });
 
 
     // function showAlert(message, type) {

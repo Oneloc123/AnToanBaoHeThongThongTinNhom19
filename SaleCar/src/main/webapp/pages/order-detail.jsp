@@ -1,7 +1,7 @@
-cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html>
@@ -12,149 +12,10 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
 
     <%@ include file="/common/header.jsp" %>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/common/dark-theme.css">
     <style>
-        :root {
-            --gold:        #C9A84C;
-            --gold-hover:  #E8C96A;
-            --gold-dim:    rgba(201,168,76,0.13);
-            --gold-border: rgba(201,168,76,0.35);
-            --green:       #22c55e;
-            --green-dim:   rgba(34,197,94,0.10);
-            --black:       #000000;
-            --bg:          #0c0c0c;
-            --sidebar-bg:  #060606;
-            --card-bg:     #ffffff;
-            --card-header: #f7f6f3;
-            --card-border: #e8e3d8;
-            --text-dark:   #111111;
-            --text-mid:    #555555;
-            --text-light:  #999999;
-            --white:       #ffffff;
-        }
-
-        * { margin:0; padding:0; box-sizing:border-box; }
-
-        body {
-            font-family: 'Jost', sans-serif;
-            background: var(--bg);
-            min-height: 100vh;
-        }
-
-        .profile-wrapper { display:flex; align-items:flex-start; min-height:100vh; }
-
-        /* ── SIDEBAR ── */
-        .sidebar-menu {
-            width: 260px;
-            background: var(--sidebar-bg);
-            padding: 32px 0;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-            border-right: 1px solid rgba(201,168,76,0.18);
-            flex-shrink: 0;
-        }
-
-        .sidebar-brand {
-            padding: 0 24px 28px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            margin-bottom: 8px;
-        }
-
-        .brand-name {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: var(--white);
-        }
-
-        .brand-name span { color: var(--gold); }
-
-        .brand-sub {
-            font-size: 10px;
-            color: var(--text-light);
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .menu-items { padding: 8px 0; }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 22px;
-            color: #888;
-            text-decoration: none;
-            transition: all 0.22s;
-            margin: 2px 10px;
-            border-radius: 7px;
-            border: 1px solid transparent;
-        }
-
-        .menu-item i { width: 20px; margin-right: 11px; font-size: 15px; }
-        .menu-item span { font-size: 13.5px; font-weight: 400; }
-
-        .menu-item:hover {
-            background: rgba(255,255,255,0.05);
-            color: var(--white);
-            border-color: rgba(255,255,255,0.07);
-        }
-
-        .menu-item.active {
-            background: var(--gold-dim);
-            color: var(--gold);
-            border-color: var(--gold-border);
-        }
-
-        .menu-item.active i { color: var(--gold); }
-        .menu-divider { height:1px; background:rgba(255,255,255,0.06); margin:10px 18px; }
-
-        /* ── MAIN ── */
-        .main-content {
-            flex: 1;
-            padding: 38px 32px;
-            background: var(--bg);
-            min-height: 100vh;
-        }
-
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 28px;
-        }
-
-        .content-header h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--white);
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .breadcrumb {
-            list-style: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 0;
-            margin: 0;
-            background: none;
-        }
-
-        .breadcrumb-item a { color: #666; text-decoration: none; font-size: 12px; transition: color 0.2s; }
-        .breadcrumb-item a:hover { color: var(--gold); }
-        .breadcrumb-item.active { color: var(--gold); font-size: 12px; }
-        .breadcrumb-item i { color: #444; font-size: 8px; }
-
-        /* Status badge */
+        /* ================= STATUS BADGE ================= */
         .status-badge {
             padding: 7px 16px;
             border-radius: 20px;
@@ -166,238 +27,192 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
             align-items: center;
             gap: 6px;
         }
+        .status-pending  { background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); }
+        .status-shipping { background: rgba(52,152,219,0.12); color: #3498db; border: 1px solid rgba(52,152,219,0.2); }
+        .status-completed{ background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+        .status-cancelled{ background: rgba(231,76,60,0.12); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
 
-        .status-pending  { background:rgba(201,168,76,0.15); color:#92730a; border:1px solid rgba(201,168,76,0.4); }
-        .status-shipping { background:rgba(59,130,246,0.10); color:#1e40af; border:1px solid rgba(59,130,246,0.3); }
-        .status-completed{ background:var(--green-dim);      color:#166534; border:1px solid rgba(34,197,94,0.35);}
-        .status-cancelled{ background:rgba(239,68,68,0.08);  color:#991b1b; border:1px solid rgba(239,68,68,0.3); }
-
-        /* ── INFO CARDS ── */
+        /* ================= INFO CARDS ================= */
         .order-info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 18px;
             margin-bottom: 22px;
         }
-
         .info-card {
-            background: var(--card-bg);
-            border-radius: 11px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
             padding: 22px 24px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-            transition: box-shadow 0.22s;
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-card);
+            transition: all var(--transition-base);
         }
-
-        .info-card:hover { box-shadow: 0 4px 24px rgba(201,168,76,0.15); }
-
+        .info-card:hover {
+            border-color: var(--border-gold);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card-hover);
+        }
         .info-card h4 {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--gold);
             margin-bottom: 16px;
             padding-bottom: 10px;
-            border-bottom: 1.5px solid rgba(201,168,76,0.25);
+            border-bottom: 2px solid rgba(212,175,55,0.2);
             display: flex;
             align-items: center;
             gap: 8px;
-            letter-spacing: 1.8px;
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
-
         .info-row {
             display: flex;
             align-items: flex-start;
             gap: 10px;
             margin-bottom: 11px;
-            font-size: 13.5px;
-            color: var(--text-mid);
+            font-size: 14px;
+            color: var(--text-secondary);
         }
-
         .info-row i { color: var(--gold); margin-top: 2px; width: 15px; flex-shrink: 0; }
         .info-row span { line-height: 1.55; flex: 1; }
-        .info-row strong { color: var(--text-dark); font-weight: 600; }
+        .info-row strong { color: var(--text-primary); font-weight: 600; }
 
-        /* ── TABLE CARD ── */
+        /* ================= TABLE CARD ================= */
         .order-card {
-            background: var(--card-bg);
-            border-radius: 11px;
-            border: 1px solid var(--card-border);
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
             overflow: hidden;
             margin-bottom: 22px;
-            box-shadow: 0 2px 14px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-card);
+            transition: all var(--transition-base);
         }
+        .order-card:hover { border-color: var(--border-gold); box-shadow: var(--shadow-card-hover); }
 
         .lux-table { width: 100%; border-collapse: collapse; }
-
-        .lux-table thead tr {
-            background: var(--black);
-            border-bottom: 2px solid var(--gold);
-        }
-
+        .lux-table thead tr { background: #0a0a0a; }
         .lux-table th {
             padding: 15px 20px;
             text-align: left;
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--gold);
+            color: var(--text-primary);
             text-transform: uppercase;
-            letter-spacing: 1.8px;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border-subtle);
         }
-
         .lux-table td {
             padding: 18px 20px;
-            border-bottom: 1px solid #f0ede6;
+            border-bottom: 1px solid var(--border-subtle);
             vertical-align: middle;
-            font-size: 13.5px;
-            color: var(--text-mid);
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
         }
-
         .lux-table tbody tr:last-child td { border-bottom: none; }
-        .lux-table tbody tr { transition: background 0.18s; }
-        .lux-table tbody tr:hover { background: #faf9f6; }
-
-        .product-col { display: flex; align-items: center; gap: 14px; }
+        .lux-table tbody tr:hover td { background: var(--bg-elevated); }
 
         .product-img {
-            width: 56px;
-            height: 56px;
-            background: #f0ede6;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #e0d9c8;
-            flex-shrink: 0;
+            width: 56px; height: 56px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            overflow: hidden; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--border-subtle);
+        }
+        .product-img img { width:100%; height:100%; object-fit:cover; }
+        .product-name { font-weight: 700; color: var(--text-primary); font-size: 14px; margin-bottom: 4px; }
+        .product-meta { font-size: 12px; color: var(--text-muted); }
+        .price-cell { color: var(--text-secondary); }
+        .total-cell { font-weight: 700; color: var(--gold); font-size: 14px; }
+
+        .product-link {
+            text-decoration: none;
+            color: inherit;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 14px;
         }
+        .product-link:hover .product-name { color: var(--gold); }
 
-        .product-img img { width:100%; height:100%; object-fit:cover; }
-
-        .product-img-placeholder {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 9px;
-            color: var(--gold);
-            letter-spacing: 1px;
-        }
-
-        .product-name { font-weight: 700; color: var(--text-dark); font-size: 13.5px; margin-bottom: 4px; }
-        .product-meta { font-size: 11.5px; color: var(--text-light); }
-
-        .price-cell { color: var(--text-mid); }
-
-        .total-cell {
-            font-weight: 700;
-            color: var(--green);
-            font-size: 14px;
-        }
-
-        /* ── SUMMARY ── */
+        /* ================= SUMMARY ================= */
         .order-summary {
             padding: 22px 24px 26px;
-            background: var(--card-header);
-            border-top: 1.5px solid var(--gold);
+            background: var(--bg-elevated);
+            border-top: 1px solid var(--border-subtle);
             display: flex;
             justify-content: flex-end;
         }
-
         .summary-inner { width: 320px; }
-
         .summary-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            font-size: 13.5px;
-            color: var(--text-mid);
+            font-size: 14px;
+            color: var(--text-muted);
             padding: 3px 0;
         }
-
         .summary-row.total {
             margin-top: 14px;
             padding-top: 14px;
-            border-top: 1px dashed #d8d3c8;
-            font-size: 15px;
-            color: var(--text-dark);
+            border-top: 1px dashed var(--border-gold);
+            font-size: 16px;
+            color: var(--text-primary);
             font-weight: 700;
         }
-
         .summary-row.total .total-val {
-            font-family: 'Jost', sans-serif;
             font-size: 22px;
             font-weight: 700;
-            color: var(--green);
+            color: var(--gold);
+            font-family: 'Playfair Display', serif;
         }
 
-        /* ── BACK BUTTON ── */
+        /* ================= BACK BUTTON ================= */
         .btn-back {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 22px;
-            background: var(--white);
-            border: 1.5px solid #d0cac0;
-            color: var(--text-dark);
-            border-radius: 7px;
+            padding: 10px 24px;
+            background: transparent;
+            border: 1.5px solid var(--border-gold);
+            color: var(--gold);
+            border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
             font-size: 13px;
-            letter-spacing: 0.3px;
-            transition: all 0.22s;
+            transition: all var(--transition-base);
         }
-
         .btn-back:hover {
-            background: var(--black);
-            color: var(--white);
-            border-color: var(--black);
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #101010;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(212,175,55,0.2);
         }
 
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+        /* ================= OVERRIDES ================= */
+        .main-content { flex: 1; padding: 30px 40px; background: var(--bg-primary); min-height: 100vh; }
+        .content-header h1 { font-family: 'Playfair Display', serif; }
+        .btn-success {
+            background: rgba(34,197,94,0.12) !important;
+            border: 1px solid rgba(34,197,94,0.2) !important;
+            color: #22c55e !important;
+            border-radius: 20px !important;
+            padding: 8px 20px !important;
+            font-weight: 600 !important;
+        }
+        .btn-success:hover {
+            background: rgba(34,197,94,0.2) !important;
+            color: #22c55e !important;
+        }
+        .breadcrumb-item i { color: var(--text-muted); font-size: 9px; }
     </style>
 </head>
 <body>
 <div class="profile-wrapper">
 
-    <%-- SIDEBAR --%>
-    <div class="sidebar-menu">
-        <div class="sidebar-brand">
-            <div class="brand-name">LUX<span>CAR</span></div>
-            <div class="brand-sub">Mô hình xe cao cấp</div>
-        </div>
-
-        <div class="menu-items">
-            <a href="${pageContext.request.contextPath}/dashboard" class="menu-item">
-                <i class="fas fa-chart-pie"></i><span>Bảng điều khiển</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/profile" class="menu-item">
-                <i class="fas fa-user-circle"></i><span>Thông tin cá nhân</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/profileEdit" class="menu-item">
-                <i class="fas fa-user-edit"></i><span>Chỉnh sửa thông tin</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/changePassword" class="menu-item">
-                <i class="fas fa-lock"></i><span>Đổi mật khẩu</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/order" class="menu-item active">
-                <i class="fas fa-shopping-bag"></i><span>Đơn hàng của tôi</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/cart" class="menu-item">
-                <i class="fas fa-shopping-cart"></i><span>Giỏ hàng</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/favorites" class="menu-item">
-                <i class="fas fa-heart"></i><span>Sản phẩm yêu thích</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/key-management" class="menu-item "><i class="fas fa-key"></i><span>Quản lý Khóa cá nhân</span></a>
-
-            <div class="menu-divider"></div>
-            <a href="${pageContext.request.contextPath}/loggout" class="menu-item">
-                <i class="fas fa-sign-out-alt"></i><span>Đăng xuất</span>
-            </a>
-        </div>
-    </div>
+    <!-- Sidebar chung -->
+    <%@ include file="/common/user-sidebar.jsp" %>
 
     <%-- MAIN CONTENT --%>
     <div class="main-content">
@@ -409,11 +224,11 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item">
                             <a href="${pageContext.request.contextPath}/home">Trang chủ</a>
-                            <i class="fas fa-chevron-right"></i>
+                            <i class="bi bi-chevron-right"></i>
                         </li>
                         <li class="breadcrumb-item">
                             <a href="${pageContext.request.contextPath}/order">Đơn hàng</a>
-                            <i class="fas fa-chevron-right"></i>
+                            <i class="bi bi-chevron-right"></i>
                         </li>
                         <li class="breadcrumb-item active">Chi tiết #${order.id}</li>
                     </ol>
@@ -424,27 +239,38 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
                 <c:choose>
                     <c:when test="${order.orderStatus == 'PENDING'}">
                         <span class="status-badge status-pending">
-                            <i class="fas fa-clock"></i> Chờ xác nhận
+                            <i class="bi bi-clock"></i> Chờ xác nhận
                         </span>
                     </c:when>
-                    <c:when test="${order.orderStatus == 'SHIPPING'}">
+                    <c:when test="${order.orderStatus == 'SHIPPING' || fn:contains(order.orderStatus, 'Đang vận chuyển')}">
                         <span class="status-badge status-shipping">
-                            <i class="fas fa-truck"></i> Đang giao hàng
+                            <i class="bi bi-truck"></i> Đang giao hàng
                         </span>
+                        <div style="margin-top:12px;">
+                            <form action="${pageContext.request.contextPath}/confirm-received" method="POST" style="display:inline;">
+                                <input type="hidden" name="id" value="${order.id}">
+                                <button type="submit" class="btn btn-success btn-sm"
+                                        style="border-radius:20px; padding:8px 20px; font-weight:600;
+                                               background:#22c55e; border-color:#22c55e;"
+                                        onclick="return confirm('Bạn xác nhận đã nhận được hàng?')">
+                                    <i class="bi bi-check-circle-fill"></i> Đã nhận được hàng
+                                </button>
+                            </form>
+                        </div>
                     </c:when>
                     <c:when test="${order.orderStatus == 'COMPLETED'}">
                         <span class="status-badge status-completed">
-                            <i class="fas fa-check-circle"></i> Đã giao thành công
+                            <i class="bi bi-check-circle-fill"></i> Đã giao thành công
                         </span>
                     </c:when>
                     <c:when test="${order.orderStatus == 'CANCELLED'}">
                         <span class="status-badge status-cancelled">
-                            <i class="fas fa-times-circle"></i> Đã hủy
+                            <i class="bi bi-x-circle-fill"></i> Đã hủy
                         </span>
                     </c:when>
                     <c:otherwise>
                         <span class="status-badge status-pending">
-                            <i class="fas fa-info-circle"></i> ${order.orderStatus}
+                            <i class="bi bi-info-circle-fill"></i> ${order.orderStatus}
                         </span>
                     </c:otherwise>
                 </c:choose>
@@ -454,21 +280,24 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
         <%-- INFO CARDS --%>
         <div class="order-info-grid">
             <div class="info-card">
-                <h4><i class="fas fa-map-marker-alt"></i> Thông tin nhận hàng</h4>
+                <h4><i class="bi bi-geo-alt-fill"></i> Thông tin nhận hàng</h4>
+
                 <div class="info-row">
-                    <i class="fas fa-phone"></i>
-                    <span>${order.phone}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fas fa-map"></i>
+                    <i class="bi bi-geo-alt"></i>
                     <span>${order.shippingAddress}</span>
                 </div>
+                <c:if test="${not empty order.note}">
+                <div class="info-row">
+                    <i class="bi bi-sticky"></i>
+                    <span>Ghi chú: <strong>${order.note}</strong></span>
+                </div>
+                </c:if>
             </div>
 
             <div class="info-card">
-                <h4><i class="fas fa-money-check-alt"></i> Thanh toán &amp; Vận chuyển</h4>
+                <h4><i class="bi bi-credit-card-2-front"></i> Thanh toán &amp; Vận chuyển</h4>
                 <div class="info-row">
-                    <i class="fas fa-credit-card"></i>
+                    <i class="bi bi-credit-card"></i>
                     <span>Phương thức: <strong>
                         <c:choose>
                             <c:when test="${order.paymentMethod == 'COD'}">Thanh toán khi nhận hàng (COD)</c:when>
@@ -477,13 +306,60 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
                     </strong></span>
                 </div>
                 <div class="info-row">
-                    <i class="fas fa-calendar-alt"></i>
+                    <i class="bi bi-calendar3"></i>
                     <span>Ngày đặt: <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/></span>
                 </div>
                 <div class="info-row">
-                    <i class="fas fa-truck"></i>
-                    <span>Đơn vị vận chuyển: <strong>LUXCAR Express (Miễn phí)</strong></span>
+                    <i class="bi bi-truck"></i>
+                    <span>Phí vận chuyển: 
+                        <strong>
+                            <c:choose>
+                                <c:when test="${order.shippingFee > 0}">
+                                    <fmt:formatNumber value="${order.shippingFee}" type="number" groupingUsed="true"/> &#8363;
+                                </c:when>
+                                <c:otherwise>
+                                    Miễn phí
+                                </c:otherwise>
+                            </c:choose>
+                        </strong>
+                    </span>
                 </div>
+                <c:if test="${not empty order.shippingMethod}">
+                <div class="info-row">
+                    <i class="bi bi-truck"></i>
+                    <span>Phương thức giao hàng: <strong>${order.shippingMethod}</strong></span>
+                </div>
+                </c:if>
+                <%-- Tính toán ngày giao dự kiến từ ngày đặt hàng --%>
+                <c:if test="${!fn:contains(order.orderStatus, 'Đã huỷ') && !fn:contains(order.orderStatus, 'Đã hủy') && order.orderStatus != 'CANCELLED' && !fn:contains(order.orderStatus, 'Đã giao') && order.orderStatus != 'DELIVERED' && order.orderStatus != 'COMPLETED'}">
+                <%
+                    code.salecar.model.Order ord = (code.salecar.model.Order) pageContext.findAttribute("order");
+                    if (ord != null && ord.getOrderDate() != null) {
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.setTime(ord.getOrderDate());
+                        cal.add(java.util.Calendar.DAY_OF_MONTH, 5);
+                        pageContext.setAttribute("estFrom", cal.getTime());
+                        cal.add(java.util.Calendar.DAY_OF_MONTH, 3);
+                        pageContext.setAttribute("estTo", cal.getTime());
+                    }
+                %>
+                <div class="info-row">
+                    <i class="bi bi-clock"></i>
+                    <span>Nhận hàng dự kiến:
+                        <strong>
+                            <c:choose>
+                                <c:when test="${fn:contains(order.orderStatus, 'SHIPPING') || fn:contains(order.orderStatus, 'Đang vận chuyển')}">
+                                    <fmt:formatDate value="${estFrom}" pattern="dd/MM"/> – <fmt:formatDate value="${estTo}" pattern="dd/MM/yyyy"/>
+                                    <span style="color:#0284c7; font-size:12px; font-weight:400;">(Đang giao)</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <fmt:formatDate value="${estFrom}" pattern="dd/MM"/> – <fmt:formatDate value="${estTo}" pattern="dd/MM/yyyy"/>
+                                </c:otherwise>
+                            </c:choose>
+                        </strong>
+                    </span>
+                </div>
+                </c:if>
             </div>
         </div>
 
@@ -503,15 +379,18 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
                         <c:forEach var="item" items="${order.items}">
                             <tr>
                                 <td>
-                                    <div class="product-col">
+                                    <a href="${pageContext.request.contextPath}/product-detail?id=${item.product.id}"
+                                       class="product-link">
                                         <div class="product-img">
-                                            <img src="https://placehold.co/100?text=LUXCAR" alt="${item.product.name}">
+                                            <img src="${not empty item.imageUrl ? pageContext.request.contextPath.concat('/uploads/').concat(item.imageUrl) : 'https://placehold.co/100?text=LUXCAR'}"
+                                                 alt="${item.product.name}"
+                                                 onerror="this.src='https://placehold.co/100?text=LUXCAR'">
                                         </div>
                                         <div>
                                             <div class="product-name">${item.product.name}</div>
                                             <div class="product-meta">ID: LUX-${item.productId}</div>
                                         </div>
-                                    </div>
+                                    </a>
                                 </td>
                                 <td class="price-cell" style="text-align:center;">
                                     <fmt:formatNumber value="${item.price}" type="number" groupingUsed="true"/> &#8363;
@@ -530,13 +409,24 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
 
             <div class="order-summary">
                 <div class="summary-inner">
+                    <%-- Tính tạm tính = tổng tiền - phí ship --%>
+                    <c:set var="subtotal" value="${order.totalAmount - order.shippingFee}" />
                     <div class="summary-row">
-                        <span>Tạm tính (chưa trừ voucher):</span>
-                        <span><fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true"/> &#8363;</span>
+                        <span>Tạm tính:</span>
+                        <span><fmt:formatNumber value="${subtotal}" type="number" groupingUsed="true"/> &#8363;</span>
                     </div>
                     <div class="summary-row">
                         <span>Phí vận chuyển:</span>
-                        <span style="color:var(--green); font-weight:600;">Miễn phí</span>
+                        <span style="font-weight:600;">
+                            <c:choose>
+                                <c:when test="${order.shippingFee > 0}">
+                                    <fmt:formatNumber value="${order.shippingFee}" type="number" groupingUsed="true"/> &#8363;
+                                </c:when>
+                                <c:otherwise>
+                                    <span style="color:var(--green);">Miễn phí</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                     <div class="summary-row total">
                         <span>Tổng cộng:</span>
@@ -550,7 +440,7 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
 
         <div>
             <a href="${pageContext.request.contextPath}/order" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Quay lại danh sách đơn hàng
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng
             </a>
         </div>
 
@@ -558,5 +448,3 @@ cat > /mnt/user-data/outputs/order-detail.jsp << 'ENDOFFILE'
 </div>
 </body>
 </html>
-
-

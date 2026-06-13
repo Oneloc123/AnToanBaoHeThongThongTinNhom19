@@ -10,7 +10,79 @@ import java.util.*;
 
 
 public class OrderDAO {
+    public List<Order> getOrdersByPreviousDays(int days) {
+        List<Order> orders = new ArrayList<>();
 
+        String query = "SELECT * FROM `order` " +
+                "WHERE order_date >= DATE_SUB(NOW(), INTERVAL ? DAY) " +
+                "AND order_date < DATE_SUB(NOW(), INTERVAL ? DAY) " +
+                "ORDER BY order_date DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, days * 2);
+            ps.setInt(2, days);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Order ord = new Order();
+                ord.setId(rs.getInt("id"));
+                ord.setUserId(rs.getInt("user_id"));
+                ord.setOrderDate(rs.getTimestamp("order_date"));
+                ord.setTotalAmount(rs.getDouble("total_price"));
+                ord.setShippingAddress(rs.getString("address"));
+                ord.setPaymentMethod(rs.getString("payment_method"));
+                ord.setOrderStatus(rs.getString("order_status"));
+                ord.setShippingFee(rs.getDouble("shipping_fee"));
+                ord.setNote(rs.getString("note"));
+                ord.setShippingMethod(rs.getString("shipping_method"));
+
+                orders.add(ord);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return orders;
+    }
+    public List<Order> getOrdersByLastDays(int days) {
+        List<Order> orders = new ArrayList<>();
+
+        String query = "SELECT * FROM `order` " +
+                "WHERE order_date >= DATE_SUB(NOW(), INTERVAL ? DAY) " +
+                "ORDER BY order_date DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, days);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Order ord = new Order();
+
+                ord.setId(rs.getInt("id"));
+                ord.setUserId(rs.getInt("user_id"));
+                ord.setOrderDate(rs.getTimestamp("order_date"));
+                ord.setTotalAmount(rs.getDouble("total_price"));
+                ord.setShippingAddress(rs.getString("address"));
+                ord.setPaymentMethod(rs.getString("payment_method"));
+                ord.setOrderStatus(rs.getString("order_status"));
+                ord.setShippingFee(rs.getDouble("shipping_fee"));
+                ord.setNote(rs.getString("note"));
+                ord.setShippingMethod(rs.getString("shipping_method"));
+
+                orders.add(ord);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return orders;
+    }
 
     public Order getOrderById(int orderId) {
         String query = "SELECT * FROM `order` WHERE id = ?";
@@ -29,7 +101,9 @@ public class OrderDAO {
                 ord.setShippingAddress(rs.getString("address"));
                 ord.setPaymentMethod(rs.getString("payment_method"));
                 ord.setOrderStatus(rs.getString("order_status"));
-
+                ord.setShippingFee(rs.getDouble("shipping_fee"));
+                ord.setNote(rs.getString("note"));
+                ord.setShippingMethod(rs.getString("shipping_method"));
 
                 return ord;
             }
@@ -44,22 +118,20 @@ public class OrderDAO {
         try(Connection conn = DBConnection.getConnection()){
             conn.setAutoCommit(false);
             try{
-                // 1. CẬP NHẬT THÊM 2 CỘT SIGNATURE VÀ PUBLIC_KEY VÀO CÂU LỆNH SQL (Tổng cộng 8 dấu ?)
                 String sql = "insert into `order` " +
-                        "(user_id, total_price, address, payment_method, payment_status, order_status, signature, public_key) " +
+                        "(user_id, total_price, address, payment_method, payment_status, order_status, shipping_fee, note, shipping_method) " +
                         "values " +
-                        "(?,?,?,?,?,?,?,?)";
+                        "(?,?,?,?,?,?,?,?,?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 pstmt.setInt(1, order.getUserId());
-                pstmt.setDouble(2, order.getTotalAmount());
+                pstmt.setDouble(2,order.getTotalAmount());
                 pstmt.setString(3, order.getShippingAddress());
                 pstmt.setString(4, order.getPaymentMethod());
                 pstmt.setString(5, "chưa thanh toán");
                 pstmt.setString(6, order.getOrderStatus());
-
-                // 2. GÁN GIÁ TRỊ CHỮ KÝ VÀ KHÓA CÔNG KHAI TỪ ĐỐI TƯỢNG ORDER VÀO SQL
-                pstmt.setString(7, order.getSignature());
-                pstmt.setString(8, order.getPublicKey());
+                pstmt.setDouble(7, order.getShippingFee());
+                pstmt.setString(8, order.getNote());
+                pstmt.setString(9, order.getShippingMethod());
 
                 pstmt.executeUpdate();
                 ResultSet rs = pstmt.getGeneratedKeys();
@@ -67,15 +139,21 @@ public class OrderDAO {
                     int orderId = rs.getInt(1);
                     order.setId(orderId);
 
+
                     for(CartItem item : cart.getItems()){
-                        String sql1 = "insert into order_item (order_id, product_id, quantity, price, total_price) values (?, ?, ?, ?, ?)";
+                        /**
+                         * Insert order_item với variant_id (nếu có).
+                         * @variantId: 0 nếu không có variant.
+                         */
+                        String sql1 = "insert into order_item (order_id, product_id, variant_id, quantity, price, total_price) values (?, ?, ?, ?, ?, ?)";
                         PreparedStatement pstmtItem = conn.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
 
                         pstmtItem.setInt(1, orderId);
-                        pstmtItem.setInt(2, item.getProductId());
-                        pstmtItem.setInt(3, item.getQuantity());
-                        pstmtItem.setDouble(4, item.getPrice());
-                        pstmtItem.setDouble(5, item.getTotalPrice());
+                        pstmtItem.setInt(2,item.getProductId());
+                        pstmtItem.setInt(3, item.getVariantId());
+                        pstmtItem.setInt(4, item.getQuantity());
+                        pstmtItem.setDouble(5, item.getPrice());
+                        pstmtItem.setDouble(6, item.getTotalPrice());
 
                         pstmtItem.executeUpdate();
                         pstmtItem.close();
@@ -87,16 +165,20 @@ public class OrderDAO {
                 e.printStackTrace();
             }
 
+
+
         }catch (Exception e){
+
             throw new RuntimeException();
         }
+
     }
 
     public List<Order> getOrdersByUserId(int userId){
         ArrayList<Order> lstOrder = new ArrayList<>();
-        String querry = "select * from `order` where user_id = ? ";
+        String querry = "select * from `order` where user_id = ? order by id desc";
         try(Connection conn = DBConnection.getConnection();
-        PreparedStatement ps = conn.prepareStatement(querry)){
+            PreparedStatement ps = conn.prepareStatement(querry)){
             ps.setInt(1,userId);
             ResultSet rs = ps.executeQuery();
 
@@ -110,6 +192,9 @@ public class OrderDAO {
                 ord.setShippingAddress(rs.getString("address"));
                 ord.setPaymentMethod(rs.getString("payment_method"));
                 ord.setOrderStatus(rs.getString("order_status"));
+                ord.setShippingFee(rs.getDouble("shipping_fee"));
+                ord.setNote(rs.getString("note"));
+                ord.setShippingMethod(rs.getString("shipping_method"));
 
                 lstOrder.add(ord);
             }
@@ -123,6 +208,7 @@ public class OrderDAO {
         List<OrderItem> listItems = new ArrayList<>();
 
         ProductDAO productDAO = new ProductDAO();
+        ProductImageDAO productImageDAO = new ProductImageDAO();
 
 
         String query = "SELECT * FROM order_item WHERE order_id = ?";
@@ -140,15 +226,16 @@ public class OrderDAO {
                 item.setId(rs.getInt("id"));
                 item.setOrderId(rs.getInt("order_id"));
                 item.setProductId(rs.getInt("product_id"));
+                item.setVariantId(rs.getInt("variant_id"));
                 item.setQuantity(rs.getInt("quantity"));
                 item.setPrice(rs.getDouble("price"));
 
-
-
                 Product product = productDAO.getProductByID(rs.getInt("product_id"));
-
-
                 item.setProduct(product);
+
+                // Lấy ảnh chính của sản phẩm từ bảng image
+                String mainImage = productImageDAO.getMainImage(product.getId());
+                item.setImageUrl(mainImage);
 
                 listItems.add(item);
             }
@@ -162,7 +249,7 @@ public class OrderDAO {
         String query = "UPDATE `order` SET order_status = ? WHERE id = ? AND user_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(query)) {
+             PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, newStatus);
             ps.setInt(2, orderId);
             ps.setInt(3, userId);
@@ -173,51 +260,75 @@ public class OrderDAO {
         }
     }
 
-    public boolean updateOrderStatus(int orderId, String status){
-
+    /**
+     * Cập nhật trạng thái đơn hàng.
+     * <p>
+     * Chỉ validate status và update, KHÔNG xử lý inventory ở đây.
+     * Việc trừ kho/hoàn kho do {@link code.salecar.service.inventory.InventoryService}
+     * đảm nhiệm, gọi từ Controller layer.
+     *
+     * @param orderId ID đơn hàng
+     * @param status  Trạng thái mới
+     * @return true nếu thành công, false nếu không hợp lệ hoặc lỗi
+     */
+    public boolean updateOrderStatus(int orderId, String status) {
         String checkQuery = "SELECT order_status FROM `order` WHERE id = ?";
+        String updateQuery = "UPDATE `order` SET order_status = ? WHERE id = ?";
 
-        String query = "UPDATE `order` SET order_status = ? WHERE id = ?";
-
-
-        try(Connection conn = DBConnection.getConnection();
-        PreparedStatement psCheck = conn.prepareStatement(checkQuery)){
-
-            psCheck.setInt(1, orderId);
-
-            ResultSet rs = psCheck.executeQuery();
-            if(rs.next()){
-                String crrStatus = rs.getString("order_status");
-                if("CANCELLED".equals(crrStatus) || "DELIVERED".equals(crrStatus)){
-                    return false;
-                }else {
-                    try(PreparedStatement ps =conn.prepareStatement(query)){
-                        ps.setString(1, status);
-                        ps.setInt(2, orderId);
-
-                        int row = ps.executeUpdate();
-                        return row > 0;
+        try (Connection conn = DBConnection.getConnection()) {
+            // ── Bước 1: Kiểm tra trạng thái hiện tại ──
+            String crrStatus;
+            try (PreparedStatement psCheck = conn.prepareStatement(checkQuery)) {
+                psCheck.setInt(1, orderId);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (!rs.next()) {
+                        return false; // Không tìm thấy đơn hàng
                     }
+                    crrStatus = rs.getString("order_status");
                 }
             }
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return false;
 
+            // Nếu đã CANCELLED, DELIVERED, hoặc các biến thể tiếng Việt → không cho đổi nữa
+            if ("CANCELLED".equals(crrStatus) || "DELIVERED".equals(crrStatus)
+                    || (crrStatus != null && crrStatus.startsWith("Đã huỷ"))
+                    || (crrStatus != null && crrStatus.startsWith("Đã hủy"))
+                    || (crrStatus != null && (crrStatus.contains("Đã giao") || crrStatus.contains("Đã giao thành công")))) {
+                System.out.println("[OrderDAO.updateOrderStatus] Đơn hàng #" + orderId
+                        + " đã ở trạng thái cuối (" + crrStatus + "), từ chối cập nhật.");
+                return false;
+            }
+
+            // ── Bước 2: Cập nhật trạng thái ──
+            try (PreparedStatement ps = conn.prepareStatement(updateQuery)) {
+                ps.setString(1, status);
+                ps.setInt(2, orderId);
+                ps.executeUpdate();
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("[OrderDAO.updateOrderStatus] LỖI: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
+
+
 
     public List<Order> getAllOrders() {
         List<Order> lstOrder = new ArrayList<>();
-        // Lấy thêm trường signature và public_key
-        String query = "SELECT id, user_id, order_date, total_price, address, payment_method, order_status, signature, public_key FROM `order` ORDER BY id DESC";
+
+        String query = "SELECT * FROM `order` ORDER BY id DESC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
 
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
                 Order ord = new Order();
+
                 ord.setId(rs.getInt("id"));
                 ord.setUserId(rs.getInt("user_id"));
                 ord.setOrderDate(rs.getTimestamp("order_date"));
@@ -225,10 +336,9 @@ public class OrderDAO {
                 ord.setShippingAddress(rs.getString("address"));
                 ord.setPaymentMethod(rs.getString("payment_method"));
                 ord.setOrderStatus(rs.getString("order_status"));
-
-                // napj dữ liệu chữ ký
-                ord.setSignature(rs.getString("signature"));
-                ord.setPublicKey(rs.getString("public_key"));
+                ord.setShippingFee(rs.getDouble("shipping_fee"));
+                ord.setNote(rs.getString("note"));
+                ord.setShippingMethod(rs.getString("shipping_method"));
 
                 lstOrder.add(ord);
             }
@@ -237,81 +347,64 @@ public class OrderDAO {
         }
         return lstOrder;
     }
-//    public List<Order> getAllOrdersWithItems() {
-//        String query = "SELECT \n" +
-//                "    o.id AS order_id, \n" +
-//                "    o.userId, \n" +
-//                "    o.orderDate, \n" +
-//                "    o.totalAmount, \n" +
-//                "    o.shippingAddress, \n" +
-//                "    o.phone, \n" +
-//                "    o.paymentMethod, \n" +
-//                "    o.orderStatus,\n" +
-//                "    oi.id AS item_id, \n" +
-//                "    oi.quantity, \n" +
-//                "    oi.price AS item_price,\n" +
-//                "    p.id AS product_id, \n" +
-//                "    p.name AS product_name \n" +
-//                "FROM `order` o\n" +
-//                "LEFT JOIN order_item oi ON o.id = oi.orderId\n" +
-//                "LEFT JOIN product p ON oi.productId = p.id\n" +
-//                "ORDER BY o.id DESC;";
-//
-//        try (Connection conn = DBConnection.getConnection();
-//             PreparedStatement ps = conn.prepareStatement(query)) {
-//
-//            ResultSet rs = ps.executeQuery();
-//
-//            Map<Integer, Order> ord = new LinkedHashMap<>();
-//
-//            while (rs.next()) {
-//                int crrOrder = rs.getInt("order_id");
-//
-//                Order order = ord.get(crrOrder);
-//
-//                if (order == null) {
-//                    order = new Order();
-//                    order.setId(crrOrder);
-//                    order.setUserId(rs.getInt("userId"));
-//                    order.setOrderDate(rs.getDate("orderDate"));
-//                    order.setTotalAmount(rs.getDouble("totalAmount"));
-//
-//
-//                    order.setShippingAddress(rs.getString("shippingAddress"));
-//                    order.setPhone(rs.getString("phone"));
-//                    order.setPaymentMethod(rs.getString("paymentMethod"));
-//                    order.setOrderStatus(rs.getString("orderStatus"));
-//                    order.setItems(new ArrayList<>());
-//
-//                    ord.put(crrOrder, order);
-//                }
-//
-//                int itemId = rs.getInt("item_id");
-//
-//                if (itemId != 0) {
-//                    Product p = new Product();
-//                    p.setId(rs.getInt("product_id"));
-//                    p.setName(rs.getString("product_name"));
-//
-//                    OrderItem item = new OrderItem();
-//                    item.setId(itemId);
-//                    item.setQuantity(rs.getInt("quantity"));
-//                    item.setPrice(rs.getDouble("item_price"));
-//
-//                    item.setProduct(p);
-//
-//                    order.getItems().add(item);
-//                }
-//            }
-//
-//            return new ArrayList<>(ord.values());
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return new ArrayList<>();
-//    }
+
+
+    public List<Order> getOrdByKeyWord(String keyword) {
+        List<Order> list = new ArrayList<>();
+        String query = "select * from order where order_status like ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, "%" + keyword + "%");
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Order o = new Order();
+                o.setId(rs.getInt("id"));
+                o.setUserId(rs.getInt("user_id"));
+                o.setOrderDate(rs.getTimestamp("order_date"));
+                o.setTotalAmount(rs.getDouble("total_price"));
+                o.setShippingAddress(rs.getString("address"));
+                o.setPaymentMethod(rs.getString("payment_method"));
+                o.setOrderStatus(rs.getString("order_status"));
+                o.setShippingFee(rs.getDouble("shipping_fee"));
+                o.setNote(rs.getString("note"));
+                o.setShippingMethod(rs.getString("shipping_method"));
+
+                list.add(o);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return  list;
     }
 
+    public List<Order> filterOrd(String status) {
+        List<Order> list = new ArrayList<>();
+        String query = "select * from order where order_status like ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, "%" + status + "%");
 
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Order o = new Order();
+                o.setId(rs.getInt("id"));
+                o.setUserId(rs.getInt("user_id"));
+                o.setOrderDate(rs.getTimestamp("order_date"));
+                o.setTotalAmount(rs.getDouble("total_price"));
+                o.setShippingAddress(rs.getString("address"));
+                o.setPaymentMethod(rs.getString("payment_method"));
+                o.setOrderStatus(rs.getString("order_status"));
+                o.setShippingFee(rs.getDouble("shipping_fee"));
+                o.setNote(rs.getString("note"));
+                o.setShippingMethod(rs.getString("shipping_method"));
 
+                list.add(o);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return  list;
+    }
+
+}

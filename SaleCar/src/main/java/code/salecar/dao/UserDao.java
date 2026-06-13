@@ -51,9 +51,9 @@ public class UserDao {
 
     public void register(User user) {
         String sql = "insert into users" +
-                "(username,password,fullname,email,description,phoneNumber,role,address,status,CreateAt,UpdateAt,imgURL) " +
+                "(username,password,fullname,email,description,phoneNumber,role,address,status,CreateAt,UpdateAt,imgURL,updatePassword) " +
                 "values " +
-                "(?,?,?,?,?,?,?,?,?,?,?,?)";
+                "(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);) {
@@ -69,6 +69,7 @@ public class UserDao {
             ps.setDate(10, user.getCreatedat());
             ps.setDate(11, user.getUpdatedat());
             ps.setString(12,user.getImgURL());
+            ps.setDate(13,user.getCreatedat());
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -92,6 +93,7 @@ public class UserDao {
                 ", password = ?" +
                 ", imgURL = ?" +
                 ", username = ?" +
+                ", updatePassword = ?" +
                 " WHERE id = ?;";
 
         try (Connection con = DBConnection.getConnection();
@@ -105,7 +107,8 @@ public class UserDao {
             ps.setString(7, user.getPassword());
             ps.setString(8, user.getImgURL());
             ps.setString(9,user.getUsername());
-            ps.setInt(10, user.getId());
+            ps.setDate(10, user.getUpdatePassword());
+             ps.setInt(11, user.getId());
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -156,6 +159,7 @@ public class UserDao {
                 user.setCreatedat(rs.getDate(11));
                 user.setUpdatedat(rs.getDate(12));
                 user.setImgURL(rs.getString(13));
+                user.setUpdatePassword(rs.getDate(14));
                 return user;
             } else {
                 return null;
@@ -191,6 +195,7 @@ public class UserDao {
                 user.setCreatedat(rs.getDate(11));
                 user.setUpdatedat(rs.getDate(12));
                 user.setImgURL(rs.getString(13));
+                user.setUpdatePassword(rs.getDate(14));
                 return user;
             } else {
                 return null;
@@ -200,6 +205,56 @@ public class UserDao {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<User> getUsersWithPagination(int offset, int limit) {
+        List<User> list = new ArrayList<>();
+        String query = "SELECT * FROM users LIMIT ? OFFSET ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User u = new User(
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7),
+                        rs.getString(9),
+                        rs.getString(8),
+                        rs.getBoolean(10),
+                        rs.getDate(11),
+                        rs.getDate(12),
+                        rs.getString(13)
+                );
+                list.add(u);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi truy vấn phân trang: " + e.getMessage(), e);
+        }
+        return list;
+    }
+
+    public int getTotalUsersCount() {
+        String query = "SELECT COUNT(*) FROM users";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi đếm số lượng người dùng: " + e.getMessage(), e);
+        }
+        return 0;
     }
 
     public List<User> getList() {
@@ -217,8 +272,8 @@ public class UserDao {
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7),
-                        rs.getString(8),
                         rs.getString(9),
+                        rs.getString(8),
                         rs.getBoolean(10),
                         rs.getDate(11),
                         rs.getDate(12),

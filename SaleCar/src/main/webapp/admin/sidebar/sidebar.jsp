@@ -6,10 +6,10 @@
   To change this template use File | Settings | File Templates.
 --%>
 <!-- File: sidebar.jsp -->
+<fmt:setLocale value="vi_VN"></fmt:setLocale>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<fmt:setLocale value="vi_VN"/>
 
 <style>
     /* File: sidebar.css */
@@ -28,6 +28,47 @@
     }
 
     /* SIDEBAR STYLE - Soft Gray */
+    .logo i {
+        color: var(--admin-primary);
+    }
+
+    .sidebar nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar nav ul li {
+        margin-bottom: 5px;
+    }
+
+    .sidebar nav ul li a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 15px;
+        border-radius: 50px;
+        color: #64748b;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .sidebar nav ul li a i {
+        font-size: 1.2rem;
+    }
+
+    .sidebar nav ul li a:hover {
+        background-color: #f8fafc;
+        color: var(--admin-primary);
+    }
+
+    .sidebar nav ul li a.active {
+        background-color: #eff6ff;
+        color: var(--admin-primary);
+    }
+
     .sidebar {
         width: 280px;
         background-color: #ffffff;
@@ -120,6 +161,43 @@
         }
     }
 
+    .sidebar {
+        flex: 0 0 280px;
+        width: 280px;
+        min-width: 280px;
+        max-width: 280px;
+
+        background-color: #ffffff;
+        border-right: 1px solid #e9edf2;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        padding: 2rem 1.2rem;
+        transition: all 0.3s;
+    }
+    .main-content {
+        flex: 1;
+        min-width: 0;
+    }
+    .sidebar * {
+        transform: none !important;
+        zoom: 1 !important;
+    }
+
+    .sidebar nav ul li a {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 18px;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .sidebar nav ul li a i {
+        font-size: 1.3rem;
+        min-width: 24px;
+    }
+
 </style>
 
 <aside class="sidebar">
@@ -129,10 +207,9 @@
     </h2>
     <nav>
         <ul>
-
             <li>
                 <a href="${pageContext.request.contextPath}/admin/dashboard"
-                   class="${fn:contains(pageContext.request.requestURI, 'dashboard') ? 'active' : ''}">
+                   class="${fn:contains(pageContext.request.requestURI, 'dashboard')  || fn:contains(pageContext.request.requestURI, 'dashboard') ? 'active' : ''}">
                     <i class="bi bi-speedometer2"></i><span> Dashboard</span>
                 </a>
             </li>
@@ -160,18 +237,13 @@
             </li>
 
             <li>
-                <a href="${pageContext.request.contextPath}/orderAdmin"
+                <a href="${pageContext.request.contextPath}/order-admin"
                    class="${fn:contains(pageContext.request.requestURI, 'orders') || fn:contains(pageContext.request.requestURI, 'order') ? 'active' : ''}">
                     <i class="bi bi-cart"></i><span> Đơn hàng</span>
                 </a>
             </li>
 
-            <li>
-                <a href="${pageContext.request.contextPath}/admin/payment"
-                   class="${fn:contains(pageContext.request.requestURI, 'payment') ? 'active' : ''}">
-                    <i class="bi bi-credit-card"></i><span> Thanh toán</span>
-                </a>
-            </li>
+
 
             <li>
                 <a href="${pageContext.request.contextPath}/userAdmin"
@@ -180,10 +252,19 @@
                 </a>
             </li>
 
+
+
             <li>
-                <a href="${pageContext.request.contextPath}/admin/blogs"
-                   class="${fn:contains(pageContext.request.requestURI, 'blogs') || fn:contains(pageContext.request.requestURI, 'blog') ? 'active' : ''}">
-                    <i class="bi bi-journal-text"></i><span> Blog</span>
+                <a href="${pageContext.request.contextPath}/admin/discounts"
+                   class="${fn:contains(pageContext.request.requestURI, 'discounts') || fn:contains(pageContext.request.requestURI, 'discount') ? 'active' : ''}">
+                    <i class="bi bi-percent"></i><span> Discount</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="${pageContext.request.contextPath}/admin/vouchers"
+                   class="${fn:contains(pageContext.request.requestURI, 'vouchers') || fn:contains(pageContext.request.requestURI, 'voucher') ? 'active' : ''}">
+                    <i class="bi bi-ticket-perforated"></i><span> Voucher</span>
                 </a>
             </li>
 
@@ -203,8 +284,9 @@
         </ul>
     </nav>
 </aside>
-<!-- Toast Container -->
-<div class="toast-container"></div>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     // ========== TINYMCE INIT ==========
     tinymce.init({
@@ -216,23 +298,21 @@
         skin: 'oxide',
         content_css: 'default'
     });
-
-    // ========== UTILITY FUNCTIONS ==========
-    function showToast(message, type = 'danger') {
-        const container = document.querySelector('.toast-container');
-        const toastEl = document.createElement('div');
-        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
-        toastEl.setAttribute('role', 'alert');
-        toastEl.setAttribute('aria-live', 'assertive');
-        toastEl.setAttribute('aria-atomic', 'true');
-        toastEl.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>`;
-        container.appendChild(toastEl);
-        const bsToast = new bootstrap.Toast(toastEl);
-        bsToast.show();
-        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-    }
 </script>
+
+<!-- ========== FLASH NOTIFICATION ========== -->
+<c:if test="${not empty sessionScope.notification}">
+<script>
+    Swal.fire({
+        icon: '${sessionScope.notification.type}',
+        title: '${sessionScope.notification.type == "success" ? "Thành công" : sessionScope.notification.type == "error" ? "Thất bại" : "Cảnh báo"}',
+        text: '${sessionScope.notification.message}',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+</script>
+<c:remove var="notification" scope="session"/>
+</c:if>

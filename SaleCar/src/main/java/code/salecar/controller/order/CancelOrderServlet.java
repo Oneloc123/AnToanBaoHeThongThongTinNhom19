@@ -1,5 +1,7 @@
 package code.salecar.controller.order;
 
+//import code.salecar.dao.NotificationDAO;
+import code.salecar.dao.NotificationDAO;
 import code.salecar.model.Order;
 import code.salecar.model.User;
 import code.salecar.service.order.OrderService;
@@ -28,7 +30,22 @@ public class CancelOrderServlet extends HttpServlet {
         if(user != null){
 
             OrderService orderService = new OrderService();
-            orderService.cancelOrder(orderId, user.getId(), cancelReason);
+            boolean cancelled = orderService.cancelOrder(orderId, user. getId(), cancelReason);
+
+            if (cancelled) {
+                // Tạo thông báo cho người dùng khi họ hủy đơn hàng
+                String message = "Đơn hàng #" + orderId + " của bạn đã bị hủy.";
+                if (cancelReason != null && !cancelReason.trim().isEmpty()) {
+                    message = "Đơn hàng #" + orderId + " của bạn đã bị hủy. Lý do: " + cancelReason;
+                }
+                NotificationDAO notiDAO = new NotificationDAO();
+                notiDAO.insertNotification(user.getId(), message, orderId);
+                request.getSession().setAttribute("toastMessage", "Đã hủy đơn hàng thành công!");
+                request.getSession().setAttribute("toastType", "success");
+            } else {
+                request.getSession().setAttribute("toastMessage", "Không thể hủy đơn hàng đang giao hoặc đã hoàn thành!");
+                request.getSession().setAttribute("toastType", "error");
+            }
         }
         response.sendRedirect("order");
     }

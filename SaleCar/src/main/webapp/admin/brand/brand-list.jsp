@@ -604,8 +604,8 @@
                                         <td class="fw-semibold">${brand.id}</td>
                                         <td>
                                             <c:choose>
-                                                <c:when test="${not empty brand.image}">
-                                                    <img src="${brand.image}"
+                                                <c:when test="${not empty brand.logo}">
+                                                    <img src="${pageContext.request.contextPath}${brand.logo}"
                                                          alt="${brand.name} logo"
                                                          class="brand-logo-preview"
                                                          data-bs-toggle="tooltip"
@@ -631,7 +631,7 @@
                                         </td>
                                         <td>
                                             <c:choose>
-                                                <c:when test="${brand.status == 'active'}">
+                                                <c:when test="${brand.status.code == 1}">
                                                     <span class="badge bg-success badge-status">Active</span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -651,10 +651,10 @@
                                             </form>
                                         </td>
                                         <td>
-                                            <fmt:formatDate value="${brand.createdAt}" pattern="dd/MM/yyyy"/>
+                                            <fmt:formatDate value="${brand.createdAtDate}" pattern="dd/MM/yyyy"/>
                                         </td>
                                         <td>
-                                            <fmt:formatDate value="${brand.updatedAt}" pattern="dd/MM/yyyy"/>
+                                            <fmt:formatDate value="${brand.updatedAtDate}" pattern="dd/MM/yyyy"/>
                                         </td>
                                         <td>
                                             <a href="/admin/brands/edit?id=${brand.id}"

@@ -6,10 +6,12 @@ public class OrderItem {
     private int id;
     private int orderId;
     private int productId;
+    private int variantId;
     private int quantity;
     private double price;
 
     private Product product;
+    private String imageUrl;
 
     public double getTotalPrice() {
         return quantity * price;
@@ -39,6 +41,9 @@ public class OrderItem {
         this.productId = productId;
     }
 
+    public int getVariantId() { return variantId; }
+    public void setVariantId(int variantId) { this.variantId = variantId; }
+
     public int getQuantity() {
         return quantity;
     }
@@ -61,5 +66,13 @@ public class OrderItem {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

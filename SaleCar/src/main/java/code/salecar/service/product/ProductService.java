@@ -1,10 +1,12 @@
 package code.salecar.service.product;
 
+import code.salecar.dao.ProductVariantsDAO;
 import code.salecar.model.Image;
 import code.salecar.model.brand.BrandInfo;
 import code.salecar.model.category.Category;
 import code.salecar.model.category.CategoryInfo;
 import code.salecar.model.enumeration.DiscountValueType;
+import code.salecar.model.enumeration.Status;
 import code.salecar.model.product.dto.ProductDetailDTO;
 import code.salecar.model.product.dto.ProductItemDTO;
 import code.salecar.model.product.entity.*;
@@ -30,17 +32,21 @@ public class ProductService {
     DiscountService discountService = new DiscountService();
     ProductVariantsService pvs = new ProductVariantsService();
     ActivityLogFileService ls = new ActivityLogFileService();
+    ProductVariantsDAO  pvDAO = new ProductVariantsDAO();
     // Lấy chi tiết sản phẩm theo ID
     public ProductDetailDTO getProductByID(long id) {
 
         // 1. Lấy entity Product
         Product product = productDAO.getProductByID(id);
+        if (product == null) {
+            return null;
+        }
         long productId = product.getId();
 
         // 2. Lấy Brand và tạo BrandInfo
         Brand brand = bs.getBrandByID(product.getBrandId());
         BrandInfo brandInfo = brand != null
-                ? BrandInfo.builder().id(brand.getId()).name(brand.getName()).link(brand.getLinkBrand()).logo(brand.getImage()).build()
+                ? BrandInfo.builder().id(brand.getId()).name(brand.getName()).link(brand.getLinkBrand()).logo(brand.getLogo()).build()
                 : null;
 
         // 3. Lấy Category và tạo CategoryInfo
@@ -88,13 +94,27 @@ public class ProductService {
         // 8. Tính phân bố rating (từ danh sách review)
         ProductRatingDistribution ratingDist = calculateRatingDistribution(reviews);
 
-        // 9. Lấy product vảiant
+        // 9. Lấy product variant
         List<ProductVariants> variants = pvs.getVariantById(productId);
+
+        /**
+         * Nếu product không có variant nào → tự động set status = INACTIVE
+         * và cập nhật DB để product không hiển thị trên frontend.
+         * Business rule: product không variant = không bán được.
+         * Dùng updateStatus()
+         * vì updateBasicInfo() cần brand/category không null.
+         */
+        if (variants == null || variants.isEmpty()) {
+            if (product.getStatus() == Status.ACTIVE) {
+                product.setStatus(Status.INACTIVE);
+                productDAO.updateStatus(product.getId(), Status.INACTIVE);
+            }
+        }
 
         //10. Log
         List<ActivityLog> activityLog = ls.readLogs(productId);
 
-        // 10. Dùng Builder để tạo ProductDetailDTO
+        // 11. Dùng Builder để tạo ProductDetailDTO
         return ProductDetailDTO.builder()
                 .product(product)
                 .brand(brandInfo)
@@ -291,6 +311,15 @@ public class ProductService {
         return result;
     }
 
+    /**
+     * Lấy sản phẩm gợi ý theo danh mục (loại trừ sản phẩm đã mua).
+     */
+    public List<ProductItemDTO> getSuggestedProducts(List<Long> categoryIds, List<Integer> excludeProductIds) {
+        List<ProductItemDTO> products = productDAO.getSuggestedProducts(categoryIds, excludeProductIds);
+        addMoreInformation(products);
+        return products;
+    }
+
     //
     public int getTotalScale() {
         return productDAO.getTotalScale();
@@ -307,13 +336,24 @@ public class ProductService {
     }
 
     //
+    public List<ProductItemDTO> getProductSale() {
+        List<ProductItemDTO> product = productDAO.getProductSale();
+        addMoreInformation(product);
+        return product;
+    }
+
+    //
     public List<ProductItemDTO> getProductNew() {
-        return productDAO.getProductNew();
+        List<ProductItemDTO>  product = productDAO.getProductNew();
+        addMoreInformation(product);
+        return product;
     }
 
     //
     public List<ProductItemDTO> getProductHot() {
-        return productDAO.getProductHot();
+        List<ProductItemDTO>  product = productDAO.getProductHot();
+        addMoreInformation(product);
+        return product;
     }
 
     //
@@ -337,22 +377,29 @@ public class ProductService {
     //
     public void addMoreInformation(List<ProductItemDTO> pi) {
         for (ProductItemDTO productItemDTO : pi) {
+            //brand
             String brand = bs.getBrandName(productItemDTO.getBrandId());
             productItemDTO.setBrandName(brand != null ? brand : "");
 
+            //category
             String categoryName = cs.getCategoryName(productItemDTO.getCategoryId());
             productItemDTO.setCategoryName(categoryName != null ? categoryName : "");
 
+            //img
             List<String> image = is.getImageProduct(productItemDTO.getId());
-            image.add(is.getImage(Image.entityType.brand, productItemDTO.getBrandId()));
+            image.add(is.getImage(Image.entityType.product, productItemDTO.getId()));
             productItemDTO.setImage(image.get(0));
 
+            //review
             List<Review> reviews = rs.getReviewsByID(productItemDTO.getId());
             if (reviews != null && !reviews.isEmpty()) {
                 productItemDTO.setAvgRating(caculateRates(reviews));
             } else {
                 productItemDTO.setAvgRating(0);
             }
+
+            //quantity
+            productItemDTO.setQuantity(pvDAO.getQuantityById(productItemDTO.getId()));
         }
     }
 
@@ -366,7 +413,66 @@ public class ProductService {
         productDAO.updateBasicInfo(product);
     }
 
-    /* Tạo sản phẩm mới
+    /** Cập nhật toàn bộ thông tin sản phẩm (thông tin cơ bản + thuộc tính + mô tả) */
+    public void updateProductDetails(long productId, String name, int categoryId, int brandId,
+                                      int status, String ratio, String size,
+                                      String material, String origin, String description) {
+        productDAO.updateProductDetail(productId, name, categoryId, brandId,
+                status, ratio, size, material, origin, description);
+    }
+
+    /** Cập nhật thông tin biến thể */
+    public void updateVariantInfo(long variantId, String name, String sku, BigDecimal price) {
+        ProductVariants v = new ProductVariants();
+        v.setId(variantId);
+        v.setVariantName(name);
+        v.setSku(sku);
+        v.setPrice(price);
+        pvDAO.update(v);
+        // Đồng bộ product.price với MIN variant price sau khi sửa
+        ProductVariants existing = pvDAO.getVariantByVariantId(variantId);
+        if (existing != null) {
+            productDAO.syncProductPrice(existing.getProductId());
+        }
+    }
+
+    /** Thêm biến thể mới */
+    public long addVariant(long productId, String name, String sku, BigDecimal price) {
+        ProductVariants v = ProductVariants.builder()
+                .productId(productId)
+                .variantName(name)
+                .sku(sku)
+                .price(price)
+                .quantity(0)
+                .reservedQuantity(0)
+                .build();
+        long newId = pvDAO.insertVariant(v);
+        // Đồng bộ product.price với MIN variant price sau khi thêm
+        productDAO.syncProductPrice(productId);
+        return newId;
+    }
+
+    /** Xoá biến thể */
+    public void removeVariant(long variantId) {
+        // Lấy productId trước khi xoá
+        ProductVariants existing = pvDAO.getVariantByVariantId(variantId);
+        long productId = (existing != null) ? existing.getProductId() : 0;
+        pvDAO.deleteVariant(variantId);
+        // Đồng bộ product.price với MIN variant price sau khi xoá
+        if (productId > 0) {
+            productDAO.syncProductPrice(productId);
+        }
+    }
+
+    /** Xoá sản phẩm theo ID
+     * @return true nếu xoá thành công
+     */
+    public boolean deleteProduct(long productId) {
+        productDAO.deleteProduct(productId);
+        return true;
+    }
+
+    /** Tạo sản phẩm mới
     1. Gán giá: Lấy giá của màu sắc/phiên bản đầu tiên gán vào sản phẩm chính (Đây là cách làm đúng để hiển thị giá "Từ..." trên trang danh sách).
     2. Lưu sản phẩm chính: Gọi insertProduct để tạo bản ghi trong bảng product và lấy về productId.
     3. Lưu biến thể: Dùng vòng lặp for để gán productId vào từng biến thể và lưu vào bảng product_variants.
