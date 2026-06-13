@@ -9,6 +9,68 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+
+/*
+         trang quản lý khoá
+            panel 1
+         - chọn thuật toán, chọn độ dài khoá
+         - chức năng tạo cặp khoá gửi lên servlet bằng ajax sau hiển thị text 2 khoá
+         - chức năng lưu private, public key về máy
+         - chức năng lưu khoá public lên CSDL ( tạo 1 table là keyPublic )
+         - nút reset phiên tạo khoá
+            panel 2
+         - hiển thị key text, ngày tạo, trạng thái, thuật toán
+         - chức năng báo mất khoá hiển thị hộp xác nhận và thay đổi trạng thái đã thu hồi
+         - chức năng xem chi tiết khoá
+            panel 3
+         - hiển thị tất cả khoá đã tạo ( ngày tạo, ngày báo mất khoá)
+
+Chi tiết trang
+         -Hiển thị trang thái chìa khoá
+          + nếu có kiểm tra trạng thái:
+            . ACTIVE hiển thị tên thuật toán, ngày tạo
+            . REVOKE hiển thị thông báo đã thu hồi
+          + nếu không có, hiển thị thông báo chưa có, câ tạo mới
+         -Chức năng tạo khoá
+          + đầu vào độ dài khoá, thuật toán
+          + hiển thị thanh tiến trình ( trong lúc tạo khoá )
+          + hiển thị các khoá đã tạo:
+            . chức năng copy text khoá public, private
+            . chức năng download khoá về máy
+            . chức năng gửi public Key lên server ( kích hoạt khoá ) == > reset lại trang
+            . chức năng kiểm tra khoá đã được đưa lên máy chủ chưa để nhắc nhở người dùng
+            . chức năng tạo khoá ( nhận đầu vào, hiển thị thanh tiến trình ==> trức tiếp trên frontend
+            gen khoá phải trên servlet
+            . chức năng huỷ khoá ( trước tải lên server, sau khi tải thì không kích hoạt được )
+         -Hiển thị khoá hiện tại ( nếu có , chỉ 1 khoá đang kích hoạt ):
+          + hiển thị ( tên thuât toán, fingerfrint ? , mã khoá tóm tắt rút gọn
+          + chức năng gửi email
+          + chức năng xem chi tiết khoá
+          + chức năng báo mất khoá ( có thẻ reset lại trang,
+          đầu vào có lý do mất khoá , ghi chú tính huống, mã xác nhận )
+         - lịch sử quản lý khoá
+          + hiện thị ngày tạo, ngày thu hồi, thuật toán, độ dài ,mã khoá của từng khóa
+
+
+          ==> servlet Hiển thị trang ( trang thái khoá , khoá hiện tại, lịch sử khoá )
+          ==> servlet tạo khoá ( gửi lên thuật toán, kích thước khoá , gen key , sau render lại trên jsp)
+          ==> servlet chức năng gửi khoá public lên server kích hoạt khoá = reset trang
+          ( có thể kiểm tra người dùng đã tải khoá private chưa sau đó kích hoạt thông báo yêu cầu tải private key)
+          ==> servlet chức năng báo mất khoá ( gửi yêu cầu , sau đó reset lại trang )
+ */
+/*
+    Trang ký giấy điện tử
+    panel 1
+        - uploads private key : xử lý trực tiếp tại frontend không gửi lên server và mà pin chứng thư số
+        - tiến hành ký ( cần tìm hiểu kỹ ) gửi lên servlet
+        (gôm thông tin đơn hàng cần băm và khoá ) đồng thời hiển thị thanh tiến trình
+
+        - lưu database, tạo đơn hàng
+
+
+
+ */
+
 public class ASyncCrypto {
     KeyPair keypair;
     PrivateKey privateKey;
