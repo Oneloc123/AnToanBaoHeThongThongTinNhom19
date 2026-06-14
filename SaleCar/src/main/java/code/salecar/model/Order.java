@@ -3,7 +3,7 @@ package code.salecar.model;
 import java.util.Date;
 import java.util.List;
 
-public class Order{
+public class Order {
     private int id;
     private int userId;
     private Date orderDate;
@@ -15,6 +15,8 @@ public class Order{
     private double shippingFee;
     private String note;
     private String shippingMethod;
+    private String signature;
+    private String orderPublicKey;
     private List<OrderItem> items;
 
     public int getId() {
@@ -105,11 +107,17 @@ public class Order{
         this.shippingMethod = shippingMethod;
     }
 
+    public String getSignature() {return signature;}
+
+    public void setSignature(String signature) {this.signature = signature;}
+
+    public String getOrderPublicKey() {return orderPublicKey;}
+
+    public void setOrderPublicKey(String orderPublicKey) {this.orderPublicKey = orderPublicKey;}
+
     public List<OrderItem> getItems() {
         return items;
     }
-
-
 
     public void setItems(List<OrderItem> items) {
         this.items = items;

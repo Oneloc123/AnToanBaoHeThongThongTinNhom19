@@ -220,4 +220,22 @@ public class ASynCrypto {
             this.keySize = keySize;
         }
     }
+    // ham xac thuc 
+    public boolean verifySignature(String payload, String signatureBase64, String publicKeyBase64) {
+        try {
+            byte[] keyBytes = Base64.getDecoder().decode(publicKeyBase64);
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey pubKey = keyFactory.generatePublic(spec);
+
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initVerify(pubKey);
+            signature.update(payload.getBytes(StandardCharsets.UTF_8));
+            byte[] sigBytes = Base64.getDecoder().decode(signatureBase64);
+            return signature.verify(sigBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

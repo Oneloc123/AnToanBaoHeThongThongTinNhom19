@@ -113,4 +113,10 @@ public class OrderService {
             return ordDAO.filterOrd(status);
 
     }
+    public String generateOrderPayload(Order order) {
+        return order.getUserId() + "|" +
+                order.getTotalAmount() + "|" +
+                order.getShippingAddress() + "|" +
+                order.getPaymentMethod();
+    }
 }

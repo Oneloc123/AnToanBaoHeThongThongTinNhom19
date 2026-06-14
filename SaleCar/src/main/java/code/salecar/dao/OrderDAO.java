@@ -104,6 +104,8 @@ public class OrderDAO {
                 ord.setShippingFee(rs.getDouble("shipping_fee"));
                 ord.setNote(rs.getString("note"));
                 ord.setShippingMethod(rs.getString("shipping_method"));
+                ord.setSignature(rs.getString("signature"));
+                ord.setOrderPublicKey(rs.getString("order_public_key"));
 
                 return ord;
             }
