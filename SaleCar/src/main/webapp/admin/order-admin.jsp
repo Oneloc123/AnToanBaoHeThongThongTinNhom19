@@ -130,6 +130,20 @@
         .col-nowrap { white-space: nowrap; }
         .text-truncate-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+        /* Digital Signature verification badges */
+        .verif-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .verif-verified { background: #d1fae5; color: #065f46; border: 1px solid #bbf7d0; }
+        .verif-unverified { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .verif-tampered { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
         /* ========== BADGES ========== */
         .badge-status {
             padding: 5px 14px; border-radius: 50px;
@@ -221,9 +235,9 @@
         <div class="admin-card">
             <div class="admin-card-body">
 
-                <!-- Filter by Status -->
+                <!-- Filter by Status / Verification -->
                 <form action="${pageContext.request.contextPath}/order-admin" method="GET" class="row g-3 align-items-end mb-4">
-                    <div class="col-md-8">
+                    <div class="col-md-3">
                         <select name="status" class="admin-select">
                             <option value="" ${empty currentStatus ? 'selected' : ''}>Tất cả trạng thái</option>
                             <option value="PENDING" ${currentStatus == 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
@@ -233,10 +247,34 @@
                             <option value="CANCELLED" ${currentStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
                         </select>
                     </div>
+                    <div class="col-md-3">
+                        <select name="verification" class="admin-select">
+                            <option value="" ${empty param.verification ? 'selected' : ''}>Tất cả trạng thái xác thực</option>
+                            <option value="Verified" ${param.verification == 'Verified' ? 'selected' : ''}>✓ đã xác thực</option>
+                            <option value="Unverified" ${param.verification == 'Unverified' ? 'selected' : ''}>- chưa xác thực</option>
+                            <option value="Tampered" ${param.verification == 'Tampered' ? 'selected' : ''}>⚠ đã bị chỉnh sửa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="tampered" class="admin-select">
+                            <option value="" ${empty param.tampered ? 'selected' : ''}>Trang thái mất khoá: tất cả trạng thái</option>
+                            <option value="yes" ${param.tampered == 'yes' ? 'selected' : ''}>đã mất khoá</option>
+                            <option value="no" ${param.tampered == 'no' ? 'selected' : ''}>chưa mât khoá</option>
+                        </select>
+                    </div>
                     <div class="col-md-4">
                         <button type="submit" class="admin-btn-primary w-100"><i class="bi bi-funnel me-1"></i> Lọc dữ liệu</button>
                     </div>
                 </form>
+
+            <%-- Hiển thị lỗi nếu có --%>
+            <c:if test="${not empty errorMessage}">
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Lỗi!</strong> ${errorMessage}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </c:if>
 
             <c:choose>
                 <c:when test="${empty orders}">
@@ -253,7 +291,7 @@
                                 <col>
                                 <col style="width: 110px;">
                                 <col style="width: 60px;">
-                                <col style="width: 140px;">
+                                <col style="width: 120px;">
                                 <col style="width: 120px;">
                             </colgroup>
                             <thead>
@@ -265,6 +303,7 @@
                                     <th>Sản phẩm</th>
                                     <th>Tổng tiền</th>
                                     <th>Thanh toán</th>
+                                    <th>Chữ ký số</th>
                                     <th>Trạng thái</th>
                                     <th class="text-center">Hành động</th>
                                 </tr>
@@ -282,29 +321,54 @@
 
                                         <td class="col-nowrap">${ord.orderDate}</td>
 
+                                        <%-- Ẩn địa chỉ nếu đơn chưa ký --%>
                                         <td>
-                                            <div class="text-truncate-cell" title="${ord.shippingAddress}">
-                                                ${ord.shippingAddress}
-                                            </div>
+                                            <c:choose>
+                                                <c:when test="${ord.verificationStatus == 'Verified'}">
+                                                    <div class="text-truncate-cell" title="${ord.shippingAddress}">
+                                                        ${ord.shippingAddress}
+                                                    </div>
+                                                </c:when>
+                                                <c:when test="${ord.verificationStatus == 'Tampered'}">
+                                                    <div class="text-truncate-cell" title="Đã phát hiện chỉnh sửa">
+                                                        <span style="color: #b91c1c;"><i class="bi bi-exclamation-triangle"></i> Dữ liệu đã bị chỉnh sửa</span>
+                                                    </div>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="text-truncate-cell">
+                                                        <span style="color: #b45309;"><i class="bi bi-lock-fill"></i> *** (Chưa ký)</span>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
 
+                                        <%-- Ẩn sản phẩm nếu đơn chưa ký --%>
                                         <td style="overflow: hidden; text-overflow: ellipsis;">
-                                            <c:set var="itemCount" value="0"/>
-                                            <c:set var="totalItems" value="${fn:length(ord.items)}"/>
-                                            <c:forEach var="item" items="${ord.items}" varStatus="stat">
-                                                <c:if test="${stat.index < 2}">
-                                                    <div class="text-truncate-cell" style="max-width: 100%;">
-                                                        <span class="fw-semibold text-dark" style="font-size: 12px;">${item.product.name}</span>
-                                                        <span class="text-danger fw-bold ms-1" style="font-size: 11px;">x${item.quantity}</span>
-                                                    </div>
-                                                </c:if>
-                                            </c:forEach>
-                                            <c:if test="${totalItems > 2}">
-                                                <span class="badge bg-secondary" style="font-size: 10px; border-radius: 10px; padding: 2px 8px;">+${totalItems - 2} cái</span>
-                                            </c:if>
-                                            <c:if test="${totalItems <= 2 && totalItems == 0}">
-                                                <span class="text-muted" style="font-size: 11px;">(trống)</span>
-                                            </c:if>
+                                            <c:choose>
+                                                <c:when test="${ord.verificationStatus == 'Verified'}">
+                                                    <c:set var="totalItems" value="${fn:length(ord.items)}"/>
+                                                    <c:forEach var="item" items="${ord.items}" varStatus="stat">
+                                                        <c:if test="${stat.index < 2}">
+                                                            <div class="text-truncate-cell" style="max-width: 100%;">
+                                                                <span class="fw-semibold text-dark" style="font-size: 12px;">${item.product.name}</span>
+                                                                <span class="text-danger fw-bold ms-1" style="font-size: 11px;">x${item.quantity}</span>
+                                                            </div>
+                                                        </c:if>
+                                                    </c:forEach>
+                                                    <c:if test="${totalItems > 2}">
+                                                        <span class="badge bg-secondary" style="font-size: 10px; border-radius: 10px; padding: 2px 8px;">+${totalItems - 2} cái</span>
+                                                    </c:if>
+                                                    <c:if test="${totalItems <= 2 && totalItems == 0}">
+                                                        <span class="text-muted" style="font-size: 11px;">(trống)</span>
+                                                    </c:if>
+                                                </c:when>
+                                                <c:when test="${ord.verificationStatus == 'Tampered'}">
+                                                    <span style="color: #b91c1c; font-size: 11px;"><i class="bi bi-exclamation-triangle"></i> Dữ liệu bị giả mạo</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span style="color: #b45309; font-size: 11px;"><i class="bi bi-lock-fill"></i> *** (Chưa ký)</span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
 
                                         <td class="col-nowrap fw-bold text-danger">
@@ -312,6 +376,21 @@
                                         </td>
 
                                         <td><span class="badge bg-secondary">${ord.paymentMethod}</span></td>
+
+                                        <%-- Chữ ký số (kết hợp Signature + Tamper) --%>
+                                        <td class="col-nowrap">
+                                            <c:choose>
+                                                <c:when test="${ord.verificationStatus == 'Verified'}">
+                                                    <span class="verif-badge verif-verified"><i class="bi bi-shield-check"></i> ✓ Đã ký</span>
+                                                </c:when>
+                                                <c:when test="${ord.verificationStatus == 'Tampered'}">
+                                                    <span class="verif-badge verif-tampered"><i class="bi bi-exclamation-triangle"></i> Giả mạo</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="verif-badge verif-unverified"><i class="bi bi-shield-slash"></i> Chưa ký</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
 
                                         <td class="col-nowrap" id="status-cell-${ord.id}">
                                             <c:choose>
@@ -344,10 +423,18 @@
                                                 </button>
 
                                                 <c:choose>
-                                                    <c:when test="${ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý'}">
+                                                    <c:when test="${(ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý') && ord.verificationStatus == 'Verified'}">
+                                                        <%-- CHỈ hiện Xác nhận khi đã ký số --%>
                                                         <button type="button" class="admin-action-btn admin-action-confirm" onclick="updateStatusOrder(event, ${ord.id}, 'CONFIRMED')" title="Xác nhận">
                                                             <i class="bi bi-check2-circle"></i>
                                                         </button>
+                                                        <button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')" title="Hủy đơn">
+                                                            <i class="bi bi-x-circle"></i>
+                                                        </button>
+                                                    </c:when>
+                                                    <c:when test="${(ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý') && ord.verificationStatus != 'Verified'}">
+                                                        <%-- Đơn chưa ký: ẩn nút Xác nhận, chỉ hiện Hủy --%>
+                                                        <span class="text-muted" style="font-size: 10px; font-style: italic;">Chờ ký số</span>
                                                         <button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ${ord.id}, 'CANCELLED')" title="Hủy đơn">
                                                             <i class="bi bi-x-circle"></i>
                                                         </button>
@@ -492,6 +579,47 @@
     </main>
 </div>
 
+<script>
+// ========================
+// TOAST NOTIFICATIONS
+// ========================
+function showToast(type, message) {
+    var container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+        document.body.appendChild(container);
+    }
+    var toast = document.createElement('div');
+    var bgColor = type === 'success' ? '#d1fae5' : '#fee2e2';
+    var textColor = type === 'success' ? '#065f46' : '#b91c1c';
+    var icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+    toast.style.cssText = 'min-width: 320px; padding: 16px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: ' + bgColor + '; color: ' + textColor + '; border: 1px solid ' + (type === 'success' ? '#bbf7d0' : '#fecaca') + '; animation: slideInRight 0.3s ease;';
+    toast.innerHTML = '<i class="bi ' + icon + '"></i> ' + message;
+    container.appendChild(toast);
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 4000);
+}
+
+// ========================
+// TAMPER DETECTION ON LOAD
+// ========================
+<c:if test="${not empty tamperedOrders}">
+(function() {
+    <c:forEach var="tamper" items="${tamperedOrders}">
+    showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "<fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm' />" đã bị thay đổi dữ liệu trái phép!');
+    </c:forEach>
+})();
+</c:if>
+
+<style>
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+
 <div id="customToast"
      style="visibility: hidden; min-width: 250px; background-color: #28a745; color: white; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 9999; right: 30px; top: 30px; font-weight: bold; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); transition: opacity 1s;">
     <i class="bi bi-check-circle-fill"></i> <span id="toastMessage"> Đơn hàng đã được xác nhận!</span>
@@ -588,7 +716,7 @@
                     }, 3000);
 
                 } else {
-                    alert("Máy chủ từ chối cập nhật! lý do: " + data);
+                    showToast('error', 'Máy chủ từ chối cập nhật! Lý do: ' + data);
                 }
             })
             .catch(function(error) {

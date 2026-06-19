@@ -20,20 +20,39 @@ public class order extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-
         User user = (User) request.getSession().getAttribute("user");
-        if (user == null){
+        if (user == null) {
             response.sendRedirect("login");
             return;
         }
 
-        OrderDAO ordDAO = new OrderDAO();
-        List<Order> lstOrder = ordDAO.getOrdersByUserId(user.getId());
+        List<Order> lstOrder = new java.util.ArrayList<>();
+        String errorMessage = null;
 
-        for(Order order : lstOrder){
-            List<OrderItem> items = ordDAO.getOrderItemsByOrderId(order.getId());
-            order.setItems(items);
-            System.out.println(order.getOrderStatus());
+        try {
+            OrderDAO ordDAO = new OrderDAO();
+            lstOrder = ordDAO.getOrdersByUserId(user.getId());
+
+            for (Order order : lstOrder) {
+                List<OrderItem> items = ordDAO.getOrderItemsByOrderId(order.getId());
+                order.setItems(items);
+            }
+
+            try {
+                code.salecar.service.product.DigitalSignatureService sigService =
+                        new code.salecar.service.product.DigitalSignatureService();
+                java.util.List<code.salecar.service.product.DigitalSignatureService.TamperAlert> tampered =
+                        sigService.checkTamperedOrders(user.getId());
+                request.setAttribute("tamperedOrders", tampered);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorMessage = "Lỗi kết nối cơ sở dữ liệu khi tải danh sách đơn hàng. Vui lòng thử lại sau.";
+            request.getSession().setAttribute("toastMessage", errorMessage);
+            request.getSession().setAttribute("toastType", "error");
         }
 
         request.setAttribute("orders", lstOrder);
