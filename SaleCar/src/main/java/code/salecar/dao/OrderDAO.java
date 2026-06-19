@@ -36,6 +36,9 @@ public class OrderDAO {
                 ord.setShippingFee(rs.getDouble("shipping_fee"));
                 ord.setNote(rs.getString("note"));
                 ord.setShippingMethod(rs.getString("shipping_method"));
+                try { ord.setSignature(rs.getString("signature")); } catch (Exception ignored) {}
+                try { ord.setKeyId(rs.getInt("key_id")); } catch (Exception ignored) {}
+                try { ord.setVerificationStatus(rs.getString("verification_status")); } catch (Exception ignored) {}
 
                 orders.add(ord);
             }
@@ -104,6 +107,9 @@ public class OrderDAO {
                 ord.setShippingFee(rs.getDouble("shipping_fee"));
                 ord.setNote(rs.getString("note"));
                 ord.setShippingMethod(rs.getString("shipping_method"));
+                try { ord.setSignature(rs.getString("signature")); } catch (Exception ignored) {}
+                try { ord.setKeyId(rs.getInt("key_id")); } catch (Exception ignored) {}
+                try { ord.setVerificationStatus(rs.getString("verification_status")); } catch (Exception ignored) {}
 
                 return ord;
             }
@@ -119,9 +125,9 @@ public class OrderDAO {
             conn.setAutoCommit(false);
             try{
                 String sql = "insert into `order` " +
-                        "(user_id, total_price, address, payment_method, payment_status, order_status, shipping_fee, note, shipping_method) " +
+                        "(user_id, total_price, address, payment_method, payment_status, order_status, shipping_fee, note, shipping_method, verification_status) " +
                         "values " +
-                        "(?,?,?,?,?,?,?,?,?)";
+                        "(?,?,?,?,?,?,?,?,?,?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 pstmt.setInt(1, order.getUserId());
                 pstmt.setDouble(2,order.getTotalAmount());
@@ -132,6 +138,7 @@ public class OrderDAO {
                 pstmt.setDouble(7, order.getShippingFee());
                 pstmt.setString(8, order.getNote());
                 pstmt.setString(9, order.getShippingMethod());
+                pstmt.setString(10, "Unverified");
 
                 pstmt.executeUpdate();
                 ResultSet rs = pstmt.getGeneratedKeys();
@@ -141,10 +148,7 @@ public class OrderDAO {
 
 
                     for(CartItem item : cart.getItems()){
-                        /**
-                         * Insert order_item với variant_id (nếu có).
-                         * @variantId: 0 nếu không có variant.
-                         */
+
                         String sql1 = "insert into order_item (order_id, product_id, variant_id, quantity, price, total_price) values (?, ?, ?, ?, ?, ?)";
                         PreparedStatement pstmtItem = conn.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
 
@@ -195,6 +199,9 @@ public class OrderDAO {
                 ord.setShippingFee(rs.getDouble("shipping_fee"));
                 ord.setNote(rs.getString("note"));
                 ord.setShippingMethod(rs.getString("shipping_method"));
+                try { ord.setSignature(rs.getString("signature")); } catch (Exception ignored) {}
+                try { ord.setKeyId(rs.getInt("key_id")); } catch (Exception ignored) {}
+                try { ord.setVerificationStatus(rs.getString("verification_status")); } catch (Exception ignored) {}
 
                 lstOrder.add(ord);
             }
@@ -233,7 +240,6 @@ public class OrderDAO {
                 Product product = productDAO.getProductByID(rs.getInt("product_id"));
                 item.setProduct(product);
 
-                // Lấy ảnh chính của sản phẩm từ bảng image
                 String mainImage = productImageDAO.getMainImage(product.getId());
                 item.setImageUrl(mainImage);
 
@@ -260,35 +266,24 @@ public class OrderDAO {
         }
     }
 
-    /**
-     * Cập nhật trạng thái đơn hàng.
-     * <p>
-     * Chỉ validate status và update, KHÔNG xử lý inventory ở đây.
-     * Việc trừ kho/hoàn kho do {@link code.salecar.service.inventory.InventoryService}
-     * đảm nhiệm, gọi từ Controller layer.
-     *
-     * @param orderId ID đơn hàng
-     * @param status  Trạng thái mới
-     * @return true nếu thành công, false nếu không hợp lệ hoặc lỗi
-     */
     public boolean updateOrderStatus(int orderId, String status) {
         String checkQuery = "SELECT order_status FROM `order` WHERE id = ?";
         String updateQuery = "UPDATE `order` SET order_status = ? WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {
-            // ── Bước 1: Kiểm tra trạng thái hiện tại ──
+
             String crrStatus;
             try (PreparedStatement psCheck = conn.prepareStatement(checkQuery)) {
                 psCheck.setInt(1, orderId);
                 try (ResultSet rs = psCheck.executeQuery()) {
                     if (!rs.next()) {
-                        return false; // Không tìm thấy đơn hàng
+                        return false;
                     }
                     crrStatus = rs.getString("order_status");
                 }
             }
 
-            // Nếu đã CANCELLED, DELIVERED, hoặc các biến thể tiếng Việt → không cho đổi nữa
+
             if ("CANCELLED".equals(crrStatus) || "DELIVERED".equals(crrStatus)
                     || (crrStatus != null && crrStatus.startsWith("Đã huỷ"))
                     || (crrStatus != null && crrStatus.startsWith("Đã hủy"))
@@ -298,7 +293,6 @@ public class OrderDAO {
                 return false;
             }
 
-            // ── Bước 2: Cập nhật trạng thái ──
             try (PreparedStatement ps = conn.prepareStatement(updateQuery)) {
                 ps.setString(1, status);
                 ps.setInt(2, orderId);
@@ -339,6 +333,9 @@ public class OrderDAO {
                 ord.setShippingFee(rs.getDouble("shipping_fee"));
                 ord.setNote(rs.getString("note"));
                 ord.setShippingMethod(rs.getString("shipping_method"));
+                try { ord.setSignature(rs.getString("signature")); } catch (Exception ignored) {}
+                try { ord.setKeyId(rs.getInt("key_id")); } catch (Exception ignored) {}
+                try { ord.setVerificationStatus(rs.getString("verification_status")); } catch (Exception ignored) {}
 
                 lstOrder.add(ord);
             }

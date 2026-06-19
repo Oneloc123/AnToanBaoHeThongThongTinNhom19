@@ -25,7 +25,20 @@ public class UpdateOrderStatus extends HttpServlet {
         int orderId = Integer.parseInt(request.getParameter("orderId"));
         String status = request.getParameter("status");
 
-        // Admin KHÔNG được tự ý đặt trạng thái "Đã giao/DELIVERED"
+        if ("CONFIRMED".equals(status)) {
+            OrderDAO checkDAO = new OrderDAO();
+            Order checkOrder = checkDAO.getOrderById(orderId);
+            if (checkOrder != null) {
+                String verStatus = checkOrder.getVerificationStatus();
+                if (!"Verified".equals(verStatus)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write("error: Cannot approve order #" + orderId
+                            + " - digital signature is not verified. Please sign the order first.");
+                    return;
+                }
+            }
+        }
+
         if ("DELIVERED".equalsIgnoreCase(status)
                 || "Đã giao".equals(status)
                 || "Đã giao thành công".equals(status)) {
