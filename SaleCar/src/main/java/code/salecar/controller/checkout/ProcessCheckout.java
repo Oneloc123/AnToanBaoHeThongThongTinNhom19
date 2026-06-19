@@ -38,7 +38,6 @@ public class ProcessCheckout extends HttpServlet {
         String type = request.getParameter("type");
         Cart targetCart = null;
 
-        // check type
         if("buynow".equals(type)){
             targetCart = (Cart) session.getAttribute("buyNowCart");
         } else {
@@ -57,7 +56,6 @@ public class ProcessCheckout extends HttpServlet {
         String note = request.getParameter("note");
         String shippingMethod = request.getParameter("shippingMethod");
 
-        // Lấy phí vận chuyển từ form
         double shippingFee = 0;
         String shippingFeeStr = request.getParameter("shippingFee");
         if (shippingFeeStr != null && !shippingFeeStr.isEmpty()) {
@@ -71,22 +69,28 @@ public class ProcessCheckout extends HttpServlet {
         OrderService orderService = new OrderService();
 
 
-        Order newOrder = orderService.processOrder(user, targetCart, name, phone, shippingAddress, paymentMethod, shippingFee, note, shippingMethod);
-
+        Order newOrder = null;
+        try {
+            newOrder = orderService.processOrder(user, targetCart, name, phone, shippingAddress, paymentMethod, shippingFee, note, shippingMethod);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setContentType("text/html; charset=UTF-8");
+            response.getWriter().println("<script>alert('Lỗi hệ thống: Không thể xử lý đơn hàng. Vui lòng thử lại sau!'); window.location.href='checkout';</script>");
+            return;
+        }
 
         if (newOrder != null && newOrder.getId() > 0) {
 
-            // Lấy voucherId đã chọn từ session
             Long selectedVoucherId = (Long) session.getAttribute("selectedVoucherId");
 
             if ("VNPAY".equals(paymentMethod)) {
-                // VNPay: backup cart + voucher, chưa tăng usedCount ngay
+
                 if ("buynow".equals(type)) {
                     session.setAttribute("pendingCartBackup", session.getAttribute("buyNowCart"));
                 } else {
                     session.setAttribute("pendingCartBackup", session.getAttribute("cart"));
                 }
-                // Backup voucherId để VNPayReturnServlet xử lý sau
+
                 if (selectedVoucherId != null) {
                     session.setAttribute("pendingVoucherId", selectedVoucherId);
                 }
@@ -95,7 +99,7 @@ public class ProcessCheckout extends HttpServlet {
                 String paymentUrl = vnPayService.createPaymentUrl(request, newOrder);
                 response.sendRedirect(paymentUrl);
             } else {
-                // COD: tăng usedCount ngay, xóa cart
+
                 if (selectedVoucherId != null) {
                     voucherService.incrementUsedCount(selectedVoucherId);
                 }
@@ -107,7 +111,10 @@ public class ProcessCheckout extends HttpServlet {
                     session.removeAttribute("cart");
                 }
 
-                // Lưu sản phẩm gợi ý vào session để hiển thị trên thankyou.jsp
+
+                session.setAttribute("lastOrderId", newOrder.getId());
+
+
                 try {
                     ProductService productService = new ProductService();
                     List<Long> categoryIds = new ArrayList<>();

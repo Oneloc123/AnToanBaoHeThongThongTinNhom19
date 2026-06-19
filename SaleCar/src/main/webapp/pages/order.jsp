@@ -16,6 +16,68 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/common/dark-theme.css">
     <style>
+        /* ================= DIGITAL SIGNATURE COLUMNS ================= */
+        .verif-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .verif-verified { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+        .verif-unverified { background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); }
+        .verif-tampered { background: rgba(231,76,60,0.12); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+
+        .order-signature-info {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 8px 0;
+            border-top: 1px dashed var(--border-subtle);
+            margin-top: 8px;
+        }
+        .order-signature-info .sig-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .btn-sign-now {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #101010;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-sign-now:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,175,55,0.25); }
+        .btn-paste-sig {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(52,152,219,0.12);
+            color: #3498db;
+            border: 1px solid rgba(52,152,219,0.2);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-paste-sig:hover { background: rgba(52,152,219,0.2); }
+
         /* ================= ORDER TABS ================= */
         .order-tabs {
             display: flex;
@@ -243,6 +305,29 @@
         }
 
         .breadcrumb-item i { color: var(--text-muted); font-size: 9px; }
+
+        /* ================= TOAST ================= */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .lux-toast {
+            min-width: 320px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInRight 0.3s ease;
+        }
+        .lux-toast.success { background: #d1fae5; color: #065f46; border: 1px solid #bbf7d0; }
+        .lux-toast.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -483,20 +568,46 @@
                 </div>
 
 
-                <%-- FOOTER --%>
-                <div class="order-footer">
-                    <a href="${pageContext.request.contextPath}/order-detail?id=${order.id}" class="btn-detail">
-                        <i class="bi bi-info-circle"></i> Xem chi tiết
+                <%-- HÀNH ĐỘNG: Ký số + Xem chi tiết --%>
+                <div class="order-footer" style="border-top: 1px solid var(--border-subtle); background: transparent;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <%-- Cột Chữ ký số --%>
+                        <span style="font-size: 12px;">
+                            <c:choose>
+                                <c:when test="${order.verificationStatus == 'Verified'}">
+                                    <span class="verif-status verif-verified"><i class="bi bi-shield-check"></i> ✓ Đã xác thực chữ ký</span>
+                                </c:when>
+                                <c:when test="${order.verificationStatus == 'Tampered'}">
+                                    <span class="verif-status verif-tampered"><i class="bi bi-exclamation-triangle-fill"></i> ⚠ đã bị chỉnh sửa</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="verif-status verif-unverified"><i class="bi bi-shield-slash"></i> - Chưa xác thực chữ ký</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </span>
 
-                    </a>
+                        <%-- Nút Ký đơn hàng (chỉ hiện khi chưa ký) --%>
+                        <c:if test="${order.verificationStatus != 'Verified'}">
+                            <a href="${pageContext.request.contextPath}/sign-order?id=${order.id}" class="btn-sign-now">
+                                <i class="bi bi-pen"></i> Ký đơn hàng
+                            </a>
+                        </c:if>
+
+                        <a href="${pageContext.request.contextPath}/order-detail?id=${order.id}" class="btn-detail" style="padding: 6px 16px; font-size: 12px;">
+                            <i class="bi bi-info-circle"></i> Chi tiết
+                        </a>
+                    </div>
+
+                    <%-- Tổng tiền --%>
                     <div>
                         <span class="total-amount-label">Tổng cộng:</span>
                         <span class="total-amount-value">
-
                             <fmt:formatNumber value="${order.totalAmount}" type="number" groupingUsed="true"/> ₫
                         </span>
                     </div>
                 </div>
+
+
             </div>
         </c:forEach>
 
@@ -559,6 +670,7 @@
     </div>
 </div>
 
+
 <%-- REORDER MODAL --%>
 <div class="modal fade" id="reorderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -588,12 +700,112 @@
 </div>
 
 <script>
+    // ========================
+    // TOAST NOTIFICATIONS
+    // ========================
+    function showToast(type, message) {
+        var container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        var toast = document.createElement('div');
+        toast.className = 'lux-toast ' + type;
+        toast.innerHTML = '<i class="bi ' + (type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + '"></i> ' + message;
+        container.appendChild(toast);
+        setTimeout(function() {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s';
+            setTimeout(function() { toast.remove(); }, 300);
+        }, 4000);
+    }
+
+    // Hiển thị toast từ session nếu có
+    <c:if test="${not empty sessionScope.toastMessage}">
+    (function() {
+        var type = '${sessionScope.toastType}' === 'success' ? 'success' : 'error';
+        showToast(type, '<c:out value="${sessionScope.toastMessage}" />');
+    })();
+    </c:if>
+    <c:remove var="toastMessage" scope="session"/>
+    <c:remove var="toastType" scope="session"/>
+
     function openCancelModal(orderId) {
         document.getElementById('displayOrderId').innerText = orderId;
         document.getElementById('cancelOrderId').value = orderId;
         let cancelModal = new bootstrap.Modal(document.getElementById('cancelOrderModal'));
         cancelModal.show();
     }
+
+    // ========================
+    // PASTE SIGNATURE MODAL
+    // ========================
+    function openPasteModal(orderId) {
+        document.getElementById('pasteOrderId').value = orderId;
+        document.getElementById('pasteSigMessage').style.display = 'none';
+        document.getElementById('pasteSignatureInput').value = '';
+        var pasteModal = new bootstrap.Modal(document.getElementById('pasteSigModal'));
+        pasteModal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pasteSignatureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var orderId = document.getElementById('pasteOrderId').value;
+            var signature = document.getElementById('pasteSignatureInput').value.trim();
+            var msgEl = document.getElementById('pasteSigMessage');
+
+            if (!signature) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Vui lòng dán chữ ký số!';
+                return;
+            }
+
+            var formData = new URLSearchParams();
+            formData.append('action', 'paste');
+            formData.append('orderId', orderId);
+            formData.append('signature', signature);
+
+            fetch('${pageContext.request.contextPath}/sign-order', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = '#2ecc71';
+                    msgEl.textContent = data.message;
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.textContent = data.message;
+                }
+            })
+            .catch(function(err) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Lỗi kết nối máy chủ, vui lòng thử lại!';
+            });
+        });
+    });
+
+    // ========================
+    // TAMPER DETECTION ON LOAD
+    // ========================
+    <c:if test="${not empty tamperedOrders}">
+    (function() {
+        <c:forEach var="tamper" items="${tamperedOrders}">
+        showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "<fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm' />" đã bị thay đổi dữ liệu trái phép!');
+        </c:forEach>
+    })();
+    </c:if>
 
     function filterOrders(statusTarget, clickedTab) {
         document.querySelectorAll('.order-tab').forEach(tab => tab.classList.remove('active'));

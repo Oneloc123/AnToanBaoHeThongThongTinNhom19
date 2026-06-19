@@ -152,11 +152,12 @@
     <div>
         <a href="${pageContext.request.contextPath}/products" class="btn btn-outline-dark" style="border-radius: 30px; padding: 10px 25px; margin-right: 10px;">
             <i class="bi bi-arrow-left"></i> Tiếp tục mua sắm
-        </a>
-        <a href="${pageContext.request.contextPath}/order" class="btn btn-dark" style="background-color: var(--black); border-radius: 30px; padding: 10px 25px;">
-            Xem lịch sử đơn hàng <i class="bi bi-arrow-right"></i>
-        </a>
-    </div>
+        </a>                <a href="${pageContext.request.contextPath}/order" class="btn btn-dark" style="background-color: var(--black); border-radius: 30px; padding: 10px 25px;">
+                    Xem lịch sử đơn hàng <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+
 </div>
 
 <%-- SUGGESTED PRODUCTS --%>

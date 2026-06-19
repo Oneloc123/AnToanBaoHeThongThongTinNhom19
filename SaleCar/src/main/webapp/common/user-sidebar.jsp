@@ -42,6 +42,10 @@
            class="menu-item ${fn:contains(cur, 'notifications') ? 'active' : ''}">
             <i class="bi bi-bell"></i><span>Thông báo</span>
         </a>
+        <a href="${pageContext.request.contextPath}/digital-keys"
+           class="menu-item ${fn:contains(cur, 'digital-keys') ? 'active' : ''}">
+            <i class="bi bi-shield-lock"></i><span>Quản lý khóa</span>
+        </a>
         <a href="${pageContext.request.contextPath}/changePassword"
            class="menu-item ${fn:contains(cur, 'changepassword') ? 'active' : ''}">
             <i class="bi bi-key"></i><span>Thay đổi mật khẩu</span>

@@ -15,6 +15,9 @@ public class Order{
     private double shippingFee;
     private String note;
     private String shippingMethod;
+    private String signature;
+    private int keyId;
+    private String verificationStatus;
     private List<OrderItem> items;
 
     public int getId() {
@@ -113,5 +116,38 @@ public class Order{
 
     public void setItems(List<OrderItem> items) {
         this.items = items;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public int getKeyId() {
+        return keyId;
+    }
+
+    public void setKeyId(int keyId) {
+        this.keyId = keyId;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus != null ? verificationStatus : "Unverified";
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
+
+    public boolean isVerified() {
+        return "Verified".equals(verificationStatus);
+    }
+
+    public boolean isTampered() {
+        return "Tampered".equals(verificationStatus);
     }
 }

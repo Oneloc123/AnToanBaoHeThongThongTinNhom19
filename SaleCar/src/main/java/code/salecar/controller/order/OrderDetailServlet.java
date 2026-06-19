@@ -21,7 +21,6 @@ public class OrderDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-
         String idParam = request.getParameter("id");
 
         if (idParam == null || idParam.isEmpty()) {
@@ -32,32 +31,53 @@ public class OrderDetailServlet extends HttpServlet {
         try {
             int orderId = Integer.parseInt(idParam);
             OrderDAO orderDAO = new OrderDAO();
-
-            Order order = orderDAO.getOrderById(orderId);
+            Order order = null;
+            
+            try {
+                order = orderDAO.getOrderById(orderId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.getSession().setAttribute("toastMessage", "Lỗi kết nối cơ sở dữ liệu khi tải thông tin đơn hàng.");
+                request.getSession().setAttribute("toastType", "error");
+                response.sendRedirect(request.getContextPath() + "/order");
+                return;
+            }
 
             if (order != null) {
-
 
                 List<OrderItem> items = orderDAO.getOrderItemsByOrderId(orderId);
                 order.setItems(items);
 
-                // Kiểm tra sản phẩm nào đã được user đánh giá
                 User user = (User) request.getSession().getAttribute("user");
                 if (user != null) {
                     ReviewsService reviewsService = new ReviewsService();
                     Set<Integer> reviewedProductIds = new HashSet<>();
                     for (OrderItem item : items) {
-                        if (reviewsService.hasUserReviewedProduct(user.getId(), item.getProductId())) {
-                            reviewedProductIds.add(item.getProductId());
+                        try {
+                            if (reviewsService.hasUserReviewedProduct(user.getId(), item.getProductId())) {
+                                reviewedProductIds.add(item.getProductId());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                     request.setAttribute("reviewedProductIds", reviewedProductIds);
                 }
 
+                try {
+                    code.salecar.service.product.DigitalSignatureService sigService =
+                            new code.salecar.service.product.DigitalSignatureService();
+                    java.util.List<code.salecar.service.product.DigitalSignatureService.TamperAlert> tampered =
+                            sigService.checkTamperedOrders(user != null ? user.getId() : -1);
+                    request.setAttribute("tamperedOrders", tampered);
+                    request.setAttribute("verificationStatus", sigService.getVerificationStatus(orderId));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 request.setAttribute("order", order);
                 request.getRequestDispatcher("/pages/order-detail.jsp").forward(request, response);
             } else {
-
                 response.sendRedirect(request.getContextPath() + "/order");
             }
 

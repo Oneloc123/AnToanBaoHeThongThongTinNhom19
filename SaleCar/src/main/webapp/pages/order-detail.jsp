@@ -15,6 +15,35 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/common/dark-theme.css">
     <style>
+        /* ================= DIGITAL SIGNATURE ================= */
+        .sig-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .sig-verified { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+        .sig-unverified { background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); }
+        .sig-tampered { background: rgba(231,76,60,0.12); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+
+        .hash-data-box {
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+            word-break: break-all;
+            line-height: 1.5;
+            max-height: 100px;
+            overflow-y: auto;
+            margin: 8px 0;
+        }
+
         /* ================= STATUS BADGE ================= */
         .status-badge {
             padding: 7px 16px;
@@ -413,6 +442,45 @@
                 </c:if>
             </div>
 
+            <%-- CHỮ KÝ SỐ --%>
+            <div class="info-card">
+                <h4><i class="bi bi-shield-lock"></i> Chữ ký số</h4>
+                <div class="info-row">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Trạng thái: 
+                        <c:choose>
+                            <c:when test="${verificationStatus == 'Verified'}">
+                                <span class="sig-status sig-verified"><i class="bi bi-check-circle-fill"></i> ✓ Đã xác thực chữ ký</span>
+                            </c:when>
+                            <c:when test="${verificationStatus == 'Tampered'}">
+                                <span class="sig-status sig-tampered"><i class="bi bi-exclamation-triangle-fill"></i> ⚠ đã bị chỉnh sửa</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="sig-status sig-unverified"><i class="bi bi-dash-circle"></i> - Chưa xác thực chữ ký</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <i class="bi bi-key"></i>
+                    <span>Mã khóa: 
+                        <strong>
+                            <c:choose>
+                                <c:when test="${order.keyId > 0}">#${order.keyId}</c:when>
+                                <c:otherwise>Chưa ký</c:otherwise>
+                            </c:choose>
+                        </strong>
+                    </span>
+                </div>
+                <c:if test="${verificationStatus != 'Verified'}">
+                <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="${pageContext.request.contextPath}/sign-order?id=${order.id}" class="btn-back" style="padding: 6px 16px; font-size: 12px;">
+                        <i class="bi bi-pen"></i> Ký đơn hàng
+                    </a>
+                </div>
+                </c:if>
+            </div>
+
             <div class="info-card">
                 <h4><i class="bi bi-credit-card-2-front"></i> Thanh toán &amp; Vận chuyển</h4>
                 <div class="info-row">
@@ -624,7 +692,129 @@
     </div>
 </div>
 
+<!-- PASTE SIGNATURE MODAL -->
+<div class="modal fade" id="pasteSigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-subtle);">
+                <h5 class="modal-title"><i class="bi bi-clipboard me-2" style="color: var(--gold);"></i> Dán chữ ký số</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <form id="pasteSignatureDetailForm">
+                <div class="modal-body">
+                    <p style="color: var(--text-muted); font-size: 14px;">Dán chữ ký số từ Công cụ ký số vào ô bên dưới.</p>
+                    <input type="hidden" name="orderId" id="pasteDetailOrderId" value="">
+                    <input type="hidden" name="action" value="paste">
+                    <textarea name="signature" id="pasteDetailSignatureInput" class="form-control"
+                              style="background: var(--bg-elevated); border: 1.5px solid var(--border-subtle); color: var(--text-primary); min-height: 80px; font-family: 'Courier New', monospace; font-size: 12px;"
+                              placeholder="Dán chữ ký số vào đây..." required></textarea>
+                    <div id="pasteDetailSigMessage" style="margin-top: 10px; font-size: 13px; display: none;"></div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-subtle);">
+                    <button type="button" class="btn-back" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn-back" style="border: none; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #101010;">
+                        <i class="bi bi-check2-circle"></i> Xác nhận & Ký
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+// ========================
+// TOAST NOTIFICATIONS
+// ========================
+function showToast(type, message) {
+    var container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+        document.body.appendChild(container);
+    }
+    var toast = document.createElement('div');
+    var bgColor = type === 'success' ? '#d1fae5' : '#fee2e2';
+    var textColor = type === 'success' ? '#065f46' : '#b91c1c';
+    var icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+    toast.style.cssText = 'min-width: 320px; padding: 16px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: ' + bgColor + '; color: ' + textColor + '; border: 1px solid ' + (type === 'success' ? '#bbf7d0' : '#fecaca') + '; animation: slideInRight 0.3s ease;';
+    toast.innerHTML = '<i class="bi ' + icon + '"></i> ' + message;
+    container.appendChild(toast);
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 4000);
+}
+
+// ========================
+// PASTE SIGNATURE MODAL
+// ========================
+function openPasteModal(orderId) {
+    document.getElementById('pasteDetailOrderId').value = orderId;
+    document.getElementById('pasteDetailSigMessage').style.display = 'none';
+    document.getElementById('pasteDetailSignatureInput').value = '';
+    var pasteModal = new bootstrap.Modal(document.getElementById('pasteSigModal'));
+    pasteModal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var pasteForm = document.getElementById('pasteSignatureDetailForm');
+    if (pasteForm) {
+        pasteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var orderId = document.getElementById('pasteDetailOrderId').value;
+            var signature = document.getElementById('pasteDetailSignatureInput').value.trim();
+            var msgEl = document.getElementById('pasteDetailSigMessage');
+
+            if (!signature) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Vui lòng dán chữ ký số!';
+                return;
+            }
+
+            var formData = new URLSearchParams();
+            formData.append('action', 'paste');
+            formData.append('orderId', orderId);
+            formData.append('signature', signature);
+
+            fetch('${pageContext.request.contextPath}/sign-order', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = '#2ecc71';
+                    msgEl.textContent = data.message;
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                } else {
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = '#e74c3c';
+                    msgEl.textContent = data.message;
+                }
+            })
+            .catch(function(err) {
+                msgEl.style.display = 'block';
+                msgEl.style.color = '#e74c3c';
+                msgEl.textContent = 'Lỗi kết nối máy chủ!';
+            });
+        });
+    }
+});
+
+// ========================
+// TAMPER DETECTION ON LOAD
+// ========================
+<c:if test="${not empty tamperedOrders}">
+(function() {
+    <c:forEach var="tamper" items="${tamperedOrders}">                showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "<fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm' />" đã bị thay đổi dữ liệu trái phép! Hãy kiểm tra ngay.');
+    </c:forEach>
+})();
+</c:if>
+
 function toggleReviewForm(formId) {
     var targetForm = document.getElementById(formId);
     if (!targetForm) return;
