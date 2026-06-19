@@ -66,8 +66,8 @@ public class DigitalSignatureService {
         String hashData = generateOrderHashData(order);
 
         try {
-            java.security.PublicKey publicKey = code.salecar.service.product.RSAService.parsePublicKey(activeKey.getPublicKey());
-            boolean isValid = code.salecar.service.product.RSAService.verify(hashData, signature, publicKey);
+            java.security.PublicKey publicKey = code.salecar.service.product.DSAService.parsePublicKey(activeKey.getPublicKey());
+            boolean isValid = code.salecar.service.product.DSAService.verify(hashData, signature, publicKey);
 
             if (isValid) {
                 return sigDAO.saveSignature(orderId, signature, activeKey.getId());
@@ -95,8 +95,8 @@ public class DigitalSignatureService {
         String hashData = generateOrderHashData(order);
 
         try {
-            java.security.PublicKey publicKey = code.salecar.service.product.RSAService.parsePublicKey(key.getPublicKey());
-            boolean isValid = code.salecar.service.product.RSAService.verify(hashData, signature, publicKey);
+            java.security.PublicKey publicKey = code.salecar.service.product.DSAService.parsePublicKey(key.getPublicKey());
+            boolean isValid = code.salecar.service.product.DSAService.verify(hashData, signature, publicKey);
 
             if (isValid) {
                 return sigDAO.saveSignature(orderId, signature, key.getId());
@@ -135,8 +135,8 @@ public class DigitalSignatureService {
 
             try {
                 String hashData = generateOrderHashData(order);
-                java.security.PublicKey publicKey = code.salecar.service.product.RSAService.parsePublicKey(key.getPublicKey());
-                boolean isValid = code.salecar.service.product.RSAService.verify(hashData, signature, publicKey);
+                java.security.PublicKey publicKey = code.salecar.service.product.DSAService.parsePublicKey(key.getPublicKey());
+                boolean isValid = code.salecar.service.product.DSAService.verify(hashData, signature, publicKey);
 
                 if (!isValid) {
                     sigDAO.markAsTampered(order.getId());
@@ -176,8 +176,8 @@ public class DigitalSignatureService {
 
             try {
                 String hashData = generateOrderHashData(order);
-                java.security.PublicKey publicKey = code.salecar.service.product.RSAService.parsePublicKey(key.getPublicKey());
-                boolean isValid = code.salecar.service.product.RSAService.verify(hashData, signature, publicKey);
+                java.security.PublicKey publicKey = code.salecar.service.product.DSAService.parsePublicKey(key.getPublicKey());
+                boolean isValid = code.salecar.service.product.DSAService.verify(hashData, signature, publicKey);
 
                 if (!isValid) {
                     sigDAO.markAsTampered(order.getId());

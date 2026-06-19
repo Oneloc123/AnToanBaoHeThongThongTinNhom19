@@ -196,7 +196,7 @@ public class SigningToolFrame extends JFrame {
         JLabel instrLabel = new JLabel(
                 "<html><b>Bước 1:</b> Nhấp nút 'Chọn File...' để chọn file khóa bí mật 'private_key.txt'.<br>" +
                         "<b>Bước 2:</b> Dán chuỗi Dữ liệu Hash Đơn hàng sao chép từ hệ thống LUXCAR.<br>" +
-                        "<b>Bước 3:</b> Bấm nút 'Ký Đơn Hàng' để tạo chữ ký số điện tử.</html>");
+                        "<b>Bước 3:</b> Bấm nút 'Ký Đơn Hàng' để tạo chữ ký số DSA.</html>");
         instrLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         instrLabel.setBorder(new EmptyBorder(0, 0, 10, 0));
 

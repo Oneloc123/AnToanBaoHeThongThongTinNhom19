@@ -44,6 +44,15 @@ public class order extends HttpServlet {
                 java.util.List<code.salecar.service.product.DigitalSignatureService.TamperAlert> tampered =
                         sigService.checkTamperedOrders(user.getId());
                 request.setAttribute("tamperedOrders", tampered);
+
+                // After the tamper check updated DB statuses, synchronize the local order objects
+                for (code.salecar.service.product.DigitalSignatureService.TamperAlert alert : tampered) {
+                    for (Order ord : lstOrder) {
+                        if (ord.getId() == alert.getOrderId()) {
+                            ord.setVerificationStatus("Tampered");
+                        }
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

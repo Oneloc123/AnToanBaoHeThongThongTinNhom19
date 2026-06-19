@@ -611,7 +611,8 @@ function showToast(type, message) {
 <c:if test="${not empty tamperedOrders}">
 (function() {
     <c:forEach var="tamper" items="${tamperedOrders}">
-    showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "<fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm' />" đã bị thay đổi dữ liệu trái phép!');
+    var dateStr = '<c:if test="${not empty tamper.orderDate}"><fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm'/></c:if><c:if test="${empty tamper.orderDate}">không rõ</c:if>';
+    showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "' + dateStr + '" đã bị thay đổi dữ liệu trái phép!');
     </c:forEach>
 })();
 </c:if>
