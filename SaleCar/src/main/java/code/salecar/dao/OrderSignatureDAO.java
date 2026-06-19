@@ -103,8 +103,8 @@ public class OrderSignatureDAO {
                 return false;
             }
 
-            java.security.PublicKey publicKey = code.salecar.service.product.RSAService.parsePublicKey(key.getPublicKey());
-            boolean isValid = code.salecar.service.product.RSAService.verify(expectedHashData, signature, publicKey);
+            java.security.PublicKey publicKey = code.salecar.service.product.DSAService.parsePublicKey(key.getPublicKey());
+            boolean isValid = code.salecar.service.product.DSAService.verify(expectedHashData, signature, publicKey);
 
             String newStatus = isValid ? "Verified" : "Tampered";
             String sql = "UPDATE `order` SET verification_status = ? WHERE id = ?";

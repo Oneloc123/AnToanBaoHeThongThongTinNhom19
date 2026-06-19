@@ -201,10 +201,10 @@
         <div class="key-card">
             <h3><i class="bi bi-download"></i> Công cụ ký số (Offline Signing Tool)</h3>
             <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 15px;">
-                Tải công cụ ký số RSA để ký đơn hàng ngoại tuyến.
+                Tải công cụ ký số DSA để ký đơn hàng ngoại tuyến.
             </p>
-            <a href="#" class="tool-download-link" onclick="showToast('info', 'Vui lòng chạy lớp Main.java trong gói tool từ IDE của bạn.'); return false;">
-                <i class="bi bi-file-earmark-zip"></i> Tải công cụ
+            <a href="${pageContext.request.contextPath}/download-signing-tool" class="tool-download-link">
+                <i class="bi bi-file-earmark-zip"></i> Tải công cụ ký số (MyApp-portable.zip)
             </a>
         </div>
 

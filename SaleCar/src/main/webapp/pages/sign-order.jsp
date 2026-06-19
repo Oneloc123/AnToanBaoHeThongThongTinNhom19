@@ -162,7 +162,7 @@
 <%--            <h3><i class="bi bi-info-circle"></i> Cách ký đơn hàng</h3>--%>
 <%--            <ol style="color: var(--text-secondary); font-size: 14px; line-height: 2.2;">--%>
 <%--                <li>Mở <strong>Công cụ ký số</strong>.</li>--%>
-<%--                <li>Ở Tab 1, tạo cặp khóa RSA và <strong>sao chép Public Key</strong> vào trang <a href="${pageContext.request.contextPath}/digital-keys" style="color: var(--gold);">Quản lý khóa</a> của bạn.</li>--%>
+<%--                <li>Ở Tab 1, tạo cặp khóa DSA và <strong>sao chép Public Key</strong> vào trang <a href="${pageContext.request.contextPath}/digital-keys" style="color: var(--gold);">Quản lý khóa</a> của bạn.</li>--%>
 <%--                <li><strong>Sao chép</strong> chuỗi dữ liệu băm (Hash Data) bên dưới (nhấn nút sao chép).</li>--%>
 <%--                <li>Chuyển sang <strong>Tab 2 (Ký đơn hàng)</strong> trong công cụ, dán <strong>Private Key</strong> và dữ liệu băm, sau đó nhấn <strong>"Ký"</strong>.</li>--%>
 <%--                <li><strong>Sao chép</strong> chữ ký số được tạo ra và dán vào ô bên dưới, sau đó nhấn <strong>"Xác nhận ký"</strong>.</li>--%>
