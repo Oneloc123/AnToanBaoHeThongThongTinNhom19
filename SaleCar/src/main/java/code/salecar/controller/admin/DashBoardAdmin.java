@@ -3,7 +3,9 @@ package code.salecar.controller.admin;
 import code.salecar.dao.OrderDAO;
 import code.salecar.model.Order;
 import code.salecar.model.User;
+import code.salecar.model.product.dto.ProductItemDTO;
 import code.salecar.service.order.OrderService;
+import code.salecar.service.product.ProductService;
 import code.salecar.service.user.UserService;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -41,8 +43,12 @@ public class DashBoardAdmin extends HttpServlet {
 
         for (Order o : listOrder){
             //
-            totalPriceOrder += o.getTotalAmount();
-            totalOrder ++;
+            if(o.getOrderStatus().equals("DELIVERED")){
+                totalPriceOrder += o.getTotalAmount();
+                totalOrder ++;
+            }
+
+
             if(o.getOrderStatus().equals("Đang xử lý")){
                 totalOrderInProcess++;
             }
@@ -103,6 +109,11 @@ public class DashBoardAdmin extends HttpServlet {
                 ));
         request.setAttribute("paymentLabels", paymentMap.keySet());
         request.setAttribute("paymentData", paymentMap.values());
+
+        // Best-selling products
+        ProductService productService = new ProductService();
+        List<ProductItemDTO> bestSellers = productService.getBestSellingProducts(5);
+        request.setAttribute("bestSellers", bestSellers);
 
         request.getRequestDispatcher("/admin/dashBoardAdmin.jsp").forward(request,response);
     }

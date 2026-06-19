@@ -489,7 +489,7 @@
             </div>
 
             <div class="col-xl-3 col-sm-6">
-                <div class="stat-card" onclick="window.location.href='/orderAdmin'">
+                <div class="stat-card" onclick="window.location.href='/order-admin'">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="stat-info">
                             <h3>${totalOrder} đơn</h3>
@@ -653,30 +653,36 @@
                         <a href="/admin/products" class="view-all">Xem kho kho <i class="bi bi-arrow-right-short"></i></a>
                     </div>
                     <div class="px-4">
-                        <div class="product-item">
-                            <div class="product-img-box"><i class="bi bi-car-front-fill"></i></div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold style-14 text-dark">Thảm lót sàn da Nappa cao cấp</div>
-                                <small class="text-muted">Đã bán: 124 bộ</small>
-                            </div>
-                            <div class="fw-bold text-end text-primary" style="font-size:14px;">347M ₫</div>
-                        </div>
-                        <div class="product-item">
-                            <div class="product-img-box"><i class="bi bi-camera-video-fill"></i></div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold style-14 text-dark">Camera hành trình 4K UltraHD</div>
-                                <small class="text-muted">Đã bán: 98 cái</small>
-                            </div>
-                            <div class="fw-bold text-end text-primary" style="font-size:14px;">411M ₫</div>
-                        </div>
-                        <div class="product-item">
-                            <div class="product-img-box"><i class="bi bi-shield-shaded"></i></div>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold style-14 text-dark">Phim cách nhiệt 3M Crystalline</div>
-                                <small class="text-muted">Đã bán: 86 gói</small>
-                            </div>
-                            <div class="fw-bold text-end text-primary" style="font-size:14px;">602M ₫</div>
-                        </div>
+                        <c:choose>
+                            <c:when test="${empty bestSellers}">
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox" style="font-size: 32px;"></i>
+                                    <p class="mt-2 mb-0">Chưa có dữ liệu bán hàng</p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach items="${bestSellers}" var="product">
+                                    <div class="product-item">
+                                        <div class="product-img-box">
+                                            <c:choose>
+                                                <c:when test="${not empty product.image}">
+                                                    <img src="${pageContext.request.contextPath}/${product.image}"
+                                                         alt="${product.name}"
+                                                         style="width:45px;height:45px;object-fit:cover;border-radius:8px;">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <i class="bi bi-car-front-fill"></i>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold text-dark" style="font-size:14px;">${product.name}</div>
+                                            <small class="text-muted">Đã bán: <fmt:formatNumber value="${product.soldQuantity}" type="number" groupingUsed="true"/> sản phẩm</small>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </div>

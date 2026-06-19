@@ -974,66 +974,66 @@
         </div>
 
         <!-- ========== SECTION 7: REVIEWS ========== -->
-        <div class="info-section">
-            <h5><i class="bi bi-star me-2"></i>Đánh giá sản phẩm</h5>
-            <div class="row">
-                <div class="col-md-3 text-center">
-                    <div class="display-1 fw-bold text-warning">${product.averageRating != null ? product.averageRating : 0}</div>
-                    <div class="review-rating">
-                        <c:forEach begin="1" end="5" var="i">
-                            <i class="bi bi-star${i <= (product.averageRating != null ? product.averageRating : 0) ? '-fill' : ''}"></i>
-                        </c:forEach>
-                    </div>
-                    <div class="small text-muted">${product.totalReviews != null ? product.totalReviews : 0} đánh giá
-                    </div>
-                </div>
-                <div class="col-md-9">
-                    <div class="info-label">Danh sách đánh giá</div>
-                    <div class="mt-2" style="max-height: 300px; overflow-y: auto;">
-                        <c:choose>
-                            <c:when test="${not empty product.reviews}">
-                                <c:forEach items="${product.reviews}" var="review">
-                                    <div class="review-item">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>${review.userName != null ? review.userName : 'Người dùng'}</strong>
-                                                <div class="review-rating small">
-                                                    <c:forEach begin="1" end="5" var="i">
-                                                        <i class="bi bi-star${i <= review.rating ? '-fill' : ''}"></i>
-                                                    </c:forEach>
-                                                </div>
-                                                <div class="small mt-1">${review.comment}</div>
-                                            </div>
-                                            <div class="text-end">
-                                                <c:if test="${not empty review.createdAtDate}">
-                                                    <small class="text-muted">
-                                                        <fmt:formatDate value="${review.createdAtDate}"
-                                                                        pattern="dd/MM/yyyy"/>
-                                                    </small>
-                                                </c:if>
-                                                <div class="mt-1">
-                                                    <button class="btn btn-sm btn-outline-danger"
-                                                            onclick="hideReview(${review.id})" data-tooltip="Ẩn review">
-                                                        <i class="bi bi-eye-slash"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-warning"
-                                                            onclick="reportSpam(${review.id})" data-tooltip="Báo spam">
-                                                        <i class="bi bi-flag"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="text-muted text-center py-3">Chưa có đánh giá nào</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </div>
-        </div>
+<%--        <div class="info-section">--%>
+<%--            <h5><i class="bi bi-star me-2"></i>Đánh giá sản phẩm</h5>--%>
+<%--            <div class="row">--%>
+<%--                <div class="col-md-3 text-center">--%>
+<%--                    <div class="display-1 fw-bold text-warning">${product.averageRating != null ? product.averageRating : 0}</div>--%>
+<%--                    <div class="review-rating">--%>
+<%--                        <c:forEach begin="1" end="5" var="i">--%>
+<%--                            <i class="bi bi-star${i <= (product.averageRating != null ? product.averageRating : 0) ? '-fill' : ''}"></i>--%>
+<%--                        </c:forEach>--%>
+<%--                    </div>--%>
+<%--                    <div class="small text-muted">${product.totalReviews != null ? product.totalReviews : 0} đánh giá--%>
+<%--                    </div>--%>
+<%--                </div>--%>
+<%--                <div class="col-md-9">--%>
+<%--                    <div class="info-label">Danh sách đánh giá</div>--%>
+<%--                    <div class="mt-2" style="max-height: 300px; overflow-y: auto;">--%>
+<%--                        <c:choose>--%>
+<%--                            <c:when test="${not empty product.reviews}">--%>
+<%--                                <c:forEach items="${product.reviews}" var="review">--%>
+<%--                                    <div class="review-item">--%>
+<%--                                        <div class="d-flex justify-content-between align-items-start">--%>
+<%--                                            <div>--%>
+<%--                                                <strong>${review.userName != null ? review.userName : 'Người dùng'}</strong>--%>
+<%--                                                <div class="review-rating small">--%>
+<%--                                                    <c:forEach begin="1" end="5" var="i">--%>
+<%--                                                        <i class="bi bi-star${i <= review.rating ? '-fill' : ''}"></i>--%>
+<%--                                                    </c:forEach>--%>
+<%--                                                </div>--%>
+<%--                                                <div class="small mt-1">${review.comment}</div>--%>
+<%--                                            </div>--%>
+<%--                                            <div class="text-end">--%>
+<%--                                                <c:if test="${not empty review.createdAtDate}">--%>
+<%--                                                    <small class="text-muted">--%>
+<%--                                                        <fmt:formatDate value="${review.createdAtDate}"--%>
+<%--                                                                        pattern="dd/MM/yyyy"/>--%>
+<%--                                                    </small>--%>
+<%--                                                </c:if>--%>
+<%--                                                <div class="mt-1">--%>
+<%--                                                    <button class="btn btn-sm btn-outline-danger"--%>
+<%--                                                            onclick="hideReview(${review.id})" data-tooltip="Ẩn review">--%>
+<%--                                                        <i class="bi bi-eye-slash"></i>--%>
+<%--                                                    </button>--%>
+<%--                                                    <button class="btn btn-sm btn-outline-warning"--%>
+<%--                                                            onclick="reportSpam(${review.id})" data-tooltip="Báo spam">--%>
+<%--                                                        <i class="bi bi-flag"></i>--%>
+<%--                                                    </button>--%>
+<%--                                                </div>--%>
+<%--                                            </div>--%>
+<%--                                        </div>--%>
+<%--                                    </div>--%>
+<%--                                </c:forEach>--%>
+<%--                            </c:when>--%>
+<%--                            <c:otherwise>--%>
+<%--                                <div class="text-muted text-center py-3">Chưa có đánh giá nào</div>--%>
+<%--                            </c:otherwise>--%>
+<%--                        </c:choose>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
+<%--            </div>--%>
+<%--        </div>--%>
 
 
 

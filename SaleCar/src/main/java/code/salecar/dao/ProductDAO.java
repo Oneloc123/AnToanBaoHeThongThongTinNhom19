@@ -1074,6 +1074,48 @@ public class ProductDAO {
     }
 
     /**
+     * Lấy danh sách sản phẩm bán chạy nhất (top 5) dựa trên tổng số lượng đã xuất kho.
+     * Join với bảng export_receipt_items để đếm số lượng đã bán.
+     * Chỉ lấy product có status = 1 (ACTIVE) và có variant.
+     */
+    public List<ProductItemDTO> getBestSellingProducts(int limit) {
+        List<ProductItemDTO> products = new ArrayList<>();
+        String query = "SELECT pr.id, pr.name, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio, " +
+                "COALESCE((SELECT MIN(pv.price) FROM product_variants pv WHERE pv.product_id = pr.id), pr.price) AS price, " +
+                "COALESCE((SELECT MIN(COALESCE(pv.final_price, pv.price)) FROM product_variants pv WHERE pv.product_id = pr.id), pr.final_price) AS final_price, " +
+                "COALESCE(SUM(eri.quantity), 0) AS total_sold " +
+                "FROM product pr " +
+                "INNER JOIN export_receipt_items eri ON eri.product_id = pr.id " +
+                "WHERE pr.status = 1 " +
+                "AND EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = pr.id) " +
+                "GROUP BY pr.id, pr.name, pr.price, pr.final_price, pr.discount_percent, pr.brand_id, pr.category_id, pr.ratio " +
+                "ORDER BY total_sold DESC " +
+                "LIMIT ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ProductItemDTO p = new ProductItemDTO.Builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
+                        .price(rs.getDouble("price"))
+                        .finalPrice(rs.getDouble("final_price"))
+                        .discountPercent(rs.getDouble("discount_percent"))
+                        .brandId(rs.getInt("brand_id"))
+                        .categoryId(rs.getInt("category_id"))
+                        .ratio(rs.getString("ratio"))
+                        .soldQuantity(rs.getInt("total_sold"))
+                        .build();
+                products.add(p);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return products;
+    }
+
+    /**
      * Xóa sản phẩm và các bản ghi liên quan.
      * Xóa theo thứ tự: inventory, product_variants, product_images, reviews, discounts, product
      */

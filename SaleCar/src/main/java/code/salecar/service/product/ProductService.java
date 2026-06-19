@@ -403,6 +403,16 @@ public class ProductService {
         }
     }
 
+    /**
+     * Lấy danh sách sản phẩm bán chạy nhất (top N).
+     * Kết quả đã được enrich với ảnh, brand name, category name.
+     */
+    public List<ProductItemDTO> getBestSellingProducts(int limit) {
+        List<ProductItemDTO> products = productDAO.getBestSellingProducts(limit);
+        addMoreInformation(products);
+        return products;
+    }
+
     //
     public int getTotalProductForAdmin(ProductFilter productFilter) {
         return productDAO.getTotalProductForAdmin(productFilter);

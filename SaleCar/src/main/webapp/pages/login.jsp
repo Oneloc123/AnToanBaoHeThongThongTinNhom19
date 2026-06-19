@@ -375,11 +375,11 @@
                 <div class="divider"><span>HOẶC ĐĂNG NHẬP BẰNG</span></div>
 
                 <div class="social-login">
-                    <a href="https://accounts.google.com/o/oauth2/auth?scope=email profile&redirect_uri=http://localhost:8080/login/GoogleLoginServlet&response_type=code&client_id=CODEODAYNE&approval_prompt=force"
+                    <a href="https://accounts.google.com/o/oauth2/auth?scope=email profile&redirect_uri=http://localhost:8080/login/GoogleLoginServlet&response_type=code&client_id=396260695374-6hd450qnu3ftc1897mneii01n0n98g4c.apps.googleusercontent.com&approval_prompt=force"
                        class="btn-social">
                         <i class="bi bi-google"></i> Google
                     </a>
-                    <a href="https://www.facebook.com/v18.0/dialog/oauth?client_id=AAAAAAAAAAAAAAAAA&redirect_uri=https://localhost:8080/login/loginFacebook&scope=email"
+                    <a href="https://www.facebook.com/v18.0/dialog/oauth?client_id=799757592968330&redirect_uri=https://localhost:8080/login/loginFacebook&scope=email"
                        class="btn-social">
                         <i class="bi bi-facebook"></i> Facebook
                     </a>

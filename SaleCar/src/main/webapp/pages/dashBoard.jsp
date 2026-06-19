@@ -74,7 +74,8 @@
         .payment-paid   { color: #2ecc71; }
         .payment-unpaid { color: #e74c3c; }
 
-        .wishlist-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+        .wishlist-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); transition: background var(--transition-fast); border-radius: 8px; padding: 12px; margin: 0 -12px; }
+        .wishlist-item:hover { background: var(--bg-elevated); }
         .wishlist-item:last-child { border-bottom: none; }
         .wishlist-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: var(--bg-elevated); }
         .wishlist-info { flex: 1; min-width: 0; }
@@ -355,27 +356,43 @@
                     <h3><i class="fas fa-heart"></i> Yêu thích gần đây</h3>
                     <a href="/favorites" class="view-all">Xem tất cả <i class="fas fa-arrow-right"></i></a>
                 </div>
-                <div class="wishlist-item">
-                    <img src="https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=100" class="wishlist-img" alt="Product">
-                    <div class="wishlist-info">
-                        <div class="wishlist-name">Vô lăng thể thao bọc da Alcantara</div>
-                        <div class="wishlist-price"><span class="final">12.800.000 ₫</span><span class="original">15.000.000 ₫</span><span class="badge-disc">-15%</span></div>
-                    </div>
-                </div>
-                <div class="wishlist-item">
-                    <img src="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=100" class="wishlist-img" alt="Product">
-                    <div class="wishlist-info">
-                        <div class="wishlist-name">Thảm lót sàn Carbon cao cấp LUXCAR</div>
-                        <div class="wishlist-price"><span class="final">2.500.000 ₫</span></div>
-                    </div>
-                </div>
-                <div class="wishlist-item">
-                    <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?w=100" class="wishlist-img" alt="Product">
-                    <div class="wishlist-info">
-                        <div class="wishlist-name">Camera hành trình 4K Ultra-S</div>
-                        <div class="wishlist-price"><span class="final">4.200.000 ₫</span><span class="original">4.900.000 ₫</span><span class="badge-disc">-14%</span></div>
-                    </div>
-                </div>
+                <c:choose>
+                    <c:when test="${empty recentFavorites}">
+                        <div class="noti-empty">
+                            <p>Bạn chưa có sản phẩm yêu thích nào.</p>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach items="${recentFavorites}" var="product">
+                            <a href="${pageContext.request.contextPath}/product-detail?id=${product.productId}"
+                               class="text-decoration-none">
+                                <div class="wishlist-item">
+                                    <div class="wishlist-info">
+                                        <div class="wishlist-name">${product.productName}</div>
+                                        <div class="wishlist-price">
+                                            <c:choose>
+                                                <c:when test="${product.discountPercent > 0}">
+                                                    <span class="final">
+                                                        <fmt:formatNumber value="${product.finalPrice}" type="number" groupingUsed="true"/> ₫
+                                                    </span>
+                                                    <span class="original">
+                                                        <fmt:formatNumber value="${product.price}" type="number" groupingUsed="true"/> ₫
+                                                    </span>
+                                                    <span class="badge-disc">-<fmt:formatNumber value="${product.discountPercent}" maxFractionDigits="0"/>%</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="final">
+                                                        <fmt:formatNumber value="${product.finalPrice}" type="number" groupingUsed="true"/> ₫
+                                                    </span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
 

@@ -311,7 +311,7 @@
                                             <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
                                         </td>
 
-                                        <td><span class="badge bg-secondary">COD</span></td>
+                                        <td><span class="badge bg-secondary">${ord.paymentMethod}</span></td>
 
                                         <td class="col-nowrap" id="status-cell-${ord.id}">
                                             <c:choose>
@@ -405,7 +405,7 @@
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label text-muted small">Phương thức thanh toán</label>
-                                        <input type="text" class="form-control" value="COD (Mặc định)" readonly>
+                                        <input type="text" class="form-control" value="${ord.paymentMethod}" readonly>
                                     </div>
                                     <c:if test="${not empty ord.shippingMethod}">
                                     <div class="col-md-4 mb-3">

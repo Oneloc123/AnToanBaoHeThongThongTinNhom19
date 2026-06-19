@@ -65,11 +65,14 @@ public class DashBoard extends HttpServlet {
             // WishList
             FavoritesService fs = new FavoritesService();
             List<ProductDetailDTO> listWishList = fs.getFavorites(user.getId());
-            int countWishList = 0;
-            for(ProductDetailDTO p :listWishList){
-                countWishList++;
-            }
+            int countWishList = listWishList.size();
             request.setAttribute("totalFavorites",countWishList);
+
+            // Lấy tối đa 5 sản phẩm yêu thích gần đây
+            List<ProductDetailDTO> recentFavorites = listWishList.size() > 5
+                    ? listWishList.subList(0, 5)
+                    : listWishList;
+            request.setAttribute("recentFavorites", recentFavorites);
             // Cart
             Cart cart = (Cart)session.getAttribute("cart");
             if(cart == null){cart = new Cart();}
