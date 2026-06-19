@@ -254,10 +254,26 @@
                         <form action="digital-keys" method="POST">
                             <input type="hidden" name="action" value="update">
                             <div class="form-group" style="margin-bottom: 15px;">
+                                <!-- File upload button -->
                                 <label style="display: block; color: var(--text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 8px;">
-                                    Dán khóa công khai (Public Key) của bạn vào ô bên dưới (kèm theo các dấu <<BeginPublicKey>> / <<EndPublicKey>>):
+                                    Tải lên file khóa công khai từ Công cụ ký số (public_key.txt):
                                 </label>
-                                <textarea name="publicKey" class="key-textarea" placeholder="<<BeginPublicKey>>&#10;...&#10;<<EndPublicKey>>" required></textarea>
+                                <div class="file-upload-row">
+                                    <input type="file" id="publicKeyFile" accept=".txt"
+                                           style="display: none;" onchange="readPublicKeyFile(event)">
+                                    <button type="button" class="btn-key-action btn-key-update"
+                                            onclick="document.getElementById('publicKeyFile').click()">
+                                        <i class="bi bi-file-earmark"></i> Chọn file
+                                    </button>
+                                    <span id="fileNameDisplay" style="color: var(--text-muted); font-size: 13px; margin-left: 10px;">Chưa chọn file</span>
+                                </div>
+
+                                <!-- Or paste manually -->
+                                <label style="display: block; color: var(--text-secondary); font-size: 12px; font-weight: 500; margin: 15px 0 8px 0;">
+                                    <i class="bi bi-pencil"></i> Hoặc dán trực tiếp nội dung khóa công khai (kèm theo các dấu <span style="background: var(--bg-elevated); padding: 1px 6px; border-radius: 3px; font-family: monospace; font-size: 11px;"><<BeginPublicKey>></span> / <span style="background: var(--bg-elevated); padding: 1px 6px; border-radius: 3px; font-family: monospace; font-size: 11px;"><<EndPublicKey>></span>):
+                                </label>
+                                <textarea name="publicKey" id="publicKeyTextarea" class="key-textarea"
+                                          placeholder="<<BeginPublicKey>>&#10;...&#10;<<EndPublicKey>>" required></textarea>
                             </div>
                             <button type="submit" class="btn-key-action btn-key-update">
                                 <i class="bi bi-upload"></i> Cập nhật khóa mới
@@ -379,6 +395,25 @@
             toast.style.transition = 'opacity 0.3s';
             setTimeout(function() { toast.remove(); }, 300);
         }, 4000);
+    }
+
+    // Đọc file public key và điền vào textarea
+    function readPublicKeyFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileNameSpan = document.getElementById('fileNameDisplay');
+        fileNameSpan.textContent = file.name;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            document.getElementById('publicKeyTextarea').value = content;
+        };
+        reader.onerror = function() {
+            showToast('error', 'Không thể đọc file. Vui lòng thử lại.');
+        };
+        reader.readAsText(file);
     }
 
     // Hiển thị toast từ session nếu có
