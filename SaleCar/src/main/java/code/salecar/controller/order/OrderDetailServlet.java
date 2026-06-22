@@ -47,9 +47,6 @@ public class OrderDetailServlet extends HttpServlet {
 
                 User user = (User) request.getSession().getAttribute("user");
                 if (user != null) {
-                    if ("admin".equals(user.getRole())) {
-                        request.setAttribute("isAdminView", true);
-                    }
                     ReviewsService reviewsService = new ReviewsService();
                     Set<Integer> reviewedProductIds = new HashSet<>();
                     for (OrderItem item : items) {
