@@ -723,31 +723,6 @@
 
 <script>
 // ========================
-// TOAST NOTIFICATIONS
-// ========================
-function showToast(type, message) {
-    var container = document.getElementById('toastContainer');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toastContainer';
-        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
-        document.body.appendChild(container);
-    }
-    var toast = document.createElement('div');
-    var bgColor = type === 'success' ? '#d1fae5' : '#fee2e2';
-    var textColor = type === 'success' ? '#065f46' : '#b91c1c';
-    var icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
-    toast.style.cssText = 'min-width: 320px; padding: 16px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: ' + bgColor + '; color: ' + textColor + '; border: 1px solid ' + (type === 'success' ? '#bbf7d0' : '#fecaca') + '; animation: slideInRight 0.3s ease;';
-    toast.innerHTML = '<i class="bi ' + icon + '"></i> ' + message;
-    container.appendChild(toast);
-    setTimeout(function() {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s';
-        setTimeout(function() { toast.remove(); }, 300);
-    }, 4000);
-}
-
-// ========================
 // PASTE SIGNATURE MODAL
 // ========================
 function openPasteModal(orderId) {
@@ -804,18 +779,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// ========================
-// TAMPER DETECTION ON LOAD
-// ========================
-<c:if test="${not empty tamperedOrders}">
-(function() {
-    <c:forEach var="tamper" items="${tamperedOrders}">
-    var dateStr = '<c:if test="${not empty tamper.orderDate}"><fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm'/></c:if><c:if test="${empty tamper.orderDate}">không rõ</c:if>';
-    showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "' + dateStr + '" đã bị thay đổi dữ liệu trái phép! Hãy kiểm tra ngay.');
-    </c:forEach>
-})();
-</c:if>
 
 function toggleReviewForm(formId) {
     var targetForm = document.getElementById(formId);
