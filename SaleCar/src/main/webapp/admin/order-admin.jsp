@@ -182,25 +182,7 @@
         }
         .admin-action-delete:hover { background-color: #ffe0e0; color: #b84c4c; }
 
-        /* ========== MODAL ========== */
-        .form-card { padding: 25px; }
-        .form-section {
-            background: #fefefe; border: 1px solid #eef2f6;
-            border-radius: 20px; padding: 20px; margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-        .form-section-title {
-            font-size: 14px; font-weight: 600;
-            color: #2c7da0; margin-bottom: 15px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .btn-cancel-modal {
-            border: 1px solid #e2e8f0; padding: 8px 18px;
-            border-radius: 30px; color: #64748b;
-            text-decoration: none; background: transparent; transition: 0.2s;
-        }
-        .btn-cancel-modal:hover { border-color: #2c7da0; color: #2c7da0; }
+        /* ========== MISC ========== */
         .form-control:read-only { background-color: #f8fafc; color: #475569; }
 
         /* ========== RESPONSIVE ========== */
@@ -418,9 +400,9 @@
                                         <td class="col-nowrap" style="text-align: center;">
                                             <div id="action-buttons-${ord.id}" class="d-flex justify-content-center gap-1 flex-nowrap">
 
-                                                <button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal${ord.id}" title="Xem chi tiết">
+                                                <a href="${pageContext.request.contextPath}/order-detail?id=${ord.id}" class="admin-action-btn admin-action-view" title="Xem chi tiết" target="_blank">
                                                     <i class="bi bi-eye"></i>
-                                                </button>
+                                                </a>
 
                                                 <c:choose>
                                                     <c:when test="${(ord.orderStatus == 'PENDING' || ord.orderStatus == 'Đang xử lý') && ord.verificationStatus == 'Verified'}">
@@ -466,116 +448,6 @@
             </div>
         </div>
 
-        <c:forEach var="ord" items="${orders}">
-            <div class="modal fade" id="viewOrderModal${ord.id}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="form-card">
-
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-cart-check-fill"></i> Thông tin Đơn hàng #ORD-${ord.id}
-                                </h3>
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-muted small">Ngày đặt</label>
-                                        <input type="text" class="form-control" value="${ord.orderDate}" readonly>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-muted small">Tên khách hàng</label>
-                                        <input type="text" class="form-control fw-semibold" value="${customerNameMap[ord.userId]}" readonly>
-                                    </div>
-
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-muted small">Trạng thái</label>
-                                        <input type="text" class="form-control text-primary fw-bold" value="${ord.orderStatus}" readonly>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-muted small">Phương thức thanh toán</label>
-                                        <input type="text" class="form-control" value="${ord.paymentMethod}" readonly>
-                                    </div>
-                                    <c:if test="${not empty ord.shippingMethod}">
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-muted small">Phương thức giao hàng</label>
-                                        <input type="text" class="form-control" value="${ord.shippingMethod}" readonly>
-                                    </div>
-                                    </c:if>
-                                </div>
-                            </div>
-
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-person-lines-fill"></i> Thông tin Khách hàng & Giao hàng
-                                </h3>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label text-muted small">ID Người mua</label>
-                                        <input type="text" class="form-control" value="${ord.userId}" readonly>
-                                    </div>
-
-
-                                    <div class="col-12 mb-3">
-                                        <label class="form-label text-muted small">Địa chỉ giao hàng</label>
-                                        <input type="text" class="form-control" value="${ord.shippingAddress}" readonly>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-section">
-                                <h3 class="form-section-title">
-                                    <i class="bi bi-box-seam"></i> Chi tiết Sản phẩm
-                                </h3>
-
-                                  <div class="row">
-                                    <div class="col-12 mb-3">
-                                       <%-- Vòng lặp in từng sản phẩm có kèm ảnh --%>
-                                       <c:forEach items="${ord.items}" var="item">
-                                          <div class="d-flex justify-content-between align-items-center border-bottom py-3">
-
-                                              <%-- Phần bên trái: Ảnh + Tên + Số lượng --%>
-                                              <div class="d-flex align-items-center gap-3">
-                                                  <%-- Khối hình ảnh giống order-detail.jsp --%>
-                                                  <div style="width: 65px; height: 65px; background: #f8f9fa; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                                     <img src="${not empty item.imageUrl ? pageContext.request.contextPath.concat('/uploads/').concat(item.imageUrl) : 'https://placehold.co/100?text=LUXCAR'}" alt="${item.product.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://placehold.co/100?text=LUXCAR'">
-                                                  </div>
-
-                                                  <%-- Thông tin tên xe --%>
-                                                  <div>
-                                                     <div class="fw-bold" style="color: #1e293b; font-size: 15px;">${item.product.name}</div>
-                                                        <div class="text-muted small mt-1">
-                                                           Mã SP: LUX-${item.productId} | <span class="text-danger fw-bold">Số lượng: x${item.quantity}</span>
-                                                        </div>
-                                                     </div>
-                                                  </div>
-
-                                                  <%-- Phần bên phải: Đơn giá --%>
-                                                  <div class="fw-bold" style="color: #475569; font-size: 14px;">
-                                                      <fmt:formatNumber value="${item.price}" type="number" groupingUsed="true"/> ₫
-                                                  </div>
-
-                                          </div>
-                                       </c:forEach>
-                                    </div>
-
-                                    <div class="col-12 mt-2 text-end">
-                                        <h4 class="text-danger fw-bold m-0" style="font-size: 18px;">
-                                           Tổng tiền: <fmt:formatNumber value="${ord.totalAmount}" type="number" groupingUsed="true"/> ₫
-                                        </h4>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="button" class="btn-cancel-modal" data-bs-dismiss="modal">
-                                    <i class="bi bi-x-lg"></i> Đóng
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </c:forEach>
     </main>
 </div>
 
@@ -659,10 +531,9 @@ function showToast(type, message) {
                         document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được duyệt!";
 
 
-                        actionGroup.innerHTML =
-                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
-                                '<i class="bi bi-eye"></i>' +
-                            '</button>' +
+                        actionGroup.innerHTML =                                            '<a href="${pageContext.request.contextPath}/order-detail?id=' + orderId + '" class="admin-action-btn admin-action-view" title="Xem chi tiết" target="_blank">' +
+                                                '<i class="bi bi-eye"></i>' +
+                                            '</a>' +
                             '<button type="button" class="admin-action-btn admin-action-shipping" onclick="updateStatusOrder(event, ' + orderId + ', \'SHIPPING\')" title="Giao ĐVVC">' +
                                 '<i class="bi bi-truck"></i>' +
                             '</button>' +
@@ -675,10 +546,9 @@ function showToast(type, message) {
                     } else if("SHIPPING" === newStatus){
                         document.getElementById("toastMessage").innerText = "Đã bàn giao cho đơn vị vận chuyển!";
 
-                        actionGroup.innerHTML =
-                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
-                                '<i class="bi bi-eye"></i>' +
-                            '</button>' +
+                        actionGroup.innerHTML =                                            '<a href="${pageContext.request.contextPath}/order-detail?id=' + orderId + '" class="admin-action-btn admin-action-view" title="Xem chi tiết" target="_blank">' +
+                                                '<i class="bi bi-eye"></i>' +
+                                            '</a>' +
                             '<span class="badge bg-info text-white" style="font-size: 10px; border-radius: 10px;">Đang giao</span>' +
                             '<button type="button" class="admin-action-btn admin-action-delete" onclick="updateStatusOrder(event, ' + orderId + ', \'CANCELLED\')" title="Hủy đơn">' +
                                 '<i class="bi bi-x-circle"></i>' +
@@ -690,10 +560,9 @@ function showToast(type, message) {
                         document.getElementById("toastMessage").innerText = "Đơn hàng #ORD-"+ orderId + " đã được giao!";
 
                         // giu lai nut xem
-                        actionGroup.innerHTML =
-                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
-                                '<i class="bi bi-eye"></i>' +
-                            '</button>';
+                        actionGroup.innerHTML =                                            '<a href="${pageContext.request.contextPath}/order-detail?id=' + orderId + '" class="admin-action-btn admin-action-view" title="Xem chi tiết" target="_blank">' +
+                                                '<i class="bi bi-eye"></i>' +
+                                            '</a>';
 
                         trangThai.innerHTML = '<span class="badge-status badge-delivered">Đã giao</span>';
 
@@ -701,10 +570,9 @@ function showToast(type, message) {
                         document.getElementById("toastMessage").innerText = "Đã huỷ đơn hàng: #ORD-"+ orderId + "!";
 
 
-                        actionGroup.innerHTML =
-                            '<button class="admin-action-btn admin-action-view" data-bs-toggle="modal" data-bs-target="#viewOrderModal' + orderId + '" title="Xem chi tiết">' +
-                                '<i class="bi bi-eye"></i>' +
-                            '</button>';
+                        actionGroup.innerHTML =                                            '<a href="${pageContext.request.contextPath}/order-detail?id=' + orderId + '" class="admin-action-btn admin-action-view" title="Xem chi tiết" target="_blank">' +
+                                                '<i class="bi bi-eye"></i>' +
+                                            '</a>';
 
                         trangThai.innerHTML = '<span class="badge-status badge-cancelled">Đã huỷ đơn</span>';
                     }

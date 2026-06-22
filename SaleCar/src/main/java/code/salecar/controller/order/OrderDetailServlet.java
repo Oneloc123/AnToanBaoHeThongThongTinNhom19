@@ -27,12 +27,10 @@ public class OrderDetailServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/order");
             return;
         }
-
         try {
             int orderId = Integer.parseInt(idParam);
             OrderDAO orderDAO = new OrderDAO();
             Order order = null;
-            
             try {
                 order = orderDAO.getOrderById(orderId);
             } catch (Exception e) {
@@ -42,7 +40,6 @@ public class OrderDetailServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/order");
                 return;
             }
-
             if (order != null) {
 
                 List<OrderItem> items = orderDAO.getOrderItemsByOrderId(orderId);
@@ -63,18 +60,13 @@ public class OrderDetailServlet extends HttpServlet {
                     }
                     request.setAttribute("reviewedProductIds", reviewedProductIds);
                 }
-
                 try {
                     code.salecar.service.product.DigitalSignatureService sigService =
                             new code.salecar.service.product.DigitalSignatureService();
                     java.util.List<code.salecar.service.product.DigitalSignatureService.TamperAlert> tampered =
                             sigService.checkTamperedOrders(user != null ? user.getId() : -1);
                     request.setAttribute("tamperedOrders", tampered);
-
-                    // After the tamper check updated DB statuses, refresh the verification status
                     request.setAttribute("verificationStatus", sigService.getVerificationStatus(orderId));
-
-                    // Synchronize the local order object's verification status
                     for (code.salecar.service.product.DigitalSignatureService.TamperAlert alert : tampered) {
                         if (order.getId() == alert.getOrderId()) {
                             order.setVerificationStatus("Tampered");
@@ -83,7 +75,6 @@ public class OrderDetailServlet extends HttpServlet {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
                 request.setAttribute("order", order);
                 request.getRequestDispatcher("/pages/order-detail.jsp").forward(request, response);
             } else {
