@@ -24,20 +24,6 @@ public class OTPforForgotPassword extends HttpServlet {
         System.out.println(otp);
         User user = (User) session.getAttribute("userTemp");
         request.setAttribute("user",user);
-        new Thread(() -> {
-            String email = user.getEmail();
-            String content = """
-                <div style="font-family:Arial,sans-serif">
-                <h2 style="color:#004a99">LuxCar - Xác thực quên mật khẩu</h2>
-                <p>Mã xác thực của bạn là:</p>
-                <h1 style="letter-spacing:4px">%s</h1>
-                <p>Mã có hiệu lực trong 5 phút.</p>
-                <hr>
-                <small>Nếu bạn không yêu cầu, hãy bỏ qua email này.</small>
-                </div>
-                """.formatted(otp);
-            Mail.send(email,"xác thực đăng nhập", content);
-        }).start();
         request.getRequestDispatcher("/pages/OTP-ForgotPassword.jsp").forward(request,response);
     }
 
