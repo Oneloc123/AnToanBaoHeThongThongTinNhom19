@@ -116,29 +116,8 @@
         .status-verified { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
         .status-unverified { background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.2); }
 
-        .breadcrumb-item i { color: var(--text-muted); font-size: 9px; }
 
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-        .lux-toast {
-            min-width: 320px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideInRight 0.3s ease;
-        }
-        .lux-toast.success { background: #d1fae5; color: #065f46; border: 1px solid #bbf7d0; }
-        .lux-toast.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .breadcrumb-item i { color: var(--text-muted); font-size: 9px; }
     </style>
 </head>
 <body>
@@ -231,14 +210,11 @@
     </div>
 </div>
 
-<!-- Toast container for notifications -->
-<div class="toast-container" id="toastContainer"></div>
-
 <script>
     function copyHashData() {
         var hashData = document.getElementById('hashDataDisplay').textContent;
         navigator.clipboard.writeText(hashData).then(function() {
-            showToast('success', 'Đã sao chép dữ liệu băm vào bộ nhớ tạm!');
+            // Copied successfully — no notification needed
         }).catch(function() {
             // Fallback
             var textArea = document.createElement('textarea');
@@ -247,32 +223,8 @@
             textArea.select();
             document.execCommand('copy');
             document.body.removeChild(textArea);
-            showToast('success', 'Đã sao chép dữ liệu băm vào bộ nhớ tạm!');
         });
     }
-
-    function showToast(type, message) {
-        var container = document.getElementById('toastContainer');
-        var toast = document.createElement('div');
-        toast.className = 'lux-toast ' + type;
-        toast.innerHTML = '<i class="bi ' + (type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + '"></i> ' + message;
-        container.appendChild(toast);
-        setTimeout(function() {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s';
-            setTimeout(function() { toast.remove(); }, 300);
-        }, 4000);
-    }
-
-    // Show toast from session if present
-    <c:if test="${not empty sessionScope.toastMessage}">
-    (function() {
-        var type = '${sessionScope.toastType}' === 'success' ? 'success' : 'error';
-        showToast(type, '${sessionScope.toastMessage}');
-    })();
-    </c:if>
-    <c:remove var="toastMessage" scope="session"/>
-    <c:remove var="toastType" scope="session"/>
 </script>
 </body>
 </html>
