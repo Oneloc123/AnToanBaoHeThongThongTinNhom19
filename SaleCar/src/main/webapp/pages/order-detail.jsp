@@ -357,10 +357,30 @@
     </style>
 </head>
 <body>
-<div class="profile-wrapper">
 
-    <!-- Sidebar chung -->
-    <%@ include file="/common/user-sidebar.jsp" %>
+<c:choose>
+    <c:when test="${isAdminView}">
+        <%-- Admin layout: no user sidebar, admin-specific header --%>
+        <div class="admin-order-detail-wrapper">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 24px 32px;">
+            <div style="margin-bottom: 20px;">
+                <a href="${pageContext.request.contextPath}/order-admin"
+                   style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px;
+                          background: #f1f5f9; color: #2c7da0; border-radius: 40px;
+                          text-decoration: none; font-weight: 600; font-size: 13px;
+                          transition: all 0.2s;"
+                   onmouseover="this.style.background='#e2e8f0'"
+                   onmouseout="this.style.background='#f1f5f9'">
+                    <i class="bi bi-arrow-left"></i> Quay lại quản lý đơn hàng
+                </a>
+            </div>
+    </c:when>
+    <c:otherwise>
+        <%-- User layout --%>
+        <div class="profile-wrapper">
+        <%@ include file="/common/user-sidebar.jsp" %>
+    </c:otherwise>
+</c:choose>
 
     <%-- MAIN CONTENT --%>
     <div class="main-content">
@@ -375,7 +395,14 @@
                             <i class="bi bi-chevron-right"></i>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="${pageContext.request.contextPath}/order">Đơn hàng</a>
+                            <c:choose>
+                                <c:when test="${isAdminView}">
+                                    <a href="${pageContext.request.contextPath}/order-admin">Quản lý đơn hàng</a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/order">Đơn hàng</a>
+                                </c:otherwise>
+                            </c:choose>
                             <i class="bi bi-chevron-right"></i>
                         </li>
                         <li class="breadcrumb-item active">Chi tiết #${order.id}</li>
@@ -684,12 +711,28 @@
         </div>
 
         <div>
-            <a href="${pageContext.request.contextPath}/order" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng
-            </a>
+            <c:choose>
+                <c:when test="${isAdminView}">
+                    <a href="${pageContext.request.contextPath}/order-admin" class="btn-back">
+                        <i class="bi bi-arrow-left"></i> Quay lại quản lý đơn hàng
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/order" class="btn-back">
+                        <i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng
+                    </a>
+                </c:otherwise>
+            </c:choose>
         </div>
 
-    </div>
+    <c:choose>
+        <c:when test="${isAdminView}">
+            </div></div>
+        </c:when>
+        <c:otherwise>
+            </div>
+        </c:otherwise>
+    </c:choose>
 </div>
 
 <!-- PASTE SIGNATURE MODAL -->
