@@ -136,7 +136,7 @@ public class ProcessCheckout extends HttpServlet {
                     e.printStackTrace();
                 }
 
-                response.sendRedirect(request.getContextPath() + "/pages/thankyou.jsp");
+                response.sendRedirect(request.getContextPath() + "/order-detail?id=" + newOrder.getId());
             }
 
         } else {

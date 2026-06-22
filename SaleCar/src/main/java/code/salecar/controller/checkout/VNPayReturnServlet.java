@@ -138,7 +138,7 @@ public class VNPayReturnServlet extends HttpServlet {
                         e.printStackTrace();
                     }
 
-                    response.sendRedirect(request.getContextPath() + "/pages/thankyou.jsp");
+                    response.sendRedirect(request.getContextPath() + "/order-detail?id=" + orderId);
                 } else {
                     orderDAO.updateOrderStatus(orderId, "CANCELLED");
                     // VNPay thất bại: khôi phục cart từ backup + giữ nguyên voucher đã chọn
