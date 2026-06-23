@@ -306,28 +306,6 @@
 
         .breadcrumb-item i { color: var(--text-muted); font-size: 9px; }
 
-        /* ================= TOAST ================= */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-        .lux-toast {
-            min-width: 320px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideInRight 0.3s ease;
-        }
-        .lux-toast.success { background: #d1fae5; color: #065f46; border: 1px solid #bbf7d0; }
-        .lux-toast.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -700,38 +678,6 @@
 </div>
 
 <script>
-    // ========================
-    // TOAST NOTIFICATIONS
-    // ========================
-    function showToast(type, message) {
-        var container = document.getElementById('toastContainer');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toastContainer';
-            container.className = 'toast-container';
-            document.body.appendChild(container);
-        }
-        var toast = document.createElement('div');
-        toast.className = 'lux-toast ' + type;
-        toast.innerHTML = '<i class="bi ' + (type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + '"></i> ' + message;
-        container.appendChild(toast);
-        setTimeout(function() {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s';
-            setTimeout(function() { toast.remove(); }, 300);
-        }, 4000);
-    }
-
-    // Hiển thị toast từ session nếu có
-    <c:if test="${not empty sessionScope.toastMessage}">
-    (function() {
-        var type = '${sessionScope.toastType}' === 'success' ? 'success' : 'error';
-        showToast(type, '<c:out value="${sessionScope.toastMessage}" />');
-    })();
-    </c:if>
-    <c:remove var="toastMessage" scope="session"/>
-    <c:remove var="toastType" scope="session"/>
-
     function openCancelModal(orderId) {
         document.getElementById('displayOrderId').innerText = orderId;
         document.getElementById('cancelOrderId').value = orderId;
@@ -795,18 +741,6 @@
             });
         });
     });
-
-    // ========================
-    // TAMPER DETECTION ON LOAD
-    // ========================
-<c:if test="${not empty tamperedOrders}">
-(function() {
-    <c:forEach var="tamper" items="${tamperedOrders}">
-    var dateStr = '<c:if test="${not empty tamper.orderDate}"><fmt:formatDate value='${tamper.orderDate}' pattern='dd/MM/yyyy HH:mm'/></c:if><c:if test="${empty tamper.orderDate}">không rõ</c:if>';
-    showToast('error', 'Cảnh báo: Đơn hàng #' + ${tamper.orderId} + ' đặt ngày "' + dateStr + '" đã bị thay đổi dữ liệu trái phép!');
-    </c:forEach>
-})();
-</c:if>
 
     function filterOrders(statusTarget, clickedTab) {
         document.querySelectorAll('.order-tab').forEach(tab => tab.classList.remove('active'));
